@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*$py.class
+
+# Virtual Environment
+env/
+venv/
+ENV/
+.venv/
+.ENV/
+
+# Django Specific
+db.sqlite3
+*.log
+*.pot
+*.py,cover
+local_settings.py
+
+# Django Migrations Cache
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# Environment & Secrets
+.env
+*.env
+
+# Media & Static (if generated locally)
+media/
+staticfiles/
+static/
+
+# VS Code / IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Mac & Windows System Files
+.DS_Store
+Thumbs.db
+
+# Coverage & Test Reports
+.coverage
+htmlcov/
+*.cover
+*.log
+*.tmp
+.cache/
+.pytest_cache/
+
+# MyPy / Pyright
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Other
+*.bak
+*.orig

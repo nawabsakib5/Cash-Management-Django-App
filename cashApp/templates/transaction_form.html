@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transaction Form</title>
+  <style>
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: #f4f6fa;
+      color: #1e293b;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .form-box {
+      max-width: 500px;
+      width: 100%;
+      background: #ffffff;
+      padding: 28px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      font-size: 22px;
+      margin-bottom: 20px;
+      color: #2563eb;
+      text-align: center;
+    }
+
+    form p {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    form label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+
+    form input, 
+    form select, 
+    form textarea {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    form input:focus, 
+    form select:focus, 
+    form textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    button:hover { background: #1d4ed8; }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      text-decoration: none;
+      color: #374151;
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #111827; }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <h2>{{ form.instance.pk|yesno:"Edit Transaction,Add Transaction" }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+    <a href="{% url 'transaction_list' %}" class="back-link">← Back</a>
+  </div>
+</body>
+</html>

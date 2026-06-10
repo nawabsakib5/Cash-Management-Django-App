@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transactions</title>
+  <style>
+    /* === Transaction List Page === */
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: #f4f6fa;
+      color: #1e293b;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: #2563eb;
+    }
+
+    .summary {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .summary p {
+      font-weight: 600;
+      background: #f1f5f9;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    .summary p:nth-child(1) { color: #22c55e; }  /* Income */
+    .summary p:nth-child(2) { color: #ef4444; }  /* Expense */
+    .summary p:nth-child(3) { color: #2563eb; }  /* Balance */
+
+    .add-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .add-btn:hover {
+      background: #1d4ed8;
+    }
+
+    /* === Transactions List === */
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      background: #f9fafb;
+      margin-bottom: 10px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    li span {
+      font-weight: 600;
+    }
+
+    li .type-income { color: #22c55e; }
+    li .type-expense { color: #ef4444; }
+
+    li a {
+      font-size: 14px;
+      text-decoration: none;
+      margin-left: 10px;
+      font-weight: 600;
+    }
+    li a:first-of-type { color: #2563eb; } /* Edit */
+    li a:last-of-type { color: #ef4444; }  /* Delete */
+
+    li a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Transactions</h2>
+
+    <div class="summary">
+      <p>Total Income: {{ total_income }}</p>
+      <p>Total Expense: {{ total_expense }}</p>
+      <p>Balance: {{ balance }}</p>
+    </div>
+
+    <a href="{% url 'transaction_create' %}" class="add-btn">+ Add Transaction</a>
+
+    <ul>
+      {% for t in transactions %}
+        <li>
+          <span>{{ t.title }} - {{ t.amount }}</span> 
+          <span class="type-{{ t.type }}">{{ t.type }}</span>
+          <div>
+            <a href="{% url 'transaction_edit' t.pk %}">Edit</a> |
+            <a href="{% url 'transaction_delete' t.pk %}">Delete</a>
+          </div>
+        </li>
+      {% empty %}
+        <li>No transactions yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>

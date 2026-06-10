@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delete Transaction</title>
+  <style>
+    /* === Delete Confirmation Page === */
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: #f9fafb;
+      color: #1e293b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .confirm-box {
+      background: #ffffff;
+      padding: 24px 28px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .confirm-box h2 {
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: #dc2626; /* red for warning */
+    }
+
+    .confirm-box p {
+      font-size: 14px;
+      color: #374151;
+      margin-bottom: 20px;
+    }
+
+    /* Buttons */
+    .confirm-box form {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .confirm-box button,
+    .confirm-box a {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .confirm-box button {
+      border: none;
+      background: #dc2626;
+      color: white;
+    }
+    .confirm-box button:hover { background: #b91c1c; }
+    .confirm-box button:active { transform: scale(0.97); }
+
+    .confirm-box a {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .confirm-box a:hover { background: #d1d5db; }
+    .confirm-box a:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+  <div class="confirm-box">
+    <h2>Delete Transaction</h2>
+    <p>Are you sure you want to delete "{{ transaction.title }}"?</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Yes, Delete</button>
+      <a href="{% url 'transaction_list' %}">Cancel</a>
+    </form>
+  </div>
+</body>
+</html>
