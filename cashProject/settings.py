@@ -1,12 +1,16 @@
+# cashProject/settings.py
+
 from pathlib import Path
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-replace-this')
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# ─── Security ──────────────────────────────────────────────────────────────────
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-replace-this-in-production')
+DEBUG      = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
 
+# ─── Apps ──────────────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -17,9 +21,10 @@ INSTALLED_APPS = [
     'cashApp',
 ]
 
+# ─── Middleware ─────────────────────────────────────────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',       
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -28,8 +33,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'cashProject.urls'
+ROOT_URLCONF      = 'cashProject.urls'
+WSGI_APPLICATION  = 'cashProject.wsgi.application'
 
+# ─── Templates ─────────────────────────────────────────────────────────────────
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -45,16 +52,17 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'cashProject.wsgi.application'
-
-AUTH_USER_MODEL = 'cashApp.CustomUser'
-
+# ─── Database ──────────────────────────────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+AUTH_USER_MODEL    = 'cashApp.CustomUser'
+LOGIN_URL          = 'login'           
+LOGIN_REDIRECT_URL = 'project_list'        
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -63,16 +71,16 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Dhaka'
-USE_I18N = True
-USE_TZ = True
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE     = 'Asia/Dhaka'
+USE_I18N      = True
+USE_TZ        = True
+
+
+STATIC_URL    = '/static/'
+STATIC_ROOT   = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# ─── Default PK ────────────────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'transaction_list'

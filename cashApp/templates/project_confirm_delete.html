@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% block title %}Delete "{{ project.name }}" — CashManager{% endblock %}
+{% block nav_projects %}active{% endblock %}
+
+{% block content %}
+
+<div class="delete-shell">
+
+  <!-- Back breadcrumb -->
+  <a href="{% url 'project_detail' project.pk %}" class="back-crumb">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+    </svg>
+    Back to Project
+  </a>
+
+  <div class="delete-card">
+
+    <!-- Top danger bar -->
+    <div class="delete-bar"></div>
+
+    <!-- Icon -->
+    <div class="delete-icon-wrap">
+      <div class="delete-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </div>
+      <div class="delete-icon-ring"></div>
+    </div>
+
+    <!-- Heading -->
+    <div class="delete-heading">
+      <span class="delete-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Irreversible Action
+      </span>
+      <h1 class="delete-title">Delete this project?</h1>
+      <p class="delete-subtitle">
+        You're about to permanently delete
+        <span class="project-name-pill">{{ project.name }}</span>
+        and all its transactions. This cannot be undone.
+      </p>
+    </div>
+
+    <!-- Stats summary -->
+    <div class="delete-stats">
+      <div class="dstat">
+        <span class="dstat-label">Income</span>
+        <span class="dstat-value income">৳{{ project.total_income|floatformat:0 }}</span>
+      </div>
+      <div class="dstat-sep"></div>
+      <div class="dstat">
+        <span class="dstat-label">Expense</span>
+        <span class="dstat-value expense">৳{{ project.total_expense|floatformat:0 }}</span>
+      </div>
+      <div class="dstat-sep"></div>
+      <div class="dstat">
+        <span class="dstat-label">Balance</span>
+        <span class="dstat-value balance {% if project.balance < 0 %}neg{% endif %}">৳{{ project.balance|floatformat:0 }}</span>
+      </div>
+    </div>
+
+    <!-- Warning note -->
+    <div class="delete-warning">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p>All transactions linked to <strong>{{ project.name }}</strong> will be permanently erased. There is no way to recover this data.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="delete-actions">
+      <a href="{% url 'project_detail' project.pk %}" class="btn-cancel">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Cancel
+      </a>
+      <form method="post" style="display:contents;">
+        {% csrf_token %}
+        <button type="submit" class="btn-confirm-delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Yes, delete forever
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .delete-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 48px;
+  }
+
+  .back-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: color var(--transition);
+  }
+  .back-crumb svg {
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round;
+    transition: transform var(--transition);
+  }
+  .back-crumb:hover { color: var(--indigo); }
+  .back-crumb:hover svg { transform: translateX(-3px); }
+
+  /* ── Card ─────────────────────────────────────────────────── */
+  .delete-card {
+    background: var(--surface);
+    border: 1px solid rgba(244,63,94,0.25);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .delete-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #f43f5e, #fb7185, #fda4af);
+  }
+
+  /* Subtle rose glow top-right */
+  .delete-card::after {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(244,63,94,0.09) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── Icon ─────────────────────────────────────────────────── */
+  .delete-icon-wrap {
+    position: relative;
+    width: 56px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .delete-icon {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: rgba(244,63,94,0.1);
+    border: 1px solid rgba(244,63,94,0.28);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1;
+    position: relative;
+  }
+  .delete-icon svg {
+    width: 22px; height: 22px;
+    stroke: var(--rose); fill: none;
+  }
+  .delete-icon-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 21px;
+    border: 1px solid rgba(244,63,94,0.2);
+    animation: pulse-ring 2.2s ease-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%   { opacity: .7; transform: scale(1); }
+    70%  { opacity: 0;  transform: scale(1.18); }
+    100% { opacity: 0;  transform: scale(1.18); }
+  }
+
+  /* ── Heading ──────────────────────────────────────────────── */
+  .delete-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 6px;
+  }
+  .delete-eyebrow svg {
+    width: 12px; height: 12px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round;
+  }
+  .delete-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 10px;
+    line-height: 1.2;
+  }
+  .delete-subtitle {
+    font-size: 14px;
+    color: var(--text3);
+    line-height: 1.6;
+    margin: 0;
+  }
+  .project-name-pill {
+    display: inline-block;
+    background: rgba(244,63,94,0.1);
+    border: 1px solid rgba(244,63,94,0.25);
+    border-radius: 5px;
+    padding: 1px 8px;
+    font-weight: 600;
+    color: var(--rose);
+    font-size: 13.5px;
+  }
+
+  /* ── Stats ────────────────────────────────────────────────── */
+  .delete-stats {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: var(--surface2, rgba(255,255,255,0.03));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 0;
+  }
+  .dstat { flex: 1; text-align: center; }
+  .dstat-sep {
+    width: 1px; height: 28px;
+    background: var(--border); flex-shrink: 0;
+  }
+  .dstat-label {
+    display: block;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 4px;
+  }
+  .dstat-value {
+    display: block;
+    font-family: var(--mono); font-size: 14px; font-weight: 500;
+  }
+  .dstat-value.income  { color: var(--emerald); }
+  .dstat-value.expense { color: var(--rose); }
+  .dstat-value.balance { color: var(--indigo); }
+  .dstat-value.balance.neg { color: var(--rose); }
+
+  /* ── Warning box ──────────────────────────────────────────── */
+  .delete-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    background: rgba(244,63,94,0.06);
+    border: 1px solid rgba(244,63,94,0.2);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    text-align: left;
+  }
+  .delete-warning svg {
+    width: 15px; height: 15px;
+    stroke: var(--rose); fill: none;
+    stroke-width: 2; stroke-linecap: round;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .delete-warning p {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .delete-warning strong { color: var(--text2); font-weight: 600; }
+
+  /* ── Actions ──────────────────────────────────────────────── */
+  .delete-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .btn-cancel {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text3);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    transition: all var(--transition);
+  }
+  .btn-cancel svg {
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round;
+  }
+  .btn-cancel:hover {
+    color: var(--text);
+    border-color: var(--border2);
+    background: var(--surface2, rgba(255,255,255,0.04));
+  }
+
+  .btn-confirm-delete {
+    flex: 1.4;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--rose);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-confirm-delete::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .btn-confirm-delete svg {
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round;
+  }
+  .btn-confirm-delete:hover {
+    background: #e11d48;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(244,63,94,0.4);
+  }
+  .btn-confirm-delete:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  /* ── Responsive ───────────────────────────────────────────── */
+  @media (max-width: 520px) {
+    .delete-card { padding: 24px 16px; }
+    .delete-actions { flex-direction: column; }
+    .btn-cancel, .btn-confirm-delete { flex: unset; width: 100%; }
+  }
+</style>
+{% endblock %}

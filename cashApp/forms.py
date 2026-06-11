@@ -1,3 +1,5 @@
+# cashApp/forms.py
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser, Transaction, Project
@@ -7,19 +9,19 @@ class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
 
     class Meta:
-        model = CustomUser
+        model  = CustomUser
         fields = ['username', 'email', 'password1', 'password2']
 
 
 class LoginForm(AuthenticationForm):
     class Meta:
-        model = CustomUser
+        model  = CustomUser
         fields = ['username', 'password']
 
 
 class ProjectForm(forms.ModelForm):
     class Meta:
-        model = Project
+        model  = Project
         fields = ['name', 'description']
         widgets = {
             'name': forms.TextInput(attrs={
@@ -34,8 +36,8 @@ class ProjectForm(forms.ModelForm):
 
 class TransactionForm(forms.ModelForm):
     class Meta:
-        model = Transaction
-        fields = ['title', 'amount', 'type', 'date']
+        model  = Transaction
+        fields = ['title', 'amount', 'type', 'date']  # project field view থেকে set হবে
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
         }

@@ -1,3 +1,5 @@
+# cashApp/models.py
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -50,7 +52,7 @@ class Transaction(models.Model):
         ('expense', 'Expense'),
     )
     user    = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='transactions')
-    project = models.ForeignKey(           # ← নতুন
+    project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
         related_name='transactions',

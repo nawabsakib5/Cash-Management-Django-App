@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}{% if project %}Edit Project{% else %}New Project{% endif %} — CashManager{% endblock %}
+{% block nav_projects %}active{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'project_list' %}" class="back-link">
+  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  Back to Projects
+</a>
+
+<div style="max-width: 480px; margin: 0 auto;">
+
+  <div style="margin-bottom: 28px;">
+    <span class="eyebrow">
+      <span class="eyebrow-dot"></span>
+      {% if project %}Edit Project{% else %}New Project{% endif %}
+    </span>
+    <h1 class="page-title">{% if project %}Update "{{ project.name }}"{% else %}Create a Project{% endif %}</h1>
+    <p class="page-sub">{% if project %}Update your project details below{% else %}Give your project a name and start tracking cash flow{% endif %}</p>
+  </div>
+
+  <div class="card">
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      <!-- Non-field errors -->
+      {% if form.non_field_errors %}
+        {% for err in form.non_field_errors %}
+          <div class="alert-box alert-danger" style="margin-bottom:18px;">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>{{ err }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label" for="id_name">
+          Project Name
+          <span class="required"></span>
+        </label>
+        <input
+          type="text"
+          id="id_name"
+          name="name"
+          class="form-control"
+          placeholder="e.g. Monthly Budget, Office Expenses…"
+          value="{{ form.name.value|default:'' }}"
+          required
+          autofocus
+        />
+        {% if form.name.errors %}
+          <p class="form-error">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ form.name.errors.0 }}
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label class="form-label" for="id_description">
+          Description
+          <span style="font-size:11px; color:var(--text3); font-weight:400; margin-left:4px;">(optional)</span>
+        </label>
+        <textarea
+          id="id_description"
+          name="description"
+          class="form-control"
+          placeholder="What is this project for?"
+          rows="3"
+          style="resize: vertical; min-height: 80px;"
+        >{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}
+          <p class="form-error">{{ form.description.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
+          <svg viewBox="0 0 24 24">
+            {% if project %}
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            {% else %}
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            {% endif %}
+          </svg>
+          {% if project %}Save Changes{% else %}Create Project{% endif %}
+        </button>
+        <a href="{% url 'project_list' %}" class="btn-secondary">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+
+  {% if project %}
+  <div style="margin-top: 16px; padding: 14px 16px; background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.2); border-radius: var(--radius-lg);">
+    <p style="font-size: 12px; color: var(--rose); font-weight: 500; margin-bottom: 8px;">Danger Zone</p>
+    <a href="{% url 'project_delete' project.pk %}" class="btn-danger" style="font-size:13px; padding:8px 16px;">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      Delete this Project
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

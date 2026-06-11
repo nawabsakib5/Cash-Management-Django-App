@@ -31,6 +31,8 @@
       background: radial-gradient(ellipse, rgba(59,130,246,0.04) 0%, transparent 70%);
       pointer-events: none;
     }
+
+    /* === Card === */
     .register-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 20px; padding: 40px 40px 36px; width: 100%; max-width: 440px;
@@ -45,7 +47,9 @@
       background: linear-gradient(90deg, transparent, var(--green), transparent);
       border-radius: 0 0 2px 2px;
     }
-    .card-header { margin-bottom: 24px; }
+
+    /* === Header === */
+    .card-header { margin-bottom: 20px; }
     .tag {
       display: inline-flex; align-items: center; gap: 6px; font-size: 11px;
       font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
@@ -66,35 +70,43 @@
       color: var(--text); line-height: 1.2; margin-bottom: 6px;
     }
     .subtitle { font-size: 14px; color: var(--muted); }
-    .benefits { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+
+    /* === Benefits === */
+    .benefits {
+      list-style: none; display: flex; flex-direction: column;
+      gap: 7px; margin-bottom: 20px;
+    }
     .benefits li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
     .benefits li svg {
       width: 14px; height: 14px; stroke: var(--green); fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0;
     }
-    .form-group { margin-bottom: 15px; }
-    label {
-      display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
+
+    /* === Django messages === */
+    .django-messages { margin-bottom: 16px; }
+    .django-messages .msg {
+      font-size: 13px; color: var(--red); background: var(--red-dim);
+      border: 1px solid rgba(255,59,59,0.2); border-radius: 8px;
+      padding: 10px 14px; display: flex; align-items: center;
+      gap: 6px; margin-bottom: 8px;
     }
-    .input-wrap { position: relative; }
-    .input-wrap svg {
-      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      width: 15px; height: 15px; stroke: var(--muted); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none;
-      transition: stroke 0.2s;
+    .django-messages .msg::before {
+      content: '!'; display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(255,59,59,0.2); font-size: 10px; font-weight: 700; flex-shrink: 0;
     }
-    .input-wrap:focus-within svg { stroke: var(--green); }
-    input[type="text"], input[type="password"], input[type="email"] {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 11px 14px 11px 40px; font-size: 14px;
-      font-family: 'Inter', sans-serif; color: var(--text); outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+
+    /* === Form errors === */
+    .non-field-errors {
+      background: var(--red-dim); border: 1px solid rgba(255,59,59,0.2);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; list-style: none;
     }
-    input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
-    input::placeholder { color: #4a4a5a; }
-    .strength-bar { display: flex; gap: 4px; margin-top: 8px; }
-    .strength-bar span { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+    .non-field-errors li { font-size: 13px; color: var(--red); display: flex; align-items: center; gap: 6px; }
+    .non-field-errors li::before {
+      content: '!'; display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: rgba(255,59,59,0.2); font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
     .errorlist {
       list-style: none; background: var(--red-dim); border: 1px solid rgba(255,59,59,0.2);
       border-radius: 8px; padding: 10px 14px; margin-top: 8px;
@@ -102,14 +114,75 @@
     .errorlist li { font-size: 12px; color: var(--red); display: flex; align-items: center; gap: 6px; }
     .errorlist li::before {
       content: '!'; display: inline-flex; align-items: center; justify-content: center;
-      width: 15px; height: 15px; border-radius: 50%; background: rgba(255,59,59,0.2);
-      font-size: 10px; font-weight: 700; flex-shrink: 0;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: rgba(255,59,59,0.2); font-size: 10px; font-weight: 700; flex-shrink: 0;
     }
-    .non-field-errors {
-      background: var(--red-dim); border: 1px solid rgba(255,59,59,0.2);
-      border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; list-style: none;
+
+    /* === Form === */
+    .form-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;
     }
-    .non-field-errors li { font-size: 13px; color: var(--red); display: flex; align-items: center; gap: 6px; }
+    .form-row .form-group { margin-bottom: 0; }
+
+    .form-group { margin-bottom: 15px; }
+    label {
+      display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
+    }
+    .optional {
+      font-size: 10px; font-weight: 400; color: #4a4a5a;
+      text-transform: none; letter-spacing: 0; margin-left: 4px;
+    }
+
+    .input-wrap { position: relative; }
+
+    /* Left icon */
+    .input-wrap > svg.icon-left {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      width: 15px; height: 15px; stroke: var(--muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      pointer-events: none; transition: stroke 0.2s;
+    }
+    .input-wrap:focus-within > svg.icon-left { stroke: var(--green); }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 14px 11px 40px; font-size: 14px;
+      font-family: 'Inter', sans-serif; color: var(--text); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    /* Password fields have extra right padding for the toggle button */
+    input.has-toggle {
+      padding-right: 44px;
+    }
+    input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+    input::placeholder { color: #4a4a5a; }
+
+    /* Show/Hide password toggle */
+    .toggle-pass {
+      position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 4px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px; transition: background 0.15s;
+    }
+    .toggle-pass:hover { background: rgba(255,255,255,0.06); }
+    .toggle-pass svg {
+      width: 15px; height: 15px; stroke: var(--muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: stroke 0.2s; display: block;
+    }
+    .toggle-pass:hover svg { stroke: var(--green); }
+
+    /* Strength bar */
+    .strength-bar { display: flex; gap: 4px; margin-top: 8px; }
+    .strength-bar span {
+      flex: 1; height: 3px; border-radius: 2px;
+      background: var(--border); transition: background 0.3s;
+    }
+
+    /* === Submit === */
     .btn-register {
       width: 100%; padding: 13px; border: none; border-radius: 10px;
       background: var(--green); color: #0f0f13; font-family: 'Inter', sans-serif;
@@ -124,28 +197,37 @@
       width: 15px; height: 15px; stroke: #0f0f13; fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
+
+    /* === Footer === */
     .card-footer {
       margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .card-footer span { font-size: 13px; color: var(--muted); }
-    .card-footer a { font-size: 13px; font-weight: 600; color: var(--blue); text-decoration: none; transition: color 0.15s; }
+    .card-footer a {
+      font-size: 13px; font-weight: 600; color: var(--blue);
+      text-decoration: none; transition: color 0.15s;
+    }
     .card-footer a:hover { color: #93c5fd; }
+
     @media (max-width: 480px) {
       .register-card { padding: 28px 22px 26px; }
       h1 { font-size: 22px; }
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="register-card">
 
+    <!-- Header -->
     <div class="card-header">
       <div class="tag"><span class="tag-dot"></span>New Account</div>
       <h1>Create your account</h1>
       <p class="subtitle">Start tracking your income &amp; expenses</p>
     </div>
 
+    <!-- Benefits -->
     <ul class="benefits">
       <li>
         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -157,10 +239,20 @@
       </li>
       <li>
         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-        Edit or delete transactions anytime
+        Organize transactions by project
       </li>
     </ul>
 
+    <!-- Django messages -->
+    {% if messages %}
+      <div class="django-messages">
+        {% for message in messages %}
+          <div class="msg">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Non-field errors -->
     {% if form.non_field_errors %}
       <ul class="non-field-errors">
         {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
@@ -170,36 +262,106 @@
     <form method="post">
       {% csrf_token %}
 
+      <!-- Full Name + Phone (side by side) -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="id_full_name">Full Name <span class="optional">(optional)</span></label>
+          <div class="input-wrap">
+            <input type="text" name="full_name" id="id_full_name" placeholder="Your full name">
+            <svg class="icon-left" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="id_phone">Phone <span class="optional">(optional)</span></label>
+          <div class="input-wrap">
+            <input type="text" name="phone" id="id_phone" placeholder="01XXXXXXXXX">
+            <svg class="icon-left" viewBox="0 0 24 24">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.86 19.86 0 0 1 3.08 4.18 2 2 0 0 1 5.07 2h3a2 2 0 0 1 2 1.72 12.05 12.05 0 0 0 .67 2.69 2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.05 12.05 0 0 0 2.69.67A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Username -->
       <div class="form-group">
         <label for="id_username">Username</label>
         <div class="input-wrap">
-          <input type="text" name="username" id="id_username" placeholder="Choose a username" autocomplete="username" autofocus>
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <input type="text" name="username" id="id_username"
+                 placeholder="Choose a username" autocomplete="username" autofocus>
+          <svg class="icon-left" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
         </div>
         {% if form.username.errors %}
           <ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
       </div>
 
+      <!-- Email -->
       <div class="form-group">
-        <label for="id_password1">Password</label>
+        <label for="id_email">Email</label>
         <div class="input-wrap">
-          <input type="password" name="password1" id="id_password1" placeholder="Create a strong password" autocomplete="new-password" oninput="checkStrength(this.value)">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="email" name="email" id="id_email"
+                 placeholder="your@email.com" autocomplete="email">
+          <svg class="icon-left" viewBox="0 0 24 24">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
         </div>
+        {% if form.email.errors %}
+          <ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="id_password">Password</label>
+        <div class="input-wrap">
+          <input type="password" name="password" id="id_password"
+                 class="has-toggle" placeholder="Create a strong password"
+                 autocomplete="new-password" oninput="checkStrength(this.value)">
+          <svg class="icon-left" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <button type="button" class="toggle-pass" onclick="togglePassword('id_password','eye1')" title="Show/hide password">
+            <svg id="eye1" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <!-- Strength bar -->
         <div class="strength-bar">
-          <span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span>
+          <span id="s1"></span><span id="s2"></span>
+          <span id="s3"></span><span id="s4"></span>
         </div>
         {% if form.password1.errors %}
           <ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
       </div>
 
+      <!-- Confirm Password -->
       <div class="form-group">
-        <label for="id_password2">Confirm Password</label>
+        <label for="id_confirm_password">Confirm Password</label>
         <div class="input-wrap">
-          <input type="password" name="password2" id="id_password2" placeholder="Repeat your password" autocomplete="new-password">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" name="confirm_password" id="id_confirm_password"
+                 class="has-toggle" placeholder="Repeat your password"
+                 autocomplete="new-password">
+          <svg class="icon-left" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <button type="button" class="toggle-pass" onclick="togglePassword('id_confirm_password','eye2')" title="Show/hide password">
+            <svg id="eye2" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
         </div>
         {% if form.password2.errors %}
           <ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
@@ -208,27 +370,55 @@
 
       <button type="submit" class="btn-register">
         Create Account
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <svg viewBox="0 0 24 24">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
       </button>
     </form>
 
+    <!-- Footer -->
     <div class="card-footer">
       <span>Already have an account?</span>
-      <a href="{% url 'login' %}">Sign in</a>
+      <a href="{% url 'login' %}">Sign in</a>  {# ✅ lowercase #}
     </div>
 
   </div>
 
   <script>
+    // Show/hide password toggle — works for both fields
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = `
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        `;
+      } else {
+        input.type = 'password';
+        icon.innerHTML = `
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        `;
+      }
+    }
+
+    // Password strength bar
     function checkStrength(val) {
-      const bars = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
-      let score = 0;
-      if (val.length >= 8) score++;
-      if (/[A-Z]/.test(val)) score++;
-      if (/[0-9]/.test(val)) score++;
-      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const bars   = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
       const colors = ['#ff3b3b','#f97316','#eab308','#22c55e'];
-      bars.forEach((b, i) => { b.style.background = i < score ? colors[score-1] : 'var(--border)'; });
+      let score = 0;
+      if (val.length >= 8)          score++;
+      if (/[A-Z]/.test(val))        score++;
+      if (/[0-9]/.test(val))        score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      bars.forEach((b, i) => {
+        b.style.background = i < score ? colors[score - 1] : 'var(--border)';
+      });
     }
   </script>
 </body>
