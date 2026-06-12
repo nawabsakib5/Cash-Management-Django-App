@@ -5,8 +5,12 @@ from django.contrib.auth import login, logout, authenticate, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from .models import CustomUser, Transaction, Project
-from .forms import TransactionForm, RegisterForm, LoginForm, ProjectForm
+from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile
+from .forms import (
+    TransactionForm, RegisterForm, LoginForm,
+    ProjectForm, AdminUserCreateForm, AdminUserEditForm,
+)
+from .decorators import admin_required, not_frozen, log_action
 
 
 # ─── Auth Views ────────────────────────────────────────────────────────────────
@@ -70,6 +74,7 @@ def Login(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+            log_action(user, 'login', detail='Logged in', request=request)
             return redirect('project_list')
         else:
             messages.error(request, "Username বা Password ভুল।")
@@ -79,6 +84,8 @@ def Login(request):
 
 
 def logoutpage(request):
+    if request.user.is_authenticated:
+        log_action(request.user, 'logout', detail='Logged out', request=request)
     logout(request)
     return redirect('login')
 
@@ -115,13 +122,14 @@ def changapassword(request):
 
 @login_required(login_url='login')
 def project_list(request):
-    owned = request.user.owned_projects.all()
+    owned  = request.user.owned_projects.all()
     joined = request.user.joined_projects.all()
     projects = (owned | joined).distinct().order_by('-created_at')
     return render(request, 'project_list.html', {'projects': projects})
 
 
 @login_required(login_url='login')
+@not_frozen
 def project_create(request):
     if request.method == 'POST':
         form = ProjectForm(request.POST)
@@ -129,6 +137,7 @@ def project_create(request):
             project      = form.save(commit=False)
             project.user = request.user
             project.save()
+            log_action(request.user, 'create', target=project, request=request)
             messages.success(request, "Project তৈরি হয়েছে।")
             return redirect('project_list')
     else:
@@ -140,13 +149,12 @@ def project_create(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    # Permission: owner অথবা member হতে হবে
     if request.user != project.user and request.user not in project.members.all():
         messages.error(request, "এই project access করার অনুমতি নেই।")
         return redirect('project_list')
 
-    today = timezone.now().date()
-    transactions = project.transactions.all()
+    today        = timezone.now().date()
+    transactions = project.transactions.filter(is_deleted=False)
     tx_type      = request.GET.get('type', '')
     month_filter = request.GET.get('month', '')
     amount_range = request.GET.get('amount_range', '')
@@ -168,6 +176,11 @@ def project_detail(request, pk):
     elif amount_range == '1000+':
         transactions = transactions.filter(amount__gt=1000)
 
+    # delete_requested transactions user-এর কাছে hide থাকবে,
+    # কিন্তু admin আলাদাভাবে দেখতে পাবে
+    if not request.user.is_admin:
+        transactions = transactions.exclude(delete_requested=True)
+
     return render(request, 'project_detail.html', {
         'project':         project,
         'transactions':    transactions,
@@ -185,12 +198,14 @@ def project_detail(request, pk):
 
 
 @login_required(login_url='login')
+@not_frozen
 def project_edit(request, pk):
     project = get_object_or_404(Project, pk=pk, user=request.user)
     if request.method == 'POST':
         form = ProjectForm(request.POST, instance=project)
         if form.is_valid():
             form.save()
+            log_action(request.user, 'edit', target=project, request=request)
             messages.success(request, "Project update হয়েছে।")
             return redirect('project_detail', pk=pk)
     else:
@@ -199,6 +214,7 @@ def project_edit(request, pk):
 
 
 @login_required(login_url='login')
+@not_frozen
 def project_delete(request, pk):
     project = get_object_or_404(Project, pk=pk, user=request.user)
     if request.method == 'POST':
@@ -211,8 +227,9 @@ def project_delete(request, pk):
 # ─── Project Member Views ──────────────────────────────────────────────────────
 
 @login_required(login_url='login')
+@not_frozen
 def project_members(request, pk):
-    project = get_object_or_404(Project, pk=pk, user=request.user)  # owner-only
+    project = get_object_or_404(Project, pk=pk, user=request.user)
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -233,9 +250,10 @@ def project_members(request, pk):
 
 
 @login_required(login_url='login')
+@not_frozen
 def project_member_remove(request, pk, user_id):
-    project = get_object_or_404(Project, pk=pk, user=request.user)  # owner-only
-    member = get_object_or_404(CustomUser, pk=user_id)
+    project = get_object_or_404(Project, pk=pk, user=request.user)
+    member  = get_object_or_404(CustomUser, pk=user_id)
     project.members.remove(member)
     messages.success(request, f"{member.username} user Is Removed from this Project")
     return redirect('project_members', pk=pk)
@@ -244,10 +262,10 @@ def project_member_remove(request, pk, user_id):
 # ─── Transaction Views ─────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
+@not_frozen
 def transaction_create(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    # Permission: owner অথবা member
     if request.user != project.user and request.user not in project.members.all():
         messages.error(request, "You don't have permission to add transactions to this project.")
         return redirect('project_list')
@@ -264,9 +282,14 @@ def transaction_create(request, pk):
             tx.user    = request.user
             tx.project = project
             tx.save()
+            log_action(request.user, 'create', target=tx,
+                       detail=f"{tx_type} ৳{amount}", request=request)
 
             if tx_type == 'expense' and (balance - amount) < 0:
-                messages.warning(request, f"Transaction added, but balance is now negative (৳{balance - amount}).")
+                messages.warning(
+                    request,
+                    f"Transaction added, but balance is now negative (৳{balance - amount})."
+                )
             else:
                 messages.success(request, "Transaction added successfully.")
 
@@ -278,13 +301,16 @@ def transaction_create(request, pk):
         'form': form, 'project': project, 'balance': balance,
     })
 
+
 @login_required(login_url='login')
+@not_frozen
 def transaction_edit(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
     if request.method == 'POST':
         form = TransactionForm(request.POST, instance=transaction)
         if form.is_valid():
             form.save()
+            log_action(request.user, 'edit', target=transaction, request=request)
             messages.success(request, "Transaction update Done")
             return redirect('project_detail', pk=transaction.project.pk)
     else:
@@ -295,11 +321,214 @@ def transaction_edit(request, pk):
 
 
 @login_required(login_url='login')
+@not_frozen
 def transaction_delete(request, pk):
+    """
+    User delete করলে সাথে সাথে hide হয়ে যাবে (user এর কাছে),
+    কিন্তু data থাকবে — admin এর কাছে delete request হিসেবে যাবে।
+    """
     transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
     project_pk  = transaction.project.pk
+
     if request.method == 'POST':
-        transaction.delete()
-        messages.success(request, "Transaction delete Done")
+        transaction.request_delete()
+        log_action(request.user, 'delete_request', target=transaction, request=request)
+        messages.success(request, "Delete request পাঠানো হয়েছে। Admin confirm করলে delete হবে।")
         return redirect('project_detail', pk=project_pk)
+
     return render(request, 'transaction_confirm_delete.html', {'transaction': transaction})
+
+
+# ─── Admin Dashboard Views ─────────────────────────────────────────────────────
+
+@admin_required
+def admin_dashboard(request):
+    """Admin এর main dashboard — সব stats এক জায়গায়।"""
+    context = {
+        'total_users':       CustomUser.objects.filter(user_type='user').count(),
+        'frozen_users':      CustomUser.objects.filter(is_frozen=True).count(),
+        'total_projects':    Project.objects.count(),
+        'total_transactions': Transaction.objects.filter(is_deleted=False).count(),
+        'pending_deletes':   Transaction.objects.filter(
+                                 delete_requested=True, is_deleted=False
+                             ).count(),
+        'recent_logs':       AuditLog.objects.select_related('actor').all()[:20],
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+
+@admin_required
+def admin_user_list(request):
+    """সব user এর list — search সহ।"""
+    users = CustomUser.objects.all().order_by('-date_joined')
+    query = request.GET.get('q', '').strip()
+    if query:
+        users = users.filter(username__icontains=query) | \
+                users.filter(email__icontains=query)
+    return render(request, 'admin/user_list.html', {'users': users, 'query': query})
+
+
+@admin_required
+def admin_user_create(request):
+    """Admin নতুন user তৈরি করবে।"""
+    if request.method == 'POST':
+        form = AdminUserCreateForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+
+            # Admin type হলে AdminProfile তৈরি করো
+            if user.user_type == 'admin':
+                AdminProfile.objects.get_or_create(user=user)
+
+            log_action(request.user, 'user_create', target=user,
+                       detail=f"User '{user.username}' created by admin", request=request)
+            messages.success(request, f"User '{user.username}' তৈরি হয়েছে।")
+            return redirect('admin_user_list')
+    else:
+        form = AdminUserCreateForm()
+    return render(request, 'admin/user_form.html', {'form': form, 'action': 'Create'})
+
+
+@admin_required
+def admin_user_edit(request, user_id):
+    """Admin existing user edit করবে।"""
+    target_user = get_object_or_404(CustomUser, pk=user_id)
+    if request.method == 'POST':
+        form = AdminUserEditForm(request.POST, instance=target_user)
+        if form.is_valid():
+            form.save()
+            # Admin type হলে AdminProfile নিশ্চিত করো
+            if target_user.user_type == 'admin':
+                AdminProfile.objects.get_or_create(user=target_user)
+            log_action(request.user, 'edit', target=target_user,
+                       detail=f"User '{target_user.username}' edited by admin", request=request)
+            messages.success(request, f"User '{target_user.username}' update হয়েছে।")
+            return redirect('admin_user_list')
+    else:
+        form = AdminUserEditForm(instance=target_user)
+    return render(request, 'admin/user_form.html', {
+        'form': form, 'action': 'Edit', 'target_user': target_user,
+    })
+
+
+@admin_required
+def admin_user_delete(request, user_id):
+    """Admin user সম্পূর্ণ delete করবে।"""
+    target_user = get_object_or_404(CustomUser, pk=user_id)
+
+    # নিজেকে delete করা যাবে না
+    if target_user == request.user:
+        messages.error(request, "নিজের account delete করা যাবে না।")
+        return redirect('admin_user_list')
+
+    if request.method == 'POST':
+        username = target_user.username
+        log_action(request.user, 'user_delete',
+                   detail=f"User '{username}' deleted by admin", request=request)
+        target_user.delete()
+        messages.success(request, f"User '{username}' delete হয়েছে।")
+        return redirect('admin_user_list')
+
+    return render(request, 'admin/user_confirm_delete.html', {'target_user': target_user})
+
+
+@admin_required
+def admin_user_freeze(request, user_id):
+    """Admin user freeze/unfreeze করবে।"""
+    target_user = get_object_or_404(CustomUser, pk=user_id)
+
+    if target_user == request.user:
+        messages.error(request, "নিজেকে freeze করা যাবে না।")
+        return redirect('admin_user_list')
+
+    if request.method == 'POST':
+        if target_user.is_frozen:
+            target_user.is_frozen = False
+            target_user.save(update_fields=['is_frozen'])
+            log_action(request.user, 'unfreeze', target=target_user, request=request)
+            messages.success(request, f"'{target_user.username}' unfreeze করা হয়েছে।")
+        else:
+            target_user.is_frozen = True
+            target_user.save(update_fields=['is_frozen'])
+            log_action(request.user, 'freeze', target=target_user, request=request)
+            messages.success(request, f"'{target_user.username}' freeze করা হয়েছে।")
+
+        return redirect('admin_user_list')
+
+    return render(request, 'admin/user_freeze_confirm.html', {'target_user': target_user})
+
+
+@admin_required
+def admin_delete_requests(request):
+    """Pending delete request এর list — admin এখান থেকে confirm বা reject করবে।"""
+    pending = Transaction.objects.filter(
+        delete_requested=True, is_deleted=False
+    ).select_related('user', 'project').order_by('delete_requested_at')
+
+    return render(request, 'admin/delete_requests.html', {'pending': pending})
+
+
+@admin_required
+def admin_delete_confirm(request, pk):
+    """Admin transaction এর delete request confirm করবে।"""
+    transaction = get_object_or_404(Transaction, pk=pk, delete_requested=True, is_deleted=False)
+
+    if request.method == 'POST':
+        transaction.admin_confirm_delete()
+        log_action(request.user, 'delete_confirm', target=transaction,
+                   detail=f"Confirmed delete of '{transaction.title}'", request=request)
+        messages.success(request, f"'{transaction.title}' delete confirm হয়েছে।")
+        return redirect('admin_delete_requests')
+
+    return render(request, 'admin/delete_confirm.html', {'transaction': transaction})
+
+
+@admin_required
+def admin_delete_reject(request, pk):
+    """Admin delete request reject করলে transaction আবার visible হবে।"""
+    transaction = get_object_or_404(Transaction, pk=pk, delete_requested=True, is_deleted=False)
+
+    if request.method == 'POST':
+        transaction.delete_requested    = False
+        transaction.delete_requested_at = None
+        transaction.save(update_fields=['delete_requested', 'delete_requested_at'])
+        log_action(request.user, 'edit', target=transaction,
+                   detail=f"Delete request rejected for '{transaction.title}'", request=request)
+        messages.success(request, f"'{transaction.title}' এর delete request reject করা হয়েছে।")
+        return redirect('admin_delete_requests')
+
+    return render(request, 'admin/delete_confirm.html', {
+        'transaction': transaction, 'reject_mode': True,
+    })
+
+
+@admin_required
+def admin_audit_log(request):
+    """Full audit log — filter সহ।"""
+    logs = AuditLog.objects.select_related('actor').all()
+
+    # Filter by action
+    action_filter = request.GET.get('action', '')
+    if action_filter:
+        logs = logs.filter(action=action_filter)
+
+    # Filter by user
+    user_filter = request.GET.get('user', '').strip()
+    if user_filter:
+        logs = logs.filter(actor__username__icontains=user_filter)
+
+    # Filter by date
+    date_filter = request.GET.get('date', '').strip()
+    if date_filter:
+        logs = logs.filter(timestamp__date=date_filter)
+
+    context = {
+        'logs':           logs[:200],
+        'action_choices': AuditLog.ACTION_CHOICES,
+        'action_filter':  action_filter,
+        'user_filter':    user_filter,
+        'date_filter':    date_filter,
+    }
+    return render(request, 'admin/audit_log.html', context)

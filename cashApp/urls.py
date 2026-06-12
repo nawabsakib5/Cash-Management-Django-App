@@ -1,24 +1,56 @@
 # cashApp/urls.py
 
 from django.urls import path
-from cashApp.views import *
+from . import views
 
 urlpatterns = [
-    path('register/',        Signup,         name='signup'),
-    path('login/',           Login,          name='login'),
-    path('logout/',          logoutpage,     name='logout'),
-    path('change-password/', changapassword, name='changapassword'),
 
-    path('',                          project_list,   name='project_list'),
-    path('projects/create/',          project_create, name='project_create'),
-    path('projects/<int:pk>/',        project_detail, name='project_detail'),
-    path('projects/<int:pk>/edit/',   project_edit,   name='project_edit'),
-    path('projects/<int:pk>/delete/', project_delete, name='project_delete'),
+    # ── Auth ──────────────────────────────────────────────────────────────────
+    path('',           views.Login,          name='login'),
+    path('signup/',    views.Signup,         name='signup'),
+    path('logout/',    views.logoutpage,     name='logout'),
+    path('password/',  views.changapassword, name='change_password'),
 
-    path('projects/<int:pk>/members/',                  project_members,       name='project_members'),
-    path('projects/<int:pk>/members/<int:user_id>/remove/', project_member_remove, name='project_member_remove'),
+    # ── Projects ──────────────────────────────────────────────────────────────
+    path('projects/',               views.project_list,   name='project_list'),
+    path('projects/create/',        views.project_create, name='project_create'),
+    path('projects/<int:pk>/',      views.project_detail, name='project_detail'),
+    path('projects/<int:pk>/edit/', views.project_edit,   name='project_edit'),
+    path('projects/<int:pk>/delete/', views.project_delete, name='project_delete'),
 
-    path('projects/<int:pk>/add/',        transaction_create, name='transaction_create'),
-    path('transactions/<int:pk>/edit/',   transaction_edit,   name='transaction_edit'),
-    path('transactions/<int:pk>/delete/', transaction_delete, name='transaction_delete'),
+    # ── Project Members ───────────────────────────────────────────────────────
+    path('projects/<int:pk>/members/',
+         views.project_members, name='project_members'),
+    path('projects/<int:pk>/members/<int:user_id>/remove/',
+         views.project_member_remove, name='project_member_remove'),
+
+    # ── Transactions ──────────────────────────────────────────────────────────
+    path('projects/<int:pk>/transactions/add/',
+         views.transaction_create, name='transaction_create'),
+    path('transactions/<int:pk>/edit/',
+         views.transaction_edit, name='transaction_edit'),
+    path('transactions/<int:pk>/delete/',
+         views.transaction_delete, name='transaction_delete'),
+
+    # ── Admin ─────────────────────────────────────────────────────────────────
+    path('admin-panel/',
+         views.admin_dashboard, name='admin_dashboard'),
+    path('admin-panel/users/',
+         views.admin_user_list, name='admin_user_list'),
+    path('admin-panel/users/create/',
+         views.admin_user_create, name='admin_user_create'),
+    path('admin-panel/users/<int:user_id>/edit/',
+         views.admin_user_edit, name='admin_user_edit'),
+    path('admin-panel/users/<int:user_id>/delete/',
+         views.admin_user_delete, name='admin_user_delete'),
+    path('admin-panel/users/<int:user_id>/freeze/',
+         views.admin_user_freeze, name='admin_user_freeze'),
+    path('admin-panel/delete-requests/',
+         views.admin_delete_requests, name='admin_delete_requests'),
+    path('admin-panel/delete-requests/<int:pk>/confirm/',
+         views.admin_delete_confirm, name='admin_delete_confirm'),
+    path('admin-panel/delete-requests/<int:pk>/reject/',
+         views.admin_delete_reject, name='admin_delete_reject'),
+    path('admin-panel/audit-log/',
+         views.admin_audit_log, name='admin_audit_log'),
 ]
