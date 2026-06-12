@@ -5,12 +5,14 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ─── Security ──────────────────────────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-replace-this-in-production')
-DEBUG      = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG      = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
 
-# ─── Apps ──────────────────────────────────────────────────────────────────────
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -21,10 +23,9 @@ INSTALLED_APPS = [
     'cashApp',
 ]
 
-# ─── Middleware ─────────────────────────────────────────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',       
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -33,10 +34,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF      = 'cashProject.urls'
-WSGI_APPLICATION  = 'cashProject.wsgi.application'
+ROOT_URLCONF     = 'cashProject.urls'
+WSGI_APPLICATION = 'cashProject.wsgi.application'
 
-# ─── Templates ─────────────────────────────────────────────────────────────────
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -52,17 +52,20 @@ TEMPLATES = [
     },
 ]
 
-# ─── Database ──────────────────────────────────────────────────────────────────
+# SQLite — /data persistent disk on Render, local fallback
+RENDER_DISK = Path('/data')
+DB_PATH = (RENDER_DISK / 'db.sqlite3') if RENDER_DISK.exists() else (BASE_DIR / 'db.sqlite3')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_PATH,
     }
 }
 
 AUTH_USER_MODEL    = 'cashApp.CustomUser'
-LOGIN_URL = 'Login' 
-LOGIN_REDIRECT_URL = 'project_list'       
+LOGIN_URL          = 'login'
+LOGIN_REDIRECT_URL = 'project_list'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -71,16 +74,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Dhaka'
 USE_I18N      = True
 USE_TZ        = True
 
-
 STATIC_URL    = '/static/'
 STATIC_ROOT   = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ─── Default PK ────────────────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

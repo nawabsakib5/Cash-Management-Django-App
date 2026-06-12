@@ -24,7 +24,6 @@ def Signup(request):
         password         = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        # Validation
         if not all([username, email, password, confirm_password]):
             messages.error(request, "সব field পূরণ করো।")
             return render(request, 'register.html')
@@ -41,7 +40,6 @@ def Signup(request):
             messages.error(request, "এই email আগে থেকেই আছে।")
             return render(request, 'register.html')
 
-        # Create user
         user = CustomUser.objects.create_user(
             username  = username,
             full_name = full_name or '',
@@ -106,7 +104,7 @@ def changapassword(request):
 
         request.user.set_password(new_pass)
         request.user.save()
-        update_session_auth_hash(request, request.user)  
+        update_session_auth_hash(request, request.user)
         messages.success(request, "Password Successfully Changed")
         return redirect('project_list')
 

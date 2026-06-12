@@ -8,9 +8,9 @@ from cashApp.views import (
 )
 
 urlpatterns = [
-    path('register/', Signup, name='Signup'),
-    path('login/', Login,  name='Login'),        
-    path('logout/', logoutpage,     name='logout'),
+    path('register/',        Signup,         name='signup'),
+    path('login/',           Login,          name='login'),
+    path('logout/',          logoutpage,     name='logout'),
     path('change-password/', changapassword, name='changapassword'),
 
     path('',                          project_list,   name='project_list'),
