@@ -61,8 +61,8 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL    = 'cashApp.CustomUser'
-LOGIN_URL          = 'login'           
-LOGIN_REDIRECT_URL = 'project_list'        
+LOGIN_URL          = 'Login'   
+LOGIN_REDIRECT_URL = 'project_list'       
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
