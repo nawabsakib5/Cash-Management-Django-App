@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Members · {{ project.name }} · CashManager{% endblock %}
+
+{% block nav_projects %}active{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'project_detail' project.pk %}" class="back-link">
+  <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+  Back to {{ project.name }}
+</a>
+
+<div class="page-header">
+  <div>
+    <span class="eyebrow"><span class="eyebrow-dot"></span>Collaboration</span>
+    <h1 class="page-title">Project Members</h1>
+    <p class="page-sub">Manage the people working on {{ project.name }}.</p>
+  </div>
+</div>
+
+<!-- Add Member Card -->
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      Add a Member
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-row" style="align-items: end;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">
+          <span class="required"></span> Username
+        </label>
+        <input type="text" name="username" class="form-control" placeholder="Enter the username of the person you want to add" required>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Member
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Members List Card -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Team
+    </div>
+    <span class="tag">{{ project.all_members.count }} {% if project.all_members.count == 1 %}Member{% else %}Members{% endif %}</span>
+  </div>
+
+  {% if project.all_members.count > 0 %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for member in project.all_members %}
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div class="user-avatar" style="width: 28px; height: 28px; font-size: 11px;">
+                    {{ member.username|slice:":2" }}
+                  </div>
+                  <span style="color: var(--text); font-weight: 600;">{{ member.username }}</span>
+                </div>
+              </td>
+              <td>
+                {% if member == project.user %}
+                  <span class="badge income">
+                    <span class="badge-dot"></span> Owner
+                  </span>
+                {% else %}
+                  <span class="badge expense" style="background: var(--indigo-fog); color: #818cf8; border-color: var(--indigo-line);">
+                    <span class="badge-dot" style="background: #818cf8;"></span> Member
+                  </span>
+                {% endif %}
+              </td>
+              <td style="font-family: var(--mono); font-size: 12.5px; color: var(--text3);">
+                {{ member.email|default:"—" }}
+              </td>
+              <td style="text-align: right;">
+                {% if member != project.user %}
+                  <form method="post" action="{% url 'project_member_remove' project.pk member.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; color: var(--rose); border-color: rgba(244,63,94,0.18);">
+                      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      Remove
+                    </button>
+                  </form>
+                {% else %}
+                  <span style="font-size: 12px; color: var(--text3);">—</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state" style="padding: 40px 24px;">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      </div>
+      <div class="empty-title">No members yet</div>
+      <div class="empty-sub">Add someone using the form above by entering their username.</div>
+    </div>
+  {% endif %}
+</div>
+
+<hr class="divider">
+
+<div style="display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: var(--indigo-fog); border: 1px solid var(--indigo-line); border-radius: var(--radius-lg); font-size: 13px; color: #a5b4fc;">
+  <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: #818cf8; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+  <span>Members can add transactions to this project, but only the owner can edit/delete the project or manage members.</span>
+</div>
+
+{% endblock %}

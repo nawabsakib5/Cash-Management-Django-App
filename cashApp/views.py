@@ -115,7 +115,9 @@ def changapassword(request):
 
 @login_required(login_url='login')
 def project_list(request):
-    projects = Project.objects.filter(user=request.user)
+    owned = request.user.owned_projects.all()
+    joined = request.user.joined_projects.all()
+    projects = (owned | joined).distinct().order_by('-created_at')
     return render(request, 'project_list.html', {'projects': projects})
 
 
@@ -136,9 +138,14 @@ def project_create(request):
 
 @login_required(login_url='login')
 def project_detail(request, pk):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
-    today   = timezone.now().date()
+    project = get_object_or_404(Project, pk=pk)
 
+    # Permission: owner অথবা member হতে হবে
+    if request.user != project.user and request.user not in project.members.all():
+        messages.error(request, "এই project access করার অনুমতি নেই।")
+        return redirect('project_list')
+
+    today = timezone.now().date()
     transactions = project.transactions.all()
     tx_type      = request.GET.get('type', '')
     month_filter = request.GET.get('month', '')
@@ -168,6 +175,8 @@ def project_detail(request, pk):
         'total_expense':   project.total_expense(),
         'balance':         project.balance(),
         'balance_warning': project.balance() < 0,
+        'contributions':   project.contribution_summary(),
+        'is_owner':        request.user == project.user,
         'today':           today,
         'active_type':     tx_type,
         'active_month':    month_filter,
@@ -199,11 +208,50 @@ def project_delete(request, pk):
     return render(request, 'project_confirm_delete.html', {'project': project})
 
 
+# ─── Project Member Views ──────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def project_members(request, pk):
+    project = get_object_or_404(Project, pk=pk, user=request.user)  # owner-only
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        try:
+            user_to_add = CustomUser.objects.get(username=username)
+            if user_to_add == project.user:
+                messages.error(request, "তুমি নিজেই owner, নিজেকে add করতে পারবে না।")
+            elif user_to_add in project.members.all():
+                messages.error(request, f"{username} আগে থেকেই member।")
+            else:
+                project.members.add(user_to_add)
+                messages.success(request, f"{username} কে project-এ add করা হয়েছে।")
+        except CustomUser.DoesNotExist:
+            messages.error(request, "No User Found")
+        return redirect('project_members', pk=pk)
+
+    return render(request, 'project_members.html', {'project': project})
+
+
+@login_required(login_url='login')
+def project_member_remove(request, pk, user_id):
+    project = get_object_or_404(Project, pk=pk, user=request.user)  # owner-only
+    member = get_object_or_404(CustomUser, pk=user_id)
+    project.members.remove(member)
+    messages.success(request, f"{member.username} user Is Removed from this Project")
+    return redirect('project_members', pk=pk)
+
+
 # ─── Transaction Views ─────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def transaction_create(request, pk):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
+    project = get_object_or_404(Project, pk=pk)
+
+    # Permission: owner অথবা member
+    if request.user != project.user and request.user not in project.members.all():
+        messages.error(request, "You don't have permission to add transactions to this project.")
+        return redirect('project_list')
+
     balance = project.balance()
 
     if request.method == 'POST':
@@ -212,18 +260,16 @@ def transaction_create(request, pk):
             tx_type = form.cleaned_data.get('type')
             amount  = form.cleaned_data.get('amount')
 
-            if tx_type == 'expense' and (balance - amount) < 0:
-                form.add_error(None, f"এই expense করলে balance negative হবে (৳{balance - amount})।")
-                return render(request, 'transaction_form.html', {
-                    'form': form, 'project': project,
-                    'balance': balance, 'balance_warning': True,
-                })
-
             tx         = form.save(commit=False)
             tx.user    = request.user
             tx.project = project
             tx.save()
-            messages.success(request, "Transaction যোগ হয়েছে।")
+
+            if tx_type == 'expense' and (balance - amount) < 0:
+                messages.warning(request, f"Transaction added, but balance is now negative (৳{balance - amount}).")
+            else:
+                messages.success(request, "Transaction added successfully.")
+
             return redirect('project_detail', pk=pk)
     else:
         form = TransactionForm()
@@ -232,7 +278,6 @@ def transaction_create(request, pk):
         'form': form, 'project': project, 'balance': balance,
     })
 
-
 @login_required(login_url='login')
 def transaction_edit(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
@@ -240,7 +285,7 @@ def transaction_edit(request, pk):
         form = TransactionForm(request.POST, instance=transaction)
         if form.is_valid():
             form.save()
-            messages.success(request, "Transaction update হয়েছে।")
+            messages.success(request, "Transaction update Done")
             return redirect('project_detail', pk=transaction.project.pk)
     else:
         form = TransactionForm(instance=transaction)
@@ -255,6 +300,6 @@ def transaction_delete(request, pk):
     project_pk  = transaction.project.pk
     if request.method == 'POST':
         transaction.delete()
-        messages.success(request, "Transaction delete হয়েছে।")
+        messages.success(request, "Transaction delete Done")
         return redirect('project_detail', pk=project_pk)
     return render(request, 'transaction_confirm_delete.html', {'transaction': transaction})

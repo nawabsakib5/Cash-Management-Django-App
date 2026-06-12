@@ -1,112 +1,217 @@
 {% extends 'base.html' %}
-{% block title %}{% if project %}Edit Project{% else %}New Project{% endif %} — CashManager{% endblock %}
+{% block title %}{{ project.name }} — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
 {% block content %}
 
 <a href="{% url 'project_list' %}" class="back-link">
-  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
   Back to Projects
 </a>
 
-<div style="max-width: 480px; margin: 0 auto;">
-
-  <div style="margin-bottom: 28px;">
-    <span class="eyebrow">
-      <span class="eyebrow-dot"></span>
-      {% if project %}Edit Project{% else %}New Project{% endif %}
-    </span>
-    <h1 class="page-title">{% if project %}Update "{{ project.name }}"{% else %}Create a Project{% endif %}</h1>
-    <p class="page-sub">{% if project %}Update your project details below{% else %}Give your project a name and start tracking cash flow{% endif %}</p>
+<div class="page-header">
+  <div>
+    <span class="eyebrow"><span class="eyebrow-dot"></span>Project</span>
+    <h1 class="page-title">{{ project.name }}</h1>
+    {% if project.description %}
+      <p class="page-sub">{{ project.description }}</p>
+    {% endif %}
   </div>
-
-  <div class="card">
-    <form method="POST" novalidate>
-      {% csrf_token %}
-
-      <!-- Non-field errors -->
-      {% if form.non_field_errors %}
-        {% for err in form.non_field_errors %}
-          <div class="alert-box alert-danger" style="margin-bottom:18px;">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>{{ err }}</span>
-          </div>
-        {% endfor %}
-      {% endif %}
-
-      <div class="form-group">
-        <label class="form-label" for="id_name">
-          Project Name
-          <span class="required"></span>
-        </label>
-        <input
-          type="text"
-          id="id_name"
-          name="name"
-          class="form-control"
-          placeholder="e.g. Monthly Budget, Office Expenses…"
-          value="{{ form.name.value|default:'' }}"
-          required
-          autofocus
-        />
-        {% if form.name.errors %}
-          <p class="form-error">
-            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ form.name.errors.0 }}
-          </p>
-        {% endif %}
-      </div>
-
-      <div class="form-group" style="margin-bottom: 24px;">
-        <label class="form-label" for="id_description">
-          Description
-          <span style="font-size:11px; color:var(--text3); font-weight:400; margin-left:4px;">(optional)</span>
-        </label>
-        <textarea
-          id="id_description"
-          name="description"
-          class="form-control"
-          placeholder="What is this project for?"
-          rows="3"
-          style="resize: vertical; min-height: 80px;"
-        >{{ form.description.value|default:'' }}</textarea>
-        {% if form.description.errors %}
-          <p class="form-error">{{ form.description.errors.0 }}</p>
-        {% endif %}
-      </div>
-
-      <div style="display: flex; gap: 10px;">
-        <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
-          <svg viewBox="0 0 24 24">
-            {% if project %}
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            {% else %}
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            {% endif %}
-          </svg>
-          {% if project %}Save Changes{% else %}Create Project{% endif %}
-        </button>
-        <a href="{% url 'project_list' %}" class="btn-secondary">
-          Cancel
-        </a>
-      </div>
-
-    </form>
-  </div>
-
-  {% if project %}
-  <div style="margin-top: 16px; padding: 14px 16px; background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.2); border-radius: var(--radius-lg);">
-    <p style="font-size: 12px; color: var(--rose); font-weight: 500; margin-bottom: 8px;">Danger Zone</p>
-    <a href="{% url 'project_delete' project.pk %}" class="btn-danger" style="font-size:13px; padding:8px 16px;">
-      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      Delete this Project
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <a href="{% url 'transaction_create' project.pk %}" class="btn-primary">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Transaction
     </a>
+    {% if is_owner %}
+    <a href="{% url 'project_members' project.pk %}" class="btn-secondary">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Members
+    </a>
+    <a href="{% url 'project_edit' project.pk %}" class="btn-secondary">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit
+    </a>
+    {% endif %}
   </div>
-  {% endif %}
+</div>
 
+<!-- Balance Warning -->
+{% if balance_warning %}
+<div class="alert-box alert-warning" style="margin-bottom: 24px;">
+  <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  <span>This project's balance is negative. Please review the expenses below.</span>
+</div>
+{% endif %}
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="stat-card income">
+    <div class="stat-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
+    <div class="stat-label">Total Income</div>
+    <div class="stat-value">৳{{ total_income }}</div>
+  </div>
+  <div class="stat-card expense">
+    <div class="stat-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
+    <div class="stat-label">Total Expense</div>
+    <div class="stat-value">৳{{ total_expense }}</div>
+  </div>
+  <div class="stat-card balance">
+    <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+    <div class="stat-label">Balance</div>
+    <div class="stat-value">৳{{ balance }}</div>
+  </div>
+</div>
+
+<!-- Contribution Breakdown -->
+{% if contributions|length > 1 %}
+<div class="card" style="margin-bottom: 28px;">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Contributions
+    </div>
+    {% if is_owner %}
+    <a href="{% url 'project_members' project.pk %}" class="btn-secondary" style="padding:6px 12px; font-size:12px;">Manage</a>
+    {% endif %}
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Income</th>
+          <th>Expense</th>
+          <th>Net</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contributions %}
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="user-avatar" style="width:28px; height:28px; font-size:11px;">{{ c.user.username|slice:":2" }}</div>
+                <span style="color: var(--text); font-weight:600;">{{ c.user.username }}</span>
+                {% if c.is_owner %}
+                  <span class="badge income" style="margin-left:4px;"><span class="badge-dot"></span>Owner</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="amount-income">৳{{ c.income }}</td>
+            <td class="amount-expense">৳{{ c.expense }}</td>
+            <td class="{% if c.net < 0 %}amount-expense{% else %}amount-income{% endif %}">৳{{ c.net }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card" style="margin-bottom: 24px;">
+  <form method="get" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+      <label class="form-label">Type</label>
+      <select name="type" class="form-control" onchange="this.form.submit()">
+        <option value=""        {% if not active_type %}selected{% endif %}>All</option>
+        <option value="income"  {% if active_type == 'income' %}selected{% endif %}>Income</option>
+        <option value="expense" {% if active_type == 'expense' %}selected{% endif %}>Expense</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+      <label class="form-label">Period</label>
+      <select name="month" class="form-control" onchange="this.form.submit()">
+        <option value=""     {% if not active_month %}selected{% endif %}>All Time</option>
+        <option value="this" {% if active_month == 'this' %}selected{% endif %}>This Month</option>
+        <option value="last" {% if active_month == 'last' %}selected{% endif %}>Last Month</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+      <label class="form-label">Amount</label>
+      <select name="amount_range" class="form-control" onchange="this.form.submit()">
+        <option value=""        {% if not active_amount %}selected{% endif %}>Any Amount</option>
+        <option value="0-1000"  {% if active_amount == '0-1000' %}selected{% endif %}>৳0 – ৳1000</option>
+        <option value="1000+"   {% if active_amount == '1000+' %}selected{% endif %}>৳1000+</option>
+      </select>
+    </div>
+
+    {% if active_type or active_month or active_amount %}
+      <a href="{% url 'project_detail' project.pk %}" class="btn-secondary" style="margin-bottom:1px;">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Clear
+      </a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Transaction List -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Transactions
+    </div>
+  </div>
+
+  {% if transactions %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Added By</th>
+            <th>Amount</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transactions %}
+            <tr>
+              <td>
+                {{ t.title }}
+                {% if t.date == today %}
+                  <span class="badge income" style="margin-left:6px; background: var(--indigo-fog); color:#818cf8; border-color: var(--indigo-line);">
+                    <span class="badge-dot" style="background:#818cf8;"></span>Today
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {{ t.type }}">
+                  <span class="badge-dot"></span>{{ t.type }}
+                </span>
+              </td>
+              <td style="font-family: var(--mono); font-size:12.5px;">{{ t.date }}</td>
+              <td>{{ t.user.username }}</td>
+              <td class="amount-{{ t.type }}">
+                {% if t.type == 'income' %}+{% else %}-{% endif %}৳{{ t.amount }}
+              </td>
+              <td style="text-align:right;">
+                <a href="{% url 'transaction_edit' t.pk %}" class="btn-secondary" style="padding:5px 10px; font-size:12px; margin-right:4px;">
+                  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </a>
+                <a href="{% url 'transaction_delete' t.pk %}" class="btn-secondary" style="padding:5px 10px; font-size:12px; color: var(--rose); border-color: rgba(244,63,94,0.18);">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state" style="padding:48px 24px;">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </div>
+      <div class="empty-title">No transactions found</div>
+      <div class="empty-sub">Try a different filter, or add your first transaction.</div>
+    </div>
+  {% endif %}
 </div>
 
 {% endblock %}

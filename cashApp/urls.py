@@ -1,11 +1,7 @@
 # cashApp/urls.py
 
 from django.urls import path
-from cashApp.views import (
-    Signup, Login, logoutpage, changapassword,
-    project_list, project_create, project_detail, project_edit, project_delete,
-    transaction_create, transaction_edit, transaction_delete,
-)
+from cashApp.views import *
 
 urlpatterns = [
     path('register/',        Signup,         name='signup'),
@@ -18,6 +14,9 @@ urlpatterns = [
     path('projects/<int:pk>/',        project_detail, name='project_detail'),
     path('projects/<int:pk>/edit/',   project_edit,   name='project_edit'),
     path('projects/<int:pk>/delete/', project_delete, name='project_delete'),
+
+    path('projects/<int:pk>/members/',                  project_members,       name='project_members'),
+    path('projects/<int:pk>/members/<int:user_id>/remove/', project_member_remove, name='project_member_remove'),
 
     path('projects/<int:pk>/add/',        transaction_create, name='transaction_create'),
     path('transactions/<int:pk>/edit/',   transaction_edit,   name='transaction_edit'),

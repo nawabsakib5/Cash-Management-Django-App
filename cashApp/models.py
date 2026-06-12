@@ -24,8 +24,11 @@ class CustomUser(AbstractUser):
         return self.username
 
 
+
+
 class Project(models.Model):
-    user        = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='projects')
+    user        = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='owned_projects')
+    members     = models.ManyToManyField(CustomUser, related_name='joined_projects', blank=True)
     name        = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     created_at  = models.DateTimeField(auto_now_add=True)
@@ -41,6 +44,28 @@ class Project(models.Model):
 
     def balance(self):
         return self.total_income() - self.total_expense()
+
+    def all_members(self):
+        """Owner + members, no duplicates"""
+        ids = set(self.members.values_list('id', flat=True))
+        ids.add(self.user_id)
+        return CustomUser.objects.filter(id__in=ids)
+
+    def contribution_summary(self):
+        """Per-user income/expense/balance breakdown"""
+        summary = []
+        for member in self.all_members():
+            txs = self.transactions.filter(user=member)
+            income = sum(t.amount for t in txs if t.type == 'income')
+            expense = sum(t.amount for t in txs if t.type == 'expense')
+            summary.append({
+                'user': member,
+                'income': income,
+                'expense': expense,
+                'net': income - expense,
+                'is_owner': member.id == self.user_id,
+            })
+        return summary
 
     class Meta:
         ordering = ['-created_at']
