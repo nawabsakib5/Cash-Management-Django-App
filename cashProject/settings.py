@@ -61,7 +61,7 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL    = 'cashApp.CustomUser'
-LOGIN_URL          = 'Login'   
+LOGIN_URL = 'Login' 
 LOGIN_REDIRECT_URL = 'project_list'       
 
 AUTH_PASSWORD_VALIDATORS = [
