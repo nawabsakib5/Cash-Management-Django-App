@@ -17,7 +17,7 @@ from .decorators import admin_required, not_frozen, log_action
 
 def Signup(request):
     if request.user.is_authenticated:
-        if request.user.is_admin():
+        if request.user.user_type == 'admin':
             return redirect('admin_dashboard')
         return redirect('project_list')
 
@@ -56,7 +56,7 @@ def Signup(request):
         )
         login(request, user)
         messages.success(request, f"Welcome {username}! Your account has been created.")
-        if user.is_admin():
+        if user.user_type == 'admin':
             return redirect('admin_dashboard')
         return redirect('project_list')
 
@@ -65,7 +65,7 @@ def Signup(request):
 
 def Login(request):
     if request.user.is_authenticated:
-        if request.user.is_admin():
+        if request.user.user_type == 'admin':
             return redirect('admin_dashboard')
         return redirect('project_list')
 
@@ -81,7 +81,7 @@ def Login(request):
         if user:
             login(request, user)
             log_action(user, 'login', detail='Logged in', request=request)
-            if user.is_admin():
+            if user.user_type == 'admin':
                 return redirect('admin_dashboard')
             return redirect('project_list')
         else:
@@ -191,7 +191,7 @@ def project_detail(request, pk):
     if date_to:
         transactions = transactions.filter(date__lte=date_to)
 
-    if not request.user.is_admin():
+    if request.user.user_type != 'admin':
         transactions = transactions.exclude(delete_requested=True)
 
     return render(request, 'project_detail.html', {
