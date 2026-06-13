@@ -111,7 +111,8 @@
 <!-- Filters -->
 <div class="card" style="margin-bottom: 24px;">
   <form method="get" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
-    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+
+    <div class="form-group" style="margin-bottom:0; min-width:130px;">
       <label class="form-label">Type</label>
       <select name="type" class="form-control" onchange="this.form.submit()">
         <option value=""        {% if not active_type %}selected{% endif %}>All</option>
@@ -120,7 +121,7 @@
       </select>
     </div>
 
-    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+    <div class="form-group" style="margin-bottom:0; min-width:130px;">
       <label class="form-label">Period</label>
       <select name="month" class="form-control" onchange="this.form.submit()">
         <option value=""     {% if not active_month %}selected{% endif %}>All Time</option>
@@ -129,7 +130,7 @@
       </select>
     </div>
 
-    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+    <div class="form-group" style="margin-bottom:0; min-width:130px;">
       <label class="form-label">Amount</label>
       <select name="amount_range" class="form-control" onchange="this.form.submit()">
         <option value=""        {% if not active_amount %}selected{% endif %}>Any Amount</option>
@@ -138,12 +139,37 @@
       </select>
     </div>
 
-    {% if active_type or active_month or active_amount %}
+    <!-- Date Range -->
+    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+      <label class="form-label">From Date</label>
+      <input type="date" name="date_from" class="form-control"
+             value="{{ active_date_from }}"
+             style="color-scheme: dark;">
+    </div>
+
+    <div class="form-group" style="margin-bottom:0; min-width:140px;">
+      <label class="form-label">To Date</label>
+      <input type="date" name="date_to" class="form-control"
+             value="{{ active_date_to }}"
+             style="color-scheme: dark;">
+    </div>
+
+    <button type="submit" class="btn-secondary" style="margin-bottom:1px;">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Search
+    </button>
+
+    {% if active_type or active_month or active_amount or active_date_from or active_date_to %}
       <a href="{% url 'project_detail' project.pk %}" class="btn-secondary" style="margin-bottom:1px;">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
         Clear
       </a>
     {% endif %}
+
   </form>
 </div>
 
@@ -154,6 +180,9 @@
       <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       Transactions
     </div>
+    {% if transactions %}
+      <span style="font-size:12px; color:var(--muted);">{{ transactions|length }} result{% if transactions|length != 1 %}s{% endif %}</span>
+    {% endif %}
   </div>
 
   {% if transactions %}

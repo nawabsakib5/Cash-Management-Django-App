@@ -32,7 +32,6 @@
       padding: 24px;
     }
 
-    /* Ambient background glow */
     body::before {
       content: '';
       position: fixed;
@@ -57,7 +56,6 @@
       animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Top red accent bar */
     .card::before {
       content: '';
       position: absolute;
@@ -71,7 +69,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Icon */
     .icon-wrap {
       width: 52px;
       height: 52px;
@@ -94,7 +91,6 @@
       stroke-linejoin: round;
     }
 
-    /* Tag */
     .tag {
       display: inline-block;
       font-family: 'Inter', sans-serif;
@@ -126,7 +122,6 @@
       margin-bottom: 8px;
     }
 
-    /* Transaction name highlight */
     .tx-name {
       display: inline-block;
       background: rgba(240,239,244,0.06);
@@ -142,7 +137,6 @@
       letter-spacing: 0.01em;
     }
 
-    /* Warning note */
     .warning-note {
       display: flex;
       align-items: flex-start;
@@ -172,14 +166,12 @@
       line-height: 1.5;
     }
 
-    /* Divider */
     .divider {
       border: none;
       border-top: 1px solid var(--border);
       margin-bottom: 24px;
     }
 
-    /* Buttons */
     .actions {
       display: flex;
       gap: 10px;
@@ -248,7 +240,6 @@
   <div class="card">
 
     <div class="icon-wrap">
-      <!-- Trash icon -->
       <svg viewBox="0 0 24 24">
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6l-1 14H6L5 6"/>
@@ -265,7 +256,6 @@
     <div class="tx-name">{{ transaction.title }}</div>
 
     <div class="warning-note">
-      <!-- Alert icon -->
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10"/>
         <line x1="12" y1="8" x2="12" y2="12"/>
@@ -279,7 +269,7 @@
     <form method="post">
       {% csrf_token %}
       <div class="actions">
-        <a href="{% url 'transaction_list' %}" class="btn-cancel">
+        <a href="{% url 'project_detail' pk=transaction.project.pk %}" class="btn-cancel">
           <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           Cancel
         </a>
