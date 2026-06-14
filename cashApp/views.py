@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q, Prefetch
 from django.http import JsonResponse
 from django.utils import timezone
 from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory
@@ -290,7 +291,7 @@ def transaction_create(request, pk):
     balance = project.balance()
 
     if request.method == 'POST':
-        form = TransactionForm(request.POST)
+        form = TransactionForm(request.POST, user=request.user)
         if form.is_valid():
             tx_type = form.cleaned_data.get('type')
             amount  = form.cleaned_data.get('amount')
@@ -312,7 +313,7 @@ def transaction_create(request, pk):
 
             return redirect('project_detail', pk=pk)
     else:
-        form = TransactionForm()
+        form = TransactionForm(user=request.user)
 
     return render(request, 'transaction_form.html', {
         'form': form, 'project': project, 'balance': balance,
@@ -324,14 +325,14 @@ def transaction_create(request, pk):
 def transaction_edit(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
     if request.method == 'POST':
-        form = TransactionForm(request.POST, instance=transaction)
+        form = TransactionForm(request.POST, instance=transaction, user=request.user)
         if form.is_valid():
             form.save()
             log_action(request.user, 'edit', target=transaction, request=request)
             messages.success(request, "Transaction updated successfully.")
             return redirect('project_detail', pk=transaction.project.pk)
     else:
-        form = TransactionForm(instance=transaction)
+        form = TransactionForm(instance=transaction, user=request.user)
     return render(request, 'transaction_form.html', {
         'form': form, 'project': transaction.project,
     })
@@ -356,7 +357,19 @@ def transaction_delete(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def category_list(request):
-    categories = Category.objects.prefetch_related('subcategories').all()
+    # Admin sees ALL sub-categories (global + every user's private ones).
+    # Normal users see global sub-categories + only their own private ones.
+    if request.user.is_admin:
+        visible_subs = SubCategory.objects.all().select_related('user')
+    else:
+        visible_subs = SubCategory.objects.filter(
+            Q(user__isnull=True) | Q(user=request.user)
+        ).select_related('user')
+
+    categories = Category.objects.prefetch_related(
+        Prefetch('subcategories', queryset=visible_subs)
+    ).all()
+
     form = CategoryForm()
 
     if request.method == 'POST':
@@ -398,8 +411,17 @@ def subcategory_create(request):
     if request.method == 'POST':
         form = SubCategoryForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Sub-category created successfully.")
+            sub = form.save()
+            if sub.user:
+                messages.success(
+                    request,
+                    f"Sub-category '{sub.name}' created — visible only to '{sub.user.username}'."
+                )
+            else:
+                messages.success(
+                    request,
+                    f"Sub-category '{sub.name}' created — visible to everyone (Global)."
+                )
             return redirect('category_list')
     else:
         form = SubCategoryForm()
@@ -418,13 +440,20 @@ def subcategory_delete(request, pk):
 
 # ─── AJAX: Sub-categories by Category ─────────────────────────────────────────
 
+@login_required(login_url='login')
 def get_subcategories(request):
     category_id = request.GET.get('category_id')
     if not category_id:
         return JsonResponse({'subcategories': []})
+
+    # Logged-in user sees: global sub-categories (user is null)
+    # + their own private sub-categories.
     subs = SubCategory.objects.filter(
         category_id=category_id
+    ).filter(
+        Q(user__isnull=True) | Q(user=request.user)
     ).values('id', 'name')
+
     return JsonResponse({'subcategories': list(subs)})
 
 
@@ -432,6 +461,40 @@ def get_subcategories(request):
 
 @admin_required
 def admin_dashboard(request):
+    cat_form = CategoryForm()
+    sub_form = SubCategoryForm()
+
+    if request.method == 'POST':
+
+        if 'add_category' in request.POST:
+            cat_form = CategoryForm(request.POST)
+            if cat_form.is_valid():
+                cat = cat_form.save(commit=False)
+                cat.created_by = request.user
+                cat.save()
+                messages.success(request, f"Category '{cat.name}' created successfully.")
+                return redirect('admin_dashboard')
+
+        elif 'add_subcategory' in request.POST:
+            sub_form = SubCategoryForm(request.POST)
+            if sub_form.is_valid():
+                sub = sub_form.save()
+                if sub.user:
+                    messages.success(
+                        request,
+                        f"Sub-category '{sub.name}' created — visible only to '{sub.user.username}'."
+                    )
+                else:
+                    messages.success(
+                        request,
+                        f"Sub-category '{sub.name}' created — visible to everyone (Global)."
+                    )
+                return redirect('admin_dashboard')
+
+    categories = Category.objects.prefetch_related(
+        Prefetch('subcategories', queryset=SubCategory.objects.all().select_related('user'))
+    ).all()
+
     context = {
         'total_users':        CustomUser.objects.filter(user_type='user').count(),
         'frozen_users':       CustomUser.objects.filter(is_frozen=True).count(),
@@ -441,6 +504,9 @@ def admin_dashboard(request):
                                   delete_requested=True, is_deleted=False
                               ).count(),
         'recent_logs':        AuditLog.objects.select_related('actor').all()[:20],
+        'categories':         categories,
+        'cat_form':           cat_form,
+        'sub_form':           sub_form,
     }
     return render(request, 'admin/dashboard.html', context)
 

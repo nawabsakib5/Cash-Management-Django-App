@@ -62,27 +62,26 @@ class SubCategory(models.Model):
     )
     name       = models.CharField(max_length=100)
 
-    # If null/blank -> visible to everyone (global sub-category)
-    # If set -> visible ONLY to this specific user (private sub-category)
-    user       = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE,
-        null=True, blank=True, related_name='private_subcategories',
+    # If empty -> visible to everyone (global sub-category)
+    # If one or more users selected -> visible ONLY to those users
+    users      = models.ManyToManyField(
+        CustomUser, blank=True, related_name='private_subcategories',
         help_text="Leave empty for a global sub-category visible to everyone. "
-                  "Select a user to make this sub-category visible only to that user."
+                  "Select one or more users to make this sub-category visible only to them."
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        if self.user:
-            return f"{self.category.name} → {self.name} (Private: {self.user.username})"
+        if self.users.exists():
+            usernames = ", ".join(u.username for u in self.users.all())
+            return f"{self.category.name} → {self.name} (Private: {usernames})"
         return f"{self.category.name} → {self.name}"
 
     class Meta:
         ordering = ['name']
-        unique_together = ['category', 'name', 'user']
+        unique_together = ['category', 'name']
         verbose_name_plural = 'Sub Categories'
-
 
 class Project(models.Model):
     user        = models.ForeignKey(
