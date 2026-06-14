@@ -61,14 +61,26 @@ class SubCategory(models.Model):
         Category, on_delete=models.CASCADE, related_name='subcategories'
     )
     name       = models.CharField(max_length=100)
+
+    # If null/blank -> visible to everyone (global sub-category)
+    # If set -> visible ONLY to this specific user (private sub-category)
+    user       = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE,
+        null=True, blank=True, related_name='private_subcategories',
+        help_text="Leave empty for a global sub-category visible to everyone. "
+                  "Select a user to make this sub-category visible only to that user."
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        if self.user:
+            return f"{self.category.name} → {self.name} (Private: {self.user.username})"
         return f"{self.category.name} → {self.name}"
 
     class Meta:
         ordering = ['name']
-        unique_together = ['category', 'name']
+        unique_together = ['category', 'name', 'user']
         verbose_name_plural = 'Sub Categories'
 
 
