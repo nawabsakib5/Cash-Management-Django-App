@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Categories — CashManager{% endblock %}
+{% block nav_projects %}active{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <span class="eyebrow"><span class="eyebrow-dot"></span>Settings</span>
+    <h1 class="page-title">Categories</h1>
+    <p class="page-sub">Manage categories and sub-categories for your transactions.</p>
+  </div>
+  {% if user.is_admin %}
+  <a href="{% url 'subcategory_create' %}" class="btn-secondary">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Sub-Category
+  </a>
+  {% endif %}
+</div>
+
+<!-- Add Category Form -->
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add New Category
+    </div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <div style="display: flex; gap: 10px; align-items: flex-end;">
+      <div class="form-group" style="margin-bottom: 0; flex: 1;">
+        <label class="form-label">Category Name <span class="required"></span></label>
+        <input
+          type="text"
+          name="name"
+          class="form-control"
+          placeholder="e.g. Food, Transport, Salary…"
+          value="{{ form.name.value|default:'' }}"
+          required
+          autofocus
+        >
+        {% if form.name.errors %}
+          <p class="form-error">{{ form.name.errors.0 }}</p>
+        {% endif %}
+      </div>
+      <div style="margin-bottom: 0;">
+        <button type="submit" class="btn-primary">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Create
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Categories List -->
+{% if categories %}
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    {% for category in categories %}
+      <div class="card">
+        <!-- Category Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="
+              width: 36px; height: 36px; border-radius: 9px;
+              background: var(--indigo-fog); border: 1px solid var(--indigo-line);
+              display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--indigo);fill:none;stroke-width:2;stroke-linecap:round;">
+                <path d="M4 6h16M4 12h16M4 18h7"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size:15px; font-weight:600; color:var(--text);">{{ category.name }}</div>
+              <div style="font-size:12px; color:var(--text3); margin-top:2px;">
+                {{ category.subcategories.count }} sub-categor{% if category.subcategories.count == 1 %}y{% else %}ies{% endif %}
+                {% if category.created_by %}
+                  · Created by <span style="color:var(--text2);">{{ category.created_by.username }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            {% if user.is_admin %}
+            <a href="{% url 'subcategory_create' %}?category={{ category.pk }}" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Sub
+            </a>
+            {% endif %}
+            {% if user.is_admin or category.created_by == user %}
+            <form method="post" action="{% url 'category_delete' category.pk %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit"
+                class="btn-secondary"
+                style="padding:6px 12px; font-size:12px; color:var(--rose); border-color:rgba(244,63,94,0.2);"
+                onclick="return confirm('Delete category \'{{ category.name }}\'? All sub-categories will also be deleted.')">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                Delete
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Sub-Categories -->
+        {% if category.subcategories.all %}
+          <div style="
+            border-top: 1px solid var(--border);
+            padding-top: 14px;
+            display: flex; flex-wrap: wrap; gap: 8px;">
+            {% for sub in category.subcategories.all %}
+              <div style="
+                display: flex; align-items: center; gap: 8px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 6px 12px;">
+                <span style="font-size: 13px; font-weight: 500; color: var(--text2);">{{ sub.name }}</span>
+                {% if user.is_admin %}
+                <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="display:inline; margin:0;">
+                  {% csrf_token %}
+                  <button type="submit"
+                    style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;"
+                    onclick="return confirm('Delete sub-category \'{{ sub.name }}\'?')"
+                    title="Delete">
+                    <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--rose);fill:none;stroke-width:2;stroke-linecap:round;">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="
+            border-top: 1px solid var(--border);
+            padding-top: 14px;">
+            <p style="font-size: 13px; color: var(--text3);">
+              No sub-categories yet.
+              {% if user.is_admin %}
+                <a href="{% url 'subcategory_create' %}?category={{ category.pk }}" style="color:var(--indigo); text-decoration:none; font-weight:500;">Add one →</a>
+              {% endif %}
+            </p>
+          </div>
+        {% endif %}
+
+      </div>
+    {% endfor %}
+  </div>
+
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+    </div>
+    <div class="empty-title">No categories yet</div>
+    <div class="empty-sub">Create your first category using the form above.</div>
+  </div>
+{% endif %}
+
+{% endblock %}

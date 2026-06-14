@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Edit{% else %}New{% endif %} Sub-category — CashManager{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'category_list' %}" class="back-link">
+  <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+  Back to Categories
+</a>
+
+<div style="max-width: 480px; margin: 0 auto;">
+
+  <div style="margin-bottom: 28px;">
+    <span class="tag">Admin</span>
+    <h1 class="page-title" style="font-size: 22px;">
+      {% if form.instance.pk %}Edit Sub-category{% else %}New Sub-category{% endif %}
+    </h1>
+    <p class="page-sub">Add a sub-category under an existing category.</p>
+  </div>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="form-group">
+          <label class="form-label" for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}<span class="required"></span>{% endif %}
+          </label>
+
+          {% if field.field.widget.input_type == 'select' %}
+            <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control">
+              {% for val, label in field.field.choices %}
+                <option value="{{ val }}" {% if field.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input
+              type="{{ field.field.widget.input_type }}"
+              name="{{ field.html_name }}"
+              id="{{ field.id_for_label }}"
+              class="form-control"
+              value="{{ field.value|default:'' }}"
+              placeholder="Enter {{ field.label|lower }}"
+              {% if field.field.required %}required{% endif %}
+            >
+          {% endif %}
+
+          {% if field.errors %}
+            {% for error in field.errors %}
+              <div class="form-error">
+                <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                {{ error }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <hr class="divider">
+
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <a href="{% url 'category_list' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {% if form.instance.pk %}Save Changes{% else %}Create Sub-category{% endif %}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}

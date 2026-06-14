@@ -56,8 +56,7 @@
           value="{{ form.title.value|default_if_none:'' }}"
           class="form-control"
           placeholder="e.g. Office Rent, Client Payment…"
-          required
-          autofocus
+          required autofocus
         >
         {% if form.title.errors %}
           <p class="form-error">{{ form.title.errors.0 }}</p>
@@ -71,14 +70,11 @@
             Amount <span class="required"></span>
           </label>
           <input
-            type="number"
-            step="0.01"
+            type="number" step="0.01"
             id="{{ form.amount.id_for_label }}"
             name="{{ form.amount.html_name }}"
             value="{{ form.amount.value|default_if_none:'' }}"
-            class="form-control"
-            placeholder="0.00"
-            required
+            class="form-control" placeholder="0.00" required
           >
           {% if form.amount.errors %}
             <p class="form-error">{{ form.amount.errors.0 }}</p>
@@ -101,7 +97,7 @@
       </div>
 
       <!-- Date -->
-      <div class="form-group" style="margin-bottom: 24px;">
+      <div class="form-group">
         <label class="form-label" for="{{ form.date.id_for_label }}">
           Date <span class="required"></span>
         </label>
@@ -110,12 +106,52 @@
           id="{{ form.date.id_for_label }}"
           name="{{ form.date.html_name }}"
           value="{{ form.date.value|date:'Y-m-d' }}"
-          class="form-control"
-          required
+          class="form-control" required
         >
         {% if form.date.errors %}
           <p class="form-error">{{ form.date.errors.0 }}</p>
         {% endif %}
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label class="form-label" for="{{ form.category.id_for_label }}">
+          Category
+          <span style="font-size:11px; color:var(--text3); font-weight:400; margin-left:4px;">(optional)</span>
+        </label>
+        <select id="{{ form.category.id_for_label }}" name="{{ form.category.html_name }}" class="form-control" id="id_category">
+          <option value="">— Select category —</option>
+          {% for cat in form.fields.category.queryset %}
+            <option value="{{ cat.pk }}" {% if form.category.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>
+              {{ cat.name }}
+            </option>
+          {% endfor %}
+        </select>
+        {% if form.category.errors %}
+          <p class="form-error">{{ form.category.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Sub-Category (dynamic) -->
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label class="form-label" for="id_sub_category">
+          Sub-Category
+          <span style="font-size:11px; color:var(--text3); font-weight:400; margin-left:4px;">(optional)</span>
+        </label>
+        <select name="sub_category" id="id_sub_category" class="form-control">
+          <option value="">— Select sub-category —</option>
+          {% if form.instance.pk and form.instance.sub_category %}
+            <option value="{{ form.instance.sub_category.pk }}" selected>
+              {{ form.instance.sub_category.name }}
+            </option>
+          {% endif %}
+        </select>
+        {% if form.sub_category.errors %}
+          <p class="form-error">{{ form.sub_category.errors.0 }}</p>
+        {% endif %}
+        <p style="font-size:12px; color:var(--text3); margin-top:5px;">
+          Select a category first to see sub-categories.
+        </p>
       </div>
 
       <hr class="divider">
@@ -125,7 +161,8 @@
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
           {% if form.instance.pk %}Save Changes{% else %}Add Transaction{% endif %}
         </button>
-        <a href="{% if project %}{% url 'project_detail' project.pk %}{% else %}{% url 'project_list' %}{% endif %}" class="btn-secondary" style="flex: 1; justify-content: center;">
+        <a href="{% if project %}{% url 'project_detail' project.pk %}{% else %}{% url 'project_list' %}{% endif %}"
+           class="btn-secondary" style="flex: 1; justify-content: center;">
           Cancel
         </a>
       </div>
@@ -134,4 +171,55 @@
 
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const categorySelect    = document.getElementById('id_category');
+  const subCategorySelect = document.getElementById('id_sub_category');
+  const ajaxUrl           = "{% url 'get_subcategories' %}";
+
+  // Existing sub_category value (edit mode)
+  const existingSubCatId  = "{{ form.instance.sub_category_id|default:'' }}";
+
+  function loadSubCategories(categoryId, preselectId) {
+    subCategorySelect.innerHTML = '<option value="">— Select sub-category —</option>';
+
+    if (!categoryId) return;
+
+    fetch(`${ajaxUrl}?category_id=${categoryId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.subcategories.length === 0) {
+          const opt = document.createElement('option');
+          opt.disabled = true;
+          opt.textContent = 'No sub-categories available';
+          subCategorySelect.appendChild(opt);
+          return;
+        }
+        data.subcategories.forEach(sub => {
+          const opt = document.createElement('option');
+          opt.value = sub.id;
+          opt.textContent = sub.name;
+          if (String(sub.id) === String(preselectId)) {
+            opt.selected = true;
+          }
+          subCategorySelect.appendChild(opt);
+        });
+      })
+      .catch(() => {
+        subCategorySelect.innerHTML = '<option value="">Failed to load</option>';
+      });
+  }
+
+  // On category change
+  categorySelect.addEventListener('change', function () {
+    loadSubCategories(this.value, null);
+  });
+
+  // On page load: if category already selected (edit mode), load its subs
+  if (categorySelect.value) {
+    loadSubCategories(categorySelect.value, existingSubCatId);
+  }
+</script>
 {% endblock %}

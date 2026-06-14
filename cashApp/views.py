@@ -4,11 +4,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
 from django.utils import timezone
-from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile
+from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory
 from .forms import (
     TransactionForm, RegisterForm, LoginForm,
     ProjectForm, AdminUserCreateForm, AdminUserEditForm,
+    CategoryForm, SubCategoryForm,
 )
 from .decorators import admin_required, not_frozen, log_action
 
@@ -349,6 +351,83 @@ def transaction_delete(request, pk):
     return render(request, 'transaction_confirm_delete.html', {'transaction': transaction})
 
 
+# ─── Category Views (anyone can create) ───────────────────────────────────────
+
+@login_required(login_url='login')
+@not_frozen
+def category_list(request):
+    categories = Category.objects.prefetch_related('subcategories').all()
+    form = CategoryForm()
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            cat = form.save(commit=False)
+            cat.created_by = request.user
+            cat.save()
+            messages.success(request, f"Category '{cat.name}' created successfully.")
+            return redirect('category_list')
+
+    return render(request, 'category_list.html', {
+        'categories': categories,
+        'form': form,
+    })
+
+
+@login_required(login_url='login')
+@not_frozen
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+
+    if not request.user.is_admin and category.created_by != request.user:
+        messages.error(request, "You don't have permission to delete this category.")
+        return redirect('category_list')
+
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, "Category deleted successfully.")
+        return redirect('category_list')
+
+    return render(request, 'category_confirm_delete.html', {'category': category})
+
+
+# ─── SubCategory Views (admin only) ───────────────────────────────────────────
+
+@admin_required
+def subcategory_create(request):
+    if request.method == 'POST':
+        form = SubCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Sub-category created successfully.")
+            return redirect('category_list')
+    else:
+        form = SubCategoryForm()
+    return render(request, 'subcategory_form.html', {'form': form})
+
+
+@admin_required
+def subcategory_delete(request, pk):
+    subcategory = get_object_or_404(SubCategory, pk=pk)
+    if request.method == 'POST':
+        subcategory.delete()
+        messages.success(request, "Sub-category deleted successfully.")
+        return redirect('category_list')
+    return render(request, 'subcategory_confirm_delete.html', {'subcategory': subcategory})
+
+
+# ─── AJAX: Sub-categories by Category ─────────────────────────────────────────
+
+def get_subcategories(request):
+    category_id = request.GET.get('category_id')
+    if not category_id:
+        return JsonResponse({'subcategories': []})
+    subs = SubCategory.objects.filter(
+        category_id=category_id
+    ).values('id', 'name')
+    return JsonResponse({'subcategories': list(subs)})
+
+
 # ─── Admin Dashboard Views ─────────────────────────────────────────────────────
 
 @admin_required
@@ -466,13 +545,13 @@ def admin_delete_requests(request):
     pending = Transaction.objects.filter(
         delete_requested=True, is_deleted=False
     ).select_related('user', 'project').order_by('delete_requested_at')
-
     return render(request, 'admin/delete_requests.html', {'pending': pending})
 
 
 @admin_required
 def admin_delete_confirm(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk, delete_requested=True, is_deleted=False)
+    transaction = get_object_or_404(
+        Transaction, pk=pk, delete_requested=True, is_deleted=False)
 
     if request.method == 'POST':
         transaction.admin_confirm_delete()
@@ -486,7 +565,8 @@ def admin_delete_confirm(request, pk):
 
 @admin_required
 def admin_delete_reject(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk, delete_requested=True, is_deleted=False)
+    transaction = get_object_or_404(
+        Transaction, pk=pk, delete_requested=True, is_deleted=False)
 
     if request.method == 'POST':
         transaction.delete_requested    = False
@@ -494,7 +574,8 @@ def admin_delete_reject(request, pk):
         transaction.save(update_fields=['delete_requested', 'delete_requested_at'])
         log_action(request.user, 'edit', target=transaction,
                    detail=f"Delete request rejected for '{transaction.title}'", request=request)
-        messages.success(request, f"Delete request for '{transaction.title}' has been rejected.")
+        messages.success(
+            request, f"Delete request for '{transaction.title}' has been rejected.")
         return redirect('admin_delete_requests')
 
     return render(request, 'admin/delete_confirm.html', {

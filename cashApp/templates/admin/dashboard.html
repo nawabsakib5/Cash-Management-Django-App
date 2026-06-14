@@ -1,44 +1,30 @@
 {% extends 'base.html' %}
 {% block title %}Admin Dashboard — CashManager{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
 
 {% block extra_css %}
 <style>
 
-/* ── Layout ───────────────────────────────────────────────────────────────── */
-.adm-root {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
+.adm-root { display: flex; flex-direction: column; gap: 28px; }
 
-/* ── Page Header ──────────────────────────────────────────────────────────── */
+/* ── Header ── */
 .adm-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-  position: relative;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border); position: relative;
 }
 .adm-header::after {
-  content: '';
-  position: absolute;
-  bottom: -1px; left: 0;
+  content: ''; position: absolute; bottom: -1px; left: 0;
   width: 80px; height: 1px;
   background: linear-gradient(90deg, var(--indigo), transparent);
 }
-.adm-header-left {}
 .adm-eyebrow {
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--rose);
-  margin-bottom: 8px;
+  text-transform: uppercase; color: var(--rose); margin-bottom: 8px;
 }
 .adm-eyebrow-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--rose);
+  width: 5px; height: 5px; border-radius: 50%; background: var(--rose);
   box-shadow: 0 0 8px rgba(244,63,94,0.8);
   animation: pulse-dot 2s ease-in-out infinite;
 }
@@ -46,44 +32,32 @@
   0%,100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(0.8); }
 }
-.adm-title {
-  font-size: 30px; font-weight: 700; color: var(--text);
-  letter-spacing: -0.6px; line-height: 1.1;
-}
+.adm-title { font-size: 30px; font-weight: 700; color: var(--text); letter-spacing: -0.6px; line-height: 1.1; }
 .adm-title span {
   background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #a78bfa 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .adm-subtitle { font-size: 13.5px; color: var(--text3); margin-top: 5px; }
-
 .adm-header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 .adm-btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 20px; border-radius: var(--radius);
   font-size: 13.5px; font-weight: 600; font-family: var(--font);
-  color: #fff; background: var(--indigo);
-  border: 1px solid rgba(99,102,241,0.6);
+  color: #fff; background: var(--indigo); border: 1px solid rgba(99,102,241,0.6);
   text-decoration: none; cursor: pointer;
   box-shadow: 0 2px 16px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
   transition: all var(--transition);
 }
-.adm-btn-primary:hover {
-  background: var(--indigo-mid);
-  box-shadow: 0 4px 24px rgba(99,102,241,0.5);
-  transform: translateY(-1px);
-}
+.adm-btn-primary:hover { background: var(--indigo-mid); box-shadow: 0 4px 24px rgba(99,102,241,0.5); transform: translateY(-1px); }
 .adm-btn-primary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 
 .adm-btn-ghost {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 18px; border-radius: var(--radius);
   font-size: 13.5px; font-weight: 500; font-family: var(--font);
-  color: var(--text2); background: var(--surface2);
-  border: 1px solid var(--border2);
-  text-decoration: none; cursor: pointer;
-  transition: all var(--transition); position: relative;
+  color: var(--text2); background: var(--surface2); border: 1px solid var(--border2);
+  text-decoration: none; cursor: pointer; transition: all var(--transition);
 }
 .adm-btn-ghost:hover { background: var(--surface3); border-color: var(--border3); color: var(--text); }
 .adm-btn-ghost svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
@@ -91,270 +65,187 @@
 .adm-pending-pill {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 20px; height: 20px; padding: 0 6px;
-  background: var(--rose); color: #fff;
-  font-size: 10px; font-weight: 700; border-radius: 99px;
-  box-shadow: 0 0 8px rgba(244,63,94,0.5);
+  background: var(--rose); color: #fff; font-size: 10px; font-weight: 700;
+  border-radius: 99px; box-shadow: 0 0 8px rgba(244,63,94,0.5);
 }
 
-/* ── Stats Grid ───────────────────────────────────────────────────────────── */
-.adm-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
+/* ── Stats ── */
+.adm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 @media (max-width: 900px) { .adm-stats { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .adm-stats { grid-template-columns: 1fr; } }
 
 .adm-stat {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 22px 20px 18px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 22px 20px 18px;
   display: flex; flex-direction: column; gap: 14px;
-  position: relative; overflow: hidden;
+  position: relative; overflow: hidden; text-decoration: none;
   transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-  text-decoration: none;
 }
-.adm-stat:hover {
-  border-color: var(--border2);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-.adm-stat-glow {
-  position: absolute; top: 0; right: 0;
-  width: 100px; height: 100px;
-  border-radius: 0 var(--radius-xl) 0 100%;
-  opacity: 0.6;
-  pointer-events: none;
-}
-.adm-stat-top-bar {
-  position: absolute; top: 0; left: 24px; right: 24px; height: 2px;
-  border-radius: 0 0 4px 4px;
-  opacity: 0;
-  transition: opacity var(--transition);
-}
+.adm-stat:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.adm-stat-glow { position: absolute; top: 0; right: 0; width: 100px; height: 100px; border-radius: 0 var(--radius-xl) 0 100%; opacity: 0.6; pointer-events: none; }
+.adm-stat-top-bar { position: absolute; top: 0; left: 24px; right: 24px; height: 2px; border-radius: 0 0 4px 4px; opacity: 0; transition: opacity var(--transition); }
 .adm-stat:hover .adm-stat-top-bar { opacity: 1; }
-
-.adm-stat-icon {
-  width: 40px; height: 40px;
-  border-radius: var(--radius);
-  border: 1px solid;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
+.adm-stat-icon { width: 40px; height: 40px; border-radius: var(--radius); border: 1px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .adm-stat-icon svg { width: 18px; height: 18px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
 .adm-stat-body { display: flex; flex-direction: column; gap: 3px; }
-.adm-stat-num {
-  font-family: var(--mono); font-size: 32px; font-weight: 700;
-  line-height: 1; letter-spacing: -1px;
-}
-.adm-stat-label {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.09em;
-  text-transform: uppercase; color: var(--text3);
-}
-
-.adm-stat-link {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 500; text-decoration: none;
-  transition: gap var(--transition), opacity var(--transition);
-  opacity: 0.6; margin-top: auto;
-}
+.adm-stat-num { font-family: var(--mono); font-size: 32px; font-weight: 700; line-height: 1; letter-spacing: -1px; }
+.adm-stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text3); }
+.adm-stat-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; text-decoration: none; transition: gap var(--transition), opacity var(--transition); opacity: 0.6; margin-top: auto; }
 .adm-stat-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 .adm-stat:hover .adm-stat-link { gap: 8px; opacity: 1; }
 
-/* Variants */
-.adm-stat--indigo .adm-stat-glow  { background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%); }
+.adm-stat--indigo .adm-stat-glow { background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%); }
 .adm-stat--indigo .adm-stat-top-bar { background: linear-gradient(90deg, var(--indigo), #818cf8); }
-.adm-stat--indigo .adm-stat-icon  { background: var(--indigo-fog); border-color: var(--indigo-line); }
+.adm-stat--indigo .adm-stat-icon { background: var(--indigo-fog); border-color: var(--indigo-line); }
 .adm-stat--indigo .adm-stat-icon svg { stroke: var(--indigo); }
-.adm-stat--indigo .adm-stat-num   { color: var(--indigo); }
-.adm-stat--indigo .adm-stat-link  { color: var(--indigo); }
+.adm-stat--indigo .adm-stat-num { color: var(--indigo); }
+.adm-stat--indigo .adm-stat-link { color: var(--indigo); }
 
-.adm-stat--amber .adm-stat-glow   { background: radial-gradient(circle, rgba(245,158,11,0.12), transparent 70%); }
+.adm-stat--amber .adm-stat-glow { background: radial-gradient(circle, rgba(245,158,11,0.12), transparent 70%); }
 .adm-stat--amber .adm-stat-top-bar { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
-.adm-stat--amber .adm-stat-icon   { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
+.adm-stat--amber .adm-stat-icon { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
 .adm-stat--amber .adm-stat-icon svg { stroke: #f59e0b; }
-.adm-stat--amber .adm-stat-num    { color: #f59e0b; }
-.adm-stat--amber .adm-stat-link   { color: #f59e0b; }
+.adm-stat--amber .adm-stat-num { color: #f59e0b; }
+.adm-stat--amber .adm-stat-link { color: #f59e0b; }
 
 .adm-stat--emerald .adm-stat-glow { background: radial-gradient(circle, rgba(16,185,129,0.12), transparent 70%); }
 .adm-stat--emerald .adm-stat-top-bar { background: linear-gradient(90deg, var(--emerald), #34d399); }
 .adm-stat--emerald .adm-stat-icon { background: var(--emerald-fog); border-color: rgba(16,185,129,0.2); }
 .adm-stat--emerald .adm-stat-icon svg { stroke: var(--emerald); }
-.adm-stat--emerald .adm-stat-num  { color: var(--emerald); }
+.adm-stat--emerald .adm-stat-num { color: var(--emerald); }
 .adm-stat--emerald .adm-stat-link { color: var(--emerald); }
 
-.adm-stat--rose .adm-stat-glow    { background: radial-gradient(circle, rgba(244,63,94,0.15), transparent 70%); }
+.adm-stat--rose .adm-stat-glow { background: radial-gradient(circle, rgba(244,63,94,0.15), transparent 70%); }
 .adm-stat--rose .adm-stat-top-bar { background: linear-gradient(90deg, var(--rose), #fb7185); }
-.adm-stat--rose .adm-stat-icon    { background: var(--rose-fog); border-color: rgba(244,63,94,0.2); }
+.adm-stat--rose .adm-stat-icon { background: var(--rose-fog); border-color: rgba(244,63,94,0.2); }
 .adm-stat--rose .adm-stat-icon svg { stroke: var(--rose); }
-.adm-stat--rose .adm-stat-num     { color: var(--rose); }
-.adm-stat--rose .adm-stat-link    { color: var(--rose); }
+.adm-stat--rose .adm-stat-num { color: var(--rose); }
+.adm-stat--rose .adm-stat-link { color: var(--rose); }
 .adm-stat--rose { border-color: rgba(244,63,94,0.18); }
 
-/* ── Quick Actions ────────────────────────────────────────────────────────── */
-.adm-actions-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
+/* ── Quick Actions ── */
+.adm-actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 @media (max-width: 700px) { .adm-actions-row { grid-template-columns: repeat(2, 1fr); } }
 
 .adm-action-card {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  text-decoration: none;
-  transition: all var(--transition);
+  border-radius: var(--radius-lg); text-decoration: none; transition: all var(--transition);
 }
-.adm-action-card:hover {
-  border-color: var(--border2);
-  background: var(--surface2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-.adm-action-icon {
-  width: 36px; height: 36px; border-radius: var(--radius);
-  border: 1px solid; display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
+.adm-action-card:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+.adm-action-icon { width: 36px; height: 36px; border-radius: var(--radius); border: 1px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .adm-action-icon svg { width: 15px; height: 15px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .adm-action-label { font-size: 13px; font-weight: 600; color: var(--text); }
-.adm-action-sub   { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.adm-action-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
 
-/* ── Activity Section ─────────────────────────────────────────────────────── */
-.adm-activity {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-}
-.adm-activity-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(99,102,241,0.03) 100%);
-}
-.adm-activity-title {
-  font-size: 14px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 9px;
-}
-.adm-activity-title-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--indigo);
-  box-shadow: 0 0 10px rgba(99,102,241,0.7);
-}
+/* ── Activity ── */
+.adm-activity { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
+.adm-activity-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--surface) 0%, rgba(99,102,241,0.03) 100%); }
+.adm-activity-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 9px; }
+.adm-activity-title-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--indigo); box-shadow: 0 0 10px rgba(99,102,241,0.7); }
 .adm-activity-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
-.adm-activity-link {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12.5px; font-weight: 500; color: var(--indigo);
-  text-decoration: none; transition: gap var(--transition);
-}
+.adm-activity-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 500; color: var(--indigo); text-decoration: none; transition: gap var(--transition); }
 .adm-activity-link:hover { gap: 8px; }
 .adm-activity-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 
-/* Log rows */
-.adm-log-row {
-  display: grid;
-  grid-template-columns: 90px 160px 1fr 1fr 90px;
-  align-items: center; gap: 12px;
-  padding: 13px 24px;
-  border-bottom: 1px solid var(--border);
-  transition: background var(--transition);
-}
+.adm-log-row { display: grid; grid-template-columns: 90px 160px 1fr 1fr 90px; align-items: center; gap: 12px; padding: 13px 24px; border-bottom: 1px solid var(--border); transition: background var(--transition); }
 .adm-log-row:last-child { border-bottom: none; }
 .adm-log-row:hover { background: rgba(255,255,255,0.015); }
-
-.adm-log-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 4px 10px; border-radius: 99px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
+.adm-log-badge { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border-radius: 99px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
 .adm-log-actor { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.adm-log-avatar {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; color: var(--indigo); flex-shrink: 0;
-  font-family: var(--mono);
-}
-.adm-log-username {
-  font-size: 13px; font-weight: 600; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
+.adm-log-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--indigo); flex-shrink: 0; font-family: var(--mono); }
+.adm-log-username { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-log-target { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.adm-log-target-type {
-  font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--text3);
-}
-.adm-log-target-name {
-  font-size: 12.5px; color: var(--text2);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-.adm-log-detail {
-  font-size: 12px; color: var(--text3);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.adm-log-time {
-  font-family: var(--mono); font-size: 11px; color: var(--text3);
-  text-align: right; white-space: nowrap;
-}
-
-/* Table header row */
-.adm-log-thead {
-  display: grid;
-  grid-template-columns: 90px 160px 1fr 1fr 90px;
-  gap: 12px;
-  padding: 9px 24px;
-  background: var(--surface2);
-  border-bottom: 1px solid var(--border);
-}
-.adm-log-thead span {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--text3);
-}
-
+.adm-log-target-type { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
+.adm-log-target-name { font-size: 12.5px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adm-log-detail { font-size: 12px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adm-log-time { font-family: var(--mono); font-size: 11px; color: var(--text3); text-align: right; white-space: nowrap; }
+.adm-log-thead { display: grid; grid-template-columns: 90px 160px 1fr 1fr 90px; gap: 12px; padding: 9px 24px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+.adm-log-thead span { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
 @media (max-width: 768px) {
   .adm-log-thead { display: none; }
-  .adm-log-row {
-    grid-template-columns: 80px 1fr 90px;
-    grid-template-rows: auto auto;
-  }
+  .adm-log-row { grid-template-columns: 80px 1fr 90px; grid-template-rows: auto auto; }
   .adm-log-target, .adm-log-detail { display: none; }
 }
 
-/* ── Empty ────────────────────────────────────────────────────────────────── */
-.adm-empty {
-  padding: 56px 24px; text-align: center;
+/* ── Category Section ── */
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 700px) { .cat-grid { grid-template-columns: 1fr; } }
+
+.cat-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); overflow: hidden;
 }
-.adm-empty-icon {
-  width: 48px; height: 48px; border-radius: var(--radius-lg);
+.cat-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(99,102,241,0.03) 100%);
+}
+.cat-panel-title { font-size: 13.5px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.cat-panel-title svg { width: 14px; height: 14px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; }
+.cat-panel-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+/* Category rows */
+.cat-row {
   background: var(--surface2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;
+  border-radius: var(--radius-lg); overflow: hidden;
 }
+.cat-row-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; cursor: pointer; transition: background var(--transition);
+}
+.cat-row-head:hover { background: var(--surface3); }
+.cat-row-name { font-size: 13.5px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.cat-row-name svg { width: 13px; height: 13px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; }
+.cat-row-meta { font-size: 11px; color: var(--text3); }
+.cat-chevron { width: 14px; height: 14px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; transition: transform 0.2s; }
+.cat-row.open .cat-chevron { transform: rotate(180deg); }
+
+.cat-subs {
+  display: none; padding: 0 14px 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.cat-row.open .cat-subs { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.sub-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface3); border: 1px solid var(--border2);
+  border-radius: 99px; padding: 4px 10px;
+  font-size: 12px; font-weight: 500; color: var(--text2);
+}
+.sub-chip-del {
+  background: none; border: none; cursor: pointer; padding: 0;
+  display: flex; align-items: center; color: var(--text3);
+  transition: color var(--transition);
+}
+.sub-chip-del:hover { color: var(--rose); }
+.sub-chip-del svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+.cat-no-subs { font-size: 12px; color: var(--text3); font-style: italic; }
+
+/* Forms inside panels */
+.cat-inline-form {
+  display: flex; gap: 8px; align-items: flex-end; margin-top: 4px;
+}
+.cat-inline-form .form-control { flex: 1; padding: 8px 12px; font-size: 13px; }
+.cat-inline-form select.form-control { flex: 1; }
+.cat-inline-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: var(--font);
+  color: #fff; background: var(--indigo); border: none; cursor: pointer;
+  transition: background var(--transition); white-space: nowrap;
+}
+.cat-inline-btn:hover { background: var(--indigo-mid); }
+.cat-inline-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+/* Empty */
+.adm-empty { padding: 56px 24px; text-align: center; }
+.adm-empty-icon { width: 48px; height: 48px; border-radius: var(--radius-lg); background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
 .adm-empty-icon svg { width: 20px; height: 20px; stroke: var(--text3); fill: none; stroke-width: 1.5; }
 .adm-empty-title { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
-.adm-empty-sub   { font-size: 12.5px; color: var(--text3); }
-
-/* btn-ghost fallback if not in base */
-.btn-ghost {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 20px; border-radius: var(--radius);
-  font-size: 13.5px; font-weight: 500; font-family: var(--font);
-  color: var(--text2); background: var(--surface2);
-  border: 1px solid var(--border2);
-  text-decoration: none; cursor: pointer;
-  transition: all var(--transition); white-space: nowrap;
-}
-.btn-ghost:hover { background: var(--surface3); border-color: var(--border3); color: var(--text); }
-.btn-ghost svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
-
+.adm-empty-sub { font-size: 12.5px; color: var(--text3); }
 </style>
 {% endblock %}
 
@@ -364,13 +255,8 @@
   <!-- ── Header ── -->
   <div class="adm-header">
     <div class="adm-header-left">
-      <div class="adm-eyebrow">
-        <span class="adm-eyebrow-dot"></span>
-        Admin Panel
-      </div>
-      <h1 class="adm-title">
-        <span>Admin</span> Dashboard
-      </h1>
+      <div class="adm-eyebrow"><span class="adm-eyebrow-dot"></span>Admin Panel</div>
+      <h1 class="adm-title"><span>Admin</span> Dashboard</h1>
       <p class="adm-subtitle">Platform overview — users, projects, and live activity</p>
     </div>
     <div class="adm-header-actions">
@@ -381,130 +267,210 @@
       <a href="{% url 'admin_delete_requests' %}" class="adm-btn-ghost">
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
         Delete Requests
-        {% if pending_deletes %}
-          <span class="adm-pending-pill">{{ pending_deletes }}</span>
-        {% endif %}
+        {% if pending_deletes %}<span class="adm-pending-pill">{{ pending_deletes }}</span>{% endif %}
       </a>
     </div>
   </div>
 
   <!-- ── Stats ── -->
   <div class="adm-stats">
-
     <a href="{% url 'admin_user_list' %}" class="adm-stat adm-stat--indigo">
-      <div class="adm-stat-glow"></div>
-      <div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ total_users }}</span>
-        <span class="adm-stat-label">Total Users</span>
-      </div>
-      <span class="adm-stat-link">
-        View all
-        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </span>
+      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
+      <div class="adm-stat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="adm-stat-body"><span class="adm-stat-num">{{ total_users }}</span><span class="adm-stat-label">Total Users</span></div>
+      <span class="adm-stat-link">View all <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
     </a>
-
     <a href="{% url 'admin_user_list' %}?frozen=1" class="adm-stat adm-stat--amber">
-      <div class="adm-stat-glow"></div>
-      <div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ frozen_users }}</span>
-        <span class="adm-stat-label">Frozen Users</span>
-      </div>
-      <span class="adm-stat-link">
-        View all
-        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </span>
+      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
+      <div class="adm-stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div class="adm-stat-body"><span class="adm-stat-num">{{ frozen_users }}</span><span class="adm-stat-label">Frozen Users</span></div>
+      <span class="adm-stat-link">View all <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
     </a>
-
     <a href="{% url 'project_list' %}" class="adm-stat adm-stat--emerald">
-      <div class="adm-stat-glow"></div>
-      <div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ total_projects }}</span>
-        <span class="adm-stat-label">Total Projects</span>
-      </div>
-      <span class="adm-stat-link">
-        View all
-        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </span>
+      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
+      <div class="adm-stat-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="adm-stat-body"><span class="adm-stat-num">{{ total_projects }}</span><span class="adm-stat-label">Total Projects</span></div>
+      <span class="adm-stat-link">View all <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
     </a>
-
     <a href="{% url 'admin_delete_requests' %}" class="adm-stat adm-stat--rose">
-      <div class="adm-stat-glow"></div>
-      <div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ pending_deletes }}</span>
-        <span class="adm-stat-label">Pending Deletes</span>
-      </div>
-      <span class="adm-stat-link">
-        Review
-        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </span>
+      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
+      <div class="adm-stat-icon"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
+      <div class="adm-stat-body"><span class="adm-stat-num">{{ pending_deletes }}</span><span class="adm-stat-label">Pending Deletes</span></div>
+      <span class="adm-stat-link">Review <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
     </a>
-
   </div>
 
   <!-- ── Quick Actions ── -->
   <div class="adm-actions-row">
-
     <a href="{% url 'admin_user_list' %}" class="adm-action-card">
       <div class="adm-action-icon" style="background:var(--indigo-fog); border-color:var(--indigo-line);">
         <svg viewBox="0 0 24 24" stroke="var(--indigo)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
-      <div>
-        <div class="adm-action-label">Manage Users</div>
-        <div class="adm-action-sub">{{ total_users }} total</div>
-      </div>
+      <div><div class="adm-action-label">Manage Users</div><div class="adm-action-sub">{{ total_users }} total</div></div>
     </a>
-
     <a href="{% url 'admin_delete_requests' %}" class="adm-action-card">
       <div class="adm-action-icon" style="background:var(--rose-fog); border-color:rgba(244,63,94,0.2);">
         <svg viewBox="0 0 24 24" stroke="var(--rose)"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
       </div>
-      <div>
-        <div class="adm-action-label">Delete Requests</div>
-        <div class="adm-action-sub">{{ pending_deletes }} pending</div>
-      </div>
+      <div><div class="adm-action-label">Delete Requests</div><div class="adm-action-sub">{{ pending_deletes }} pending</div></div>
     </a>
-
     <a href="{% url 'admin_audit_log' %}" class="adm-action-card">
       <div class="adm-action-icon" style="background:rgba(99,102,241,0.07); border-color:rgba(99,102,241,0.15);">
         <svg viewBox="0 0 24 24" stroke="#6366f1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       </div>
-      <div>
-        <div class="adm-action-label">Audit Log</div>
-        <div class="adm-action-sub">Full history</div>
-      </div>
+      <div><div class="adm-action-label">Audit Log</div><div class="adm-action-sub">Full history</div></div>
     </a>
-
     <a href="{% url 'admin_user_create' %}" class="adm-action-card">
       <div class="adm-action-icon" style="background:var(--emerald-fog); border-color:rgba(16,185,129,0.2);">
         <svg viewBox="0 0 24 24" stroke="var(--emerald)"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
       </div>
-      <div>
-        <div class="adm-action-label">Create User</div>
-        <div class="adm-action-sub">Add new account</div>
-      </div>
+      <div><div class="adm-action-label">Create User</div><div class="adm-action-sub">Add new account</div></div>
     </a>
+  </div>
 
+  <!-- ── Categories ── -->
+  <div class="cat-grid">
+
+    <!-- Left: Category list with sub-categories -->
+    <div class="cat-panel">
+      <div class="cat-panel-head">
+        <div class="cat-panel-title">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Categories
+          <span style="font-size:11px; color:var(--text3); font-weight:500;">({{ categories|length }})</span>
+        </div>
+        <a href="{% url 'category_list' %}" style="font-size:12px; color:var(--indigo); text-decoration:none;">View all →</a>
+      </div>
+
+      <div class="cat-panel-body">
+        {% if categories %}
+          {% for cat in categories %}
+          <div class="cat-row" id="cat-{{ cat.pk }}">
+            <div class="cat-row-head" onclick="toggleCat('cat-{{ cat.pk }}')">
+              <div class="cat-row-name">
+                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                {{ cat.name }}
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="cat-row-meta">{{ cat.subcategories.count }} sub</span>
+                <svg class="cat-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+            <div class="cat-subs">
+              {% if cat.subcategories.all %}
+                {% for sub in cat.subcategories.all %}
+                  <span class="sub-chip">
+                    {{ sub.name }}
+                    <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="margin:0; display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="sub-chip-del" title="Delete" onclick="return confirm('Delete \'{{ sub.name }}\'?')">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </form>
+                  </span>
+                {% endfor %}
+              {% else %}
+                <span class="cat-no-subs">No sub-categories yet.</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding: 24px 0; text-align:center;">
+            <p style="font-size:13px; color:var(--text3);">No categories yet. Create one on the right.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right: Add Category + Add Sub-category forms -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Add Category -->
+      <div class="cat-panel">
+        <div class="cat-panel-head">
+          <div class="cat-panel-title">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Category
+          </div>
+        </div>
+        <div class="cat-panel-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="add_category" value="1">
+            <div class="cat-inline-form">
+              <input
+                type="text" name="name" class="form-control"
+                placeholder="e.g. Food, Transport, Salary…"
+                value="{{ cat_form.name.value|default:'' }}"
+                required
+              >
+              <button type="submit" class="cat-inline-btn">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Add
+              </button>
+            </div>
+            {% if cat_form.name.errors %}
+              <p class="form-error" style="margin-top:6px;">{{ cat_form.name.errors.0 }}</p>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
+      <!-- Add Sub-category -->
+      <div class="cat-panel">
+        <div class="cat-panel-head">
+          <div class="cat-panel-title">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Sub-category
+          </div>
+        </div>
+        <div class="cat-panel-body">
+          {% if categories %}
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="add_subcategory" value="1">
+            <div class="form-group" style="margin-bottom:10px;">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-control" required>
+                <option value="">— Select category —</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.pk }}" {% if sub_form.category.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ cat.name }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% if sub_form.category.errors %}
+                <p class="form-error">{{ sub_form.category.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div class="cat-inline-form">
+              <input
+                type="text" name="name" class="form-control"
+                placeholder="Sub-category name…"
+                value="{{ sub_form.name.value|default:'' }}"
+                required
+              >
+              <button type="submit" class="cat-inline-btn">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Add
+              </button>
+            </div>
+            {% if sub_form.name.errors %}
+              <p class="form-error" style="margin-top:6px;">{{ sub_form.name.errors.0 }}</p>
+            {% endif %}
+          </form>
+          {% else %}
+            <p style="font-size:13px; color:var(--text3);">Create a category first before adding sub-categories.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- ── Recent Activity ── -->
   <div class="adm-activity">
-
     <div class="adm-activity-head">
       <div>
         <div class="adm-activity-title">
@@ -520,52 +486,30 @@
     </div>
 
     {% if recent_logs %}
-
     <div class="adm-log-thead">
-      <span>Action</span>
-      <span>User</span>
-      <span>Target</span>
-      <span>Detail</span>
+      <span>Action</span><span>User</span><span>Target</span><span>Detail</span>
       <span style="text-align:right">Time</span>
     </div>
-
     {% for log in recent_logs %}
     <div class="adm-log-row">
-
-      <!-- Badge -->
       <div>
-        {% if log.action == 'create' %}
-          <span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Create</span>
-        {% elif log.action == 'edit' %}
-          <span class="adm-log-badge" style="background:var(--indigo-fog); color:var(--indigo);">Edit</span>
-        {% elif log.action == 'delete_request' %}
-          <span class="adm-log-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Del Req</span>
-        {% elif log.action == 'delete_confirm' %}
-          <span class="adm-log-badge" style="background:var(--rose-fog); color:var(--rose);">Deleted</span>
-        {% elif log.action == 'login' %}
-          <span class="adm-log-badge" style="background:rgba(99,102,241,0.1); color:#6366f1;">Login</span>
-        {% elif log.action == 'logout' %}
-          <span class="adm-log-badge" style="background:var(--surface3); color:var(--text3);">Logout</span>
-        {% elif log.action == 'freeze' %}
-          <span class="adm-log-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Frozen</span>
-        {% elif log.action == 'unfreeze' %}
-          <span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Unfrozen</span>
-        {% elif log.action == 'user_create' %}
-          <span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">User +</span>
-        {% elif log.action == 'user_delete' %}
-          <span class="adm-log-badge" style="background:var(--rose-fog); color:var(--rose);">User –</span>
-        {% else %}
-          <span class="adm-log-badge" style="background:var(--surface3); color:var(--text3);">{{ log.action }}</span>
+        {% if log.action == 'create' %}<span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Create</span>
+        {% elif log.action == 'edit' %}<span class="adm-log-badge" style="background:var(--indigo-fog); color:var(--indigo);">Edit</span>
+        {% elif log.action == 'delete_request' %}<span class="adm-log-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Del Req</span>
+        {% elif log.action == 'delete_confirm' %}<span class="adm-log-badge" style="background:var(--rose-fog); color:var(--rose);">Deleted</span>
+        {% elif log.action == 'login' %}<span class="adm-log-badge" style="background:rgba(99,102,241,0.1); color:#6366f1;">Login</span>
+        {% elif log.action == 'logout' %}<span class="adm-log-badge" style="background:var(--surface3); color:var(--text3);">Logout</span>
+        {% elif log.action == 'freeze' %}<span class="adm-log-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Frozen</span>
+        {% elif log.action == 'unfreeze' %}<span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Unfrozen</span>
+        {% elif log.action == 'user_create' %}<span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">User +</span>
+        {% elif log.action == 'user_delete' %}<span class="adm-log-badge" style="background:var(--rose-fog); color:var(--rose);">User –</span>
+        {% else %}<span class="adm-log-badge" style="background:var(--surface3); color:var(--text3);">{{ log.action }}</span>
         {% endif %}
       </div>
-
-      <!-- Actor -->
       <div class="adm-log-actor">
         <div class="adm-log-avatar">{{ log.actor.username|first|upper }}</div>
         <span class="adm-log-username">{% if log.actor %}{{ log.actor.username }}{% else %}—{% endif %}</span>
       </div>
-
-      <!-- Target -->
       <div class="adm-log-target">
         {% if log.target_repr %}
           <span class="adm-log-target-type">{{ log.target_type }}</span>
@@ -574,29 +518,27 @@
           <span class="adm-log-target-name" style="color:var(--text3)">—</span>
         {% endif %}
       </div>
-
-      <!-- Detail -->
-      <div class="adm-log-detail">
-        {% if log.detail %}{{ log.detail|truncatechars:40 }}{% else %}—{% endif %}
-      </div>
-
-      <!-- Time -->
+      <div class="adm-log-detail">{% if log.detail %}{{ log.detail|truncatechars:40 }}{% else %}—{% endif %}</div>
       <div class="adm-log-time">{{ log.timestamp|date:"d M, H:i" }}</div>
-
     </div>
     {% endfor %}
-
     {% else %}
     <div class="adm-empty">
-      <div class="adm-empty-icon">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      </div>
+      <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
       <p class="adm-empty-title">No activity yet</p>
       <p class="adm-empty-sub">Actions taken by users will appear here</p>
     </div>
     {% endif %}
-
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCat(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+</script>
 {% endblock %}
