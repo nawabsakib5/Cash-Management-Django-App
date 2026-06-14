@@ -40,6 +40,38 @@ class AdminProfile(models.Model):
         return f"Admin: {self.user.username}"
 
 
+class Category(models.Model):
+    name       = models.CharField(max_length=100, unique=True)
+    created_by = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='created_categories'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = 'Categories'
+
+
+class SubCategory(models.Model):
+    category   = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name='subcategories'
+    )
+    name       = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.category.name} → {self.name}"
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ['category', 'name']
+        verbose_name_plural = 'Sub Categories'
+
+
 class Project(models.Model):
     user        = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name='owned_projects'
@@ -103,8 +135,15 @@ class Transaction(models.Model):
         Project,
         on_delete=models.CASCADE,
         related_name='transactions',
-        null=True,
-        blank=True
+        null=True, blank=True
+    )
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='transactions'
+    )
+    sub_category = models.ForeignKey(
+        SubCategory, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='transactions'
     )
     title      = models.CharField(max_length=150)
     amount     = models.DecimalField(max_digits=10, decimal_places=2)
@@ -121,13 +160,11 @@ class Transaction(models.Model):
         return f"{self.title} - {self.amount} ({self.type})"
 
     def request_delete(self):
-        """User delete করলে শুধু request যাবে, data থাকবে।"""
         self.delete_requested    = True
         self.delete_requested_at = timezone.now()
         self.save(update_fields=['delete_requested', 'delete_requested_at'])
 
     def admin_confirm_delete(self):
-        """Admin confirm করলে তখনই soft-delete হবে।"""
         self.is_deleted       = True
         self.deleted_at       = timezone.now()
         self.delete_requested = False
@@ -139,16 +176,16 @@ class Transaction(models.Model):
 
 class AuditLog(models.Model):
     ACTION_CHOICES = (
-        ('create',         'তৈরি করেছে'),
-        ('edit',           'এডিট করেছে'),
-        ('delete_request', 'Delete চেয়েছে'),
-        ('delete_confirm', 'Delete Confirm করেছে'),
-        ('login',          'Login করেছে'),
-        ('logout',         'Logout করেছে'),
-        ('freeze',         'Freeze করেছে'),
-        ('unfreeze',       'Unfreeze করেছে'),
-        ('user_create',    'User তৈরি করেছে'),
-        ('user_delete',    'User Delete করেছে'),
+        ('create',         'Created'),
+        ('edit',           'Edited'),
+        ('delete_request', 'Requested Delete'),
+        ('delete_confirm', 'Confirmed Delete'),
+        ('login',          'Logged In'),
+        ('logout',         'Logged Out'),
+        ('freeze',         'Frozen'),
+        ('unfreeze',       'Unfrozen'),
+        ('user_create',    'User Created'),
+        ('user_delete',    'User Deleted'),
     )
 
     actor       = models.ForeignKey(
