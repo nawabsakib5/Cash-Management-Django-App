@@ -359,8 +359,18 @@
             <div class="cat-subs">
               {% if cat.subcategories.all %}
                 {% for sub in cat.subcategories.all %}
-                  <span class="sub-chip">
+                  <span class="sub-chip" {% if sub.users.all %}style="border-color:var(--indigo-line); background:var(--indigo-fog);"{% endif %}>
+                    {% if sub.users.all %}
+                      <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:var(--indigo);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" title="Private">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    {% endif %}
                     {{ sub.name }}
+                    {% if sub.users.all %}
+                      <span style="font-size:9.5px; font-weight:700; color:var(--indigo); background:rgba(99,102,241,0.15); border-radius:99px; padding:1px 6px;">
+                        {% for u in sub.users.all %}{{ u.username }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                      </span>
+                    {% endif %}
                     <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="margin:0; display:inline;">
                       {% csrf_token %}
                       <button type="submit" class="sub-chip-del" title="Delete" onclick="return confirm('Delete \'{{ sub.name }}\'?')">
@@ -444,6 +454,7 @@
                 <p class="form-error">{{ sub_form.category.errors.0 }}</p>
               {% endif %}
             </div>
+
             <div class="cat-inline-form">
               <input
                 type="text" name="name" class="form-control"
@@ -459,6 +470,24 @@
             {% if sub_form.name.errors %}
               <p class="form-error" style="margin-top:6px;">{{ sub_form.name.errors.0 }}</p>
             {% endif %}
+
+            <div class="form-group" style="margin-top:10px; margin-bottom:0;">
+              <label class="form-label">Restrict to users (optional)</label>
+              <select name="users" class="form-control" multiple size="5">
+                {% for choice in sub_form.users.field.queryset %}
+                  <option value="{{ choice.pk }}"
+                    {% if choice.pk|stringformat:"s" in sub_form.users.value|default:""|join:"," %}selected{% endif %}>
+                    {{ choice.username }}
+                  </option>
+                {% endfor %}
+              </select>
+              <p style="font-size:11.5px; color:var(--text3); margin-top:6px; line-height:1.5;">
+                Leave empty for Global (everyone sees it). Hold Ctrl/Cmd to select multiple users — only they will see this sub-category.
+              </p>
+              {% if sub_form.users.errors %}
+                <p class="form-error">{{ sub_form.users.errors.0 }}</p>
+              {% endif %}
+            </div>
           </form>
           {% else %}
             <p style="font-size:13px; color:var(--text3);">Create a category first before adding sub-categories.</p>

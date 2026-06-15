@@ -352,7 +352,6 @@ def transaction_delete(request, pk):
     return render(request, 'transaction_confirm_delete.html', {'transaction': transaction})
 
 
-# ─── Category Views (anyone can create) ───────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
@@ -360,11 +359,11 @@ def category_list(request):
     # Admin sees ALL sub-categories (global + every user's private ones).
     # Normal users see global sub-categories + only their own private ones.
     if request.user.is_admin:
-        visible_subs = SubCategory.objects.all().select_related('user')
+        visible_subs = SubCategory.objects.all().prefetch_related('users')
     else:
         visible_subs = SubCategory.objects.filter(
-            Q(user__isnull=True) | Q(user=request.user)
-        ).select_related('user')
+            Q(users__isnull=True) | Q(users=request.user)
+        ).distinct().prefetch_related('users')
 
     categories = Category.objects.prefetch_related(
         Prefetch('subcategories', queryset=visible_subs)
@@ -404,7 +403,7 @@ def category_delete(request, pk):
     return render(request, 'category_confirm_delete.html', {'category': category})
 
 
-# ─── SubCategory Views (admin only) ───────────────────────────────────────────
+
 
 @admin_required
 def subcategory_create(request):
@@ -412,10 +411,12 @@ def subcategory_create(request):
         form = SubCategoryForm(request.POST)
         if form.is_valid():
             sub = form.save()
-            if sub.user:
+            users = sub.users.all()
+            if users:
+                usernames = ", ".join(u.username for u in users)
                 messages.success(
                     request,
-                    f"Sub-category '{sub.name}' created — visible only to '{sub.user.username}'."
+                    f"Sub-category '{sub.name}' created — visible only to: {usernames}."
                 )
             else:
                 messages.success(
@@ -438,7 +439,6 @@ def subcategory_delete(request, pk):
     return render(request, 'subcategory_confirm_delete.html', {'subcategory': subcategory})
 
 
-# ─── AJAX: Sub-categories by Category ─────────────────────────────────────────
 
 @login_required(login_url='login')
 def get_subcategories(request):
@@ -446,18 +446,17 @@ def get_subcategories(request):
     if not category_id:
         return JsonResponse({'subcategories': []})
 
-    # Logged-in user sees: global sub-categories (user is null)
-    # + their own private sub-categories.
+    # Logged-in user sees: global sub-categories (no users assigned)
+    # + sub-categories where this user is in the allowed users list.
     subs = SubCategory.objects.filter(
         category_id=category_id
     ).filter(
-        Q(user__isnull=True) | Q(user=request.user)
-    ).values('id', 'name')
+        Q(users__isnull=True) | Q(users=request.user)
+    ).distinct().values('id', 'name')
 
     return JsonResponse({'subcategories': list(subs)})
 
 
-# ─── Admin Dashboard Views ─────────────────────────────────────────────────────
 
 @admin_required
 def admin_dashboard(request):
@@ -479,10 +478,12 @@ def admin_dashboard(request):
             sub_form = SubCategoryForm(request.POST)
             if sub_form.is_valid():
                 sub = sub_form.save()
-                if sub.user:
+                users = sub.users.all()
+                if users:
+                    usernames = ", ".join(u.username for u in users)
                     messages.success(
                         request,
-                        f"Sub-category '{sub.name}' created — visible only to '{sub.user.username}'."
+                        f"Sub-category '{sub.name}' created — visible only to: {usernames}."
                     )
                 else:
                     messages.success(
@@ -492,7 +493,7 @@ def admin_dashboard(request):
                 return redirect('admin_dashboard')
 
     categories = Category.objects.prefetch_related(
-        Prefetch('subcategories', queryset=SubCategory.objects.all().select_related('user'))
+        Prefetch('subcategories', queryset=SubCategory.objects.all().prefetch_related('users'))
     ).all()
 
     context = {
