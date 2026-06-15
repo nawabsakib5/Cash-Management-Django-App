@@ -2,7 +2,7 @@ services:
   - type: web
     name: cash-management
     env: python
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_default_admin"
     startCommand: "gunicorn cashProject.wsgi:application"
     envVars:
       - key: SECRET_KEY
