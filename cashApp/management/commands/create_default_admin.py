@@ -11,7 +11,7 @@ class Command(BaseCommand):
             CustomUser.objects.create_user(
                 username  = 'admin',
                 email     = 'admin@gmail.com',
-                password  = '1234',
+                password  = '12345678',
                 user_type = 'admin',
             )
             self.stdout.write(self.style.SUCCESS('Default admin created.'))
