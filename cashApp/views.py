@@ -1,4 +1,3 @@
-# cashApp/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
@@ -8,15 +7,10 @@ from django.db.models import Q, Prefetch
 from django.http import JsonResponse
 from django.utils import timezone
 from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory
-from .forms import (
-    TransactionForm, RegisterForm, LoginForm,
-    ProjectForm, AdminUserCreateForm, AdminUserEditForm,
-    CategoryForm, SubCategoryForm,
-)
+from .forms import *
 from .decorators import admin_required, not_frozen, log_action
 
 
-# ─── Auth Views ────────────────────────────────────────────────────────────────
 
 def Signup(request):
     if request.user.is_authenticated:
@@ -129,7 +123,6 @@ def changapassword(request):
     return render(request, 'change_password.html')
 
 
-# ─── Project Views ─────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def project_list(request):
@@ -242,7 +235,6 @@ def project_delete(request, pk):
     return render(request, 'project_confirm_delete.html', {'project': project})
 
 
-# ─── Project Member Views ──────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
@@ -277,7 +269,6 @@ def project_member_remove(request, pk, user_id):
     return redirect('project_members', pk=pk)
 
 
-# ─── Transaction Views ─────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
@@ -356,8 +347,7 @@ def transaction_delete(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def category_list(request):
-    # Admin sees ALL sub-categories (global + every user's private ones).
-    # Normal users see global sub-categories + only their own private ones.
+    
     if request.user.is_admin:
         visible_subs = SubCategory.objects.all().prefetch_related('users')
     else:

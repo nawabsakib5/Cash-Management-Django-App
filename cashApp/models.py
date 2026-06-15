@@ -62,8 +62,7 @@ class SubCategory(models.Model):
     )
     name       = models.CharField(max_length=100)
 
-    # If empty -> visible to everyone (global sub-category)
-    # If one or more users selected -> visible ONLY to those users
+    
     users      = models.ManyToManyField(
         CustomUser, blank=True, related_name='private_subcategories',
         help_text="Leave empty for a global sub-category visible to everyone. "
@@ -161,7 +160,7 @@ class Transaction(models.Model):
     type       = models.CharField(max_length=10, choices=TRANSACTION_TYPE)
     date       = models.DateField(default=timezone.now)
 
-    # ── Soft Delete ──────────────────────────────────────────────────────────
+    
     is_deleted           = models.BooleanField(default=False)
     delete_requested     = models.BooleanField(default=False)
     delete_requested_at  = models.DateTimeField(null=True, blank=True)

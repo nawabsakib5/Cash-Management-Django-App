@@ -1,4 +1,3 @@
-# cashApp/decorators.py
 
 from functools import wraps
 from django.shortcuts import redirect
@@ -32,7 +31,7 @@ def not_frozen(view_func):
     return wrapper
 
 
-# ── Audit Log Helper ───────────────────────────────────────────────────────────
+
 
 def log_action(actor, action, target=None, detail='', request=None):
     """
