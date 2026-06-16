@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+{% block title %}{{ target_user.username }} — Activity{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* ── Profile Card ─────────────────────────────────────────────────────────── */
+.ua-root { display: flex; flex-direction: column; gap: 20px; }
+
+.ua-profile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 24px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px; position: relative; overflow: hidden;
+}
+.ua-profile::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--indigo), #818cf8);
+}
+.ua-profile-left { display: flex; align-items: center; gap: 16px; }
+.ua-avatar {
+  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: var(--indigo); font-family: var(--mono);
+}
+.ua-avatar--admin { background: var(--rose-fog); border-color: rgba(244,63,94,0.2); color: var(--rose); }
+.ua-name {
+  font-size: 18px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.ua-tag {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; padding: 2px 9px; border-radius: 99px;
+}
+.ua-meta { font-size: 12.5px; color: var(--text3); margin-top: 4px; }
+
+/* Profile stats */
+.ua-profile-stats {
+  display: flex; align-items: center;
+  background: var(--bg, #0f1117);
+  border: 1px solid var(--border); border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.ua-mini-stat { padding: 14px 22px; text-align: center; }
+.ua-mini-sep  { width: 1px; height: 38px; background: var(--border); flex-shrink: 0; }
+.ua-mini-val  {
+  display: block; font-family: var(--mono);
+  font-size: 16px; font-weight: 700; line-height: 1;
+}
+.ua-mini-label {
+  display: block; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text3); margin-top: 5px;
+}
+
+/* ── Grid ─────────────────────────────────────────────────────────────────── */
+.ua-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; align-items: start;
+}
+@media (max-width: 768px) { .ua-grid { grid-template-columns: 1fr; } }
+
+/* ── Panel ────────────────────────────────────────────────────────────────── */
+.ua-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); overflow: hidden;
+}
+.ua-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 20px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(99,102,241,0.03) 100%);
+}
+.ua-panel-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13.5px; font-weight: 700; color: var(--text);
+}
+.ua-panel-title svg { width: 14px; height: 14px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ua-panel-count {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  background: var(--surface2, rgba(255,255,255,0.04));
+  border: 1px solid var(--border); border-radius: 99px; padding: 2px 10px;
+}
+.ua-panel-body { max-height: 440px; overflow-y: auto; }
+.ua-panel-body::-webkit-scrollbar { width: 3px; }
+.ua-panel-body::-webkit-scrollbar-thumb { background: var(--border2, rgba(255,255,255,0.08)); border-radius: 4px; }
+
+/* ── Log Rows ─────────────────────────────────────────────────────────────── */
+.ua-log-row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+.ua-log-row:last-child { border-bottom: none; }
+.ua-log-row:hover { background: rgba(255,255,255,0.015); }
+.ua-log-left { display: flex; align-items: flex-start; gap: 10px; min-width: 0; flex: 1; }
+
+.ua-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 3px 9px; border-radius: 99px; flex-shrink: 0;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap;
+}
+.ua-log-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ua-log-target { font-size: 12.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ua-log-detail { font-size: 11.5px; color: var(--text3); }
+.ua-log-time   { font-family: var(--mono); font-size: 10.5px; color: var(--text3); white-space: nowrap; flex-shrink: 0; padding-top: 2px; }
+
+/* ── Project Rows ─────────────────────────────────────────────────────────── */
+.ua-project-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+.ua-project-row:last-child { border-bottom: none; }
+.ua-project-row:hover { background: rgba(255,255,255,0.015); }
+.ua-project-icon {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
+  display: flex; align-items: center; justify-content: center;
+}
+.ua-project-icon svg { width: 13px; height: 13px; }
+.ua-project-info { flex: 1; min-width: 0; }
+.ua-project-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.ua-project-stats-row { font-size: 11.5px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+.ua-project-link {
+  width: 28px; height: 28px; border-radius: var(--radius); flex-shrink: 0;
+  background: var(--surface2, rgba(255,255,255,0.04)); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; color: var(--text3); transition: all var(--transition);
+}
+.ua-project-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.ua-project-link:hover { color: var(--indigo); border-color: var(--indigo-line); background: var(--indigo-fog); }
+
+/* ── Transaction Rows ─────────────────────────────────────────────────────── */
+.ua-tx-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px; border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+.ua-tx-row:last-child { border-bottom: none; }
+.ua-tx-row:hover { background: rgba(255,255,255,0.015); }
+.ua-tx-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.ua-tx-dot--income  { background: var(--emerald); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
+.ua-tx-dot--expense { background: var(--rose);    box-shadow: 0 0 6px rgba(244,63,94,0.35); }
+.ua-tx-info  { flex: 1; min-width: 0; }
+.ua-tx-title { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ua-tx-meta  { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.ua-tx-amount { font-family: var(--mono); font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+.ua-tx-amount--income  { color: var(--emerald); }
+.ua-tx-amount--expense { color: var(--rose); }
+
+/* ── Empty ────────────────────────────────────────────────────────────────── */
+.ua-empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 24px; gap: 10px;
+}
+.ua-empty svg { width: 28px; height: 28px; stroke: var(--text3); fill: none; stroke-width: 1.5; }
+.ua-empty p   { font-size: 13px; color: var(--text3); margin: 0; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ua-root">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="adm-header" style="padding-bottom:24px; border-bottom:1px solid var(--border); position:relative; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div class="adm-header::after" style="content:''; position:absolute; bottom:-1px; left:0; width:80px; height:1px; background:linear-gradient(90deg,var(--indigo),transparent);"></div>
+    <div>
+      <div style="display:inline-flex; align-items:center; gap:7px; font-size:10.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--rose); margin-bottom:8px;">
+        <span style="width:5px; height:5px; border-radius:50%; background:var(--rose); box-shadow:0 0 8px rgba(244,63,94,0.8);"></span>
+        Admin Panel
+      </div>
+      <h1 style="font-size:28px; font-weight:700; color:var(--text); letter-spacing:-0.5px; line-height:1.1; margin:0;">
+        User Activity
+      </h1>
+      <p style="font-size:13.5px; color:var(--text3); margin-top:5px;">
+        Full history and transactions for
+        <strong style="color:var(--text);">{{ target_user.username }}</strong>
+      </p>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <a href="{% url 'admin_user_edit' target_user.pk %}" class="adm-btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit User
+      </a>
+      <a href="{% url 'admin_user_list' %}" class="adm-btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Profile Strip ──────────────────────────────────────────────────── -->
+  <div class="ua-profile">
+    <div class="ua-profile-left">
+      <div class="ua-avatar {% if target_user.user_type == 'admin' %}ua-avatar--admin{% endif %}">
+        {{ target_user.username|first|upper }}
+      </div>
+      <div>
+        <div class="ua-name">
+          {{ target_user.username }}
+          {% if target_user.user_type == 'admin' %}
+            <span class="ua-tag" style="background:var(--rose-fog); color:var(--rose);">Admin</span>
+          {% else %}
+            <span class="ua-tag" style="background:var(--indigo-fog); color:var(--indigo);">User</span>
+          {% endif %}
+          {% if target_user.is_frozen %}
+            <span class="ua-tag" style="background:rgba(245,158,11,0.12); color:#d97706;">Frozen</span>
+          {% endif %}
+        </div>
+        <div class="ua-meta">
+          {{ target_user.email }}
+          {% if target_user.full_name %}&nbsp;·&nbsp; {{ target_user.full_name }}{% endif %}
+          &nbsp;·&nbsp; Joined {{ target_user.date_joined|date:"d M Y" }}
+          {% if target_user.phone %}&nbsp;·&nbsp; {{ target_user.phone }}{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="ua-profile-stats">
+      <div class="ua-mini-stat">
+        <span class="ua-mini-val" style="color:var(--indigo);">{{ projects|length }}</span>
+        <span class="ua-mini-label">Projects</span>
+      </div>
+      <div class="ua-mini-sep"></div>
+      <div class="ua-mini-stat">
+        <span class="ua-mini-val" style="color:var(--emerald);">৳{{ total_income|floatformat:0 }}</span>
+        <span class="ua-mini-label">Income</span>
+      </div>
+      <div class="ua-mini-sep"></div>
+      <div class="ua-mini-stat">
+        <span class="ua-mini-val" style="color:var(--rose);">৳{{ total_expense|floatformat:0 }}</span>
+        <span class="ua-mini-label">Expense</span>
+      </div>
+      <div class="ua-mini-sep"></div>
+      <div class="ua-mini-stat">
+        <span class="ua-mini-val" style="color:var(--text);">{{ logs|length }}</span>
+        <span class="ua-mini-label">Actions</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Two Column Grid ────────────────────────────────────────────────── -->
+  <div class="ua-grid">
+
+    <!-- LEFT: Audit Log ────────────────────────────────────────────────── -->
+    <div class="ua-panel">
+      <div class="ua-panel-head">
+        <div class="ua-panel-title">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Audit Log
+        </div>
+        <span class="ua-panel-count">{{ logs|length }} actions</span>
+      </div>
+      <div class="ua-panel-body">
+        {% if logs %}
+          {% for log in logs %}
+          <div class="ua-log-row">
+            <div class="ua-log-left">
+              {% if log.action == 'create' %}
+                <span class="ua-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Create</span>
+              {% elif log.action == 'edit' %}
+                <span class="ua-badge" style="background:var(--indigo-fog); color:var(--indigo);">Edit</span>
+              {% elif log.action == 'delete_request' %}
+                <span class="ua-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Del Req</span>
+              {% elif log.action == 'delete_confirm' %}
+                <span class="ua-badge" style="background:var(--rose-fog); color:var(--rose);">Deleted</span>
+              {% elif log.action == 'login' %}
+                <span class="ua-badge" style="background:rgba(99,102,241,0.1); color:#6366f1;">Login</span>
+              {% elif log.action == 'logout' %}
+                <span class="ua-badge" style="background:var(--surface3,rgba(255,255,255,0.05)); color:var(--text3);">Logout</span>
+              {% elif log.action == 'freeze' %}
+                <span class="ua-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Frozen</span>
+              {% elif log.action == 'unfreeze' %}
+                <span class="ua-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Unfrozen</span>
+              {% elif log.action == 'user_create' %}
+                <span class="ua-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">User +</span>
+              {% elif log.action == 'user_delete' %}
+                <span class="ua-badge" style="background:var(--rose-fog); color:var(--rose);">User –</span>
+              {% else %}
+                <span class="ua-badge" style="background:var(--surface3,rgba(255,255,255,0.05)); color:var(--text3);">{{ log.action }}</span>
+              {% endif %}
+
+              <div class="ua-log-info">
+                {% if log.target_repr %}
+                  <span class="ua-log-target">{{ log.target_repr|truncatechars:38 }}</span>
+                {% endif %}
+                {% if log.detail %}
+                  <span class="ua-log-detail">{{ log.detail|truncatechars:50 }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <span class="ua-log-time">{{ log.timestamp|date:"d M, H:i" }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="ua-empty">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>No activity recorded yet</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: Projects + Transactions ─────────────────────────────────── -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Projects -->
+      <div class="ua-panel">
+        <div class="ua-panel-head">
+          <div class="ua-panel-title">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Owned Projects
+          </div>
+          <span class="ua-panel-count">{{ projects|length }}</span>
+        </div>
+        <div class="ua-panel-body">
+          {% if projects %}
+            {% for project in projects %}
+            <div class="ua-project-row">
+              <div class="ua-project-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div class="ua-project-info">
+                <div class="ua-project-name">{{ project.name }}</div>
+                <div class="ua-project-stats-row">
+                  <span style="color:var(--emerald);">৳{{ project.total_income|floatformat:0 }}</span>
+                  &nbsp;/&nbsp;
+                  <span style="color:var(--rose);">৳{{ project.total_expense|floatformat:0 }}</span>
+                  &nbsp;·&nbsp;{{ project.created_at|date:"d M Y" }}
+                </div>
+              </div>
+              <a href="{% url 'project_detail' project.pk %}" class="ua-project-link">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="ua-empty">
+              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <p>No projects created</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Transactions -->
+      <div class="ua-panel">
+        <div class="ua-panel-head">
+          <div class="ua-panel-title">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Transactions
+          </div>
+          <span class="ua-panel-count">{{ transactions|length }} total</span>
+        </div>
+        <div class="ua-panel-body">
+          {% if transactions %}
+            {% for tx in transactions|slice:":30" %}
+            <div class="ua-tx-row">
+              <div class="ua-tx-dot ua-tx-dot--{{ tx.type }}"></div>
+              <div class="ua-tx-info">
+                <div class="ua-tx-title">{{ tx.title }}</div>
+                <div class="ua-tx-meta">
+                  {{ tx.project.name|default:"—" }}
+                  &nbsp;·&nbsp; {{ tx.date|date:"d M Y" }}
+                  {% if tx.delete_requested %}
+                    &nbsp;·&nbsp;<span style="color:#d97706; font-size:10.5px; font-weight:600;">Pending delete</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="ua-tx-amount ua-tx-amount--{{ tx.type }}">
+                {% if tx.type == 'income' %}+{% else %}−{% endif %}৳{{ tx.amount|floatformat:0 }}
+              </div>
+            </div>
+            {% endfor %}
+            {% if transactions|length > 30 %}
+              <div style="text-align:center; padding:14px; font-size:12px; color:var(--text3); border-top:1px solid var(--border);">
+                Showing 30 of {{ transactions|length }} transactions
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="ua-empty">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <p>No transactions yet</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+</script>
+{% endblock %}

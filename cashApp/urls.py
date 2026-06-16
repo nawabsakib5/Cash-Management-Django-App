@@ -43,4 +43,5 @@ urlpatterns = [
     path('admin-panel/delete-requests/<int:pk>/confirm/',views.admin_delete_confirm, name='admin_delete_confirm'),
     path('admin-panel/delete-requests/<int:pk>/reject/',views.admin_delete_reject, name='admin_delete_reject'),
     path('admin-panel/audit-log/',views.admin_audit_log, name='admin_audit_log'),
+    path('admin-panel/users/<int:user_id>/activity/',views.admin_user_activity, name='admin_user_activity'),
 ]

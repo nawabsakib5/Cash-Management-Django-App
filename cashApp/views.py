@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -123,6 +122,7 @@ def changapassword(request):
     return render(request, 'change_password.html')
 
 
+# ─── Project Views ─────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def project_list(request):
@@ -235,6 +235,7 @@ def project_delete(request, pk):
     return render(request, 'project_confirm_delete.html', {'project': project})
 
 
+# ─── Project Member Views ──────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
@@ -269,6 +270,7 @@ def project_member_remove(request, pk, user_id):
     return redirect('project_members', pk=pk)
 
 
+# ─── Transaction Views ─────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
@@ -343,11 +345,11 @@ def transaction_delete(request, pk):
     return render(request, 'transaction_confirm_delete.html', {'transaction': transaction})
 
 
+# ─── Category Views ────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
 def category_list(request):
-    
     if request.user.is_admin:
         visible_subs = SubCategory.objects.all().prefetch_related('users')
     else:
@@ -393,8 +395,6 @@ def category_delete(request, pk):
     return render(request, 'category_confirm_delete.html', {'category': category})
 
 
-
-
 @admin_required
 def subcategory_create(request):
     if request.method == 'POST':
@@ -404,15 +404,9 @@ def subcategory_create(request):
             users = sub.users.all()
             if users:
                 usernames = ", ".join(u.username for u in users)
-                messages.success(
-                    request,
-                    f"Sub-category '{sub.name}' created — visible only to: {usernames}."
-                )
+                messages.success(request, f"Sub-category '{sub.name}' created — visible only to: {usernames}.")
             else:
-                messages.success(
-                    request,
-                    f"Sub-category '{sub.name}' created — visible to everyone (Global)."
-                )
+                messages.success(request, f"Sub-category '{sub.name}' created — visible to everyone (Global).")
             return redirect('category_list')
     else:
         form = SubCategoryForm()
@@ -429,15 +423,12 @@ def subcategory_delete(request, pk):
     return render(request, 'subcategory_confirm_delete.html', {'subcategory': subcategory})
 
 
-
 @login_required(login_url='login')
 def get_subcategories(request):
     category_id = request.GET.get('category_id')
     if not category_id:
         return JsonResponse({'subcategories': []})
 
-    # Logged-in user sees: global sub-categories (no users assigned)
-    # + sub-categories where this user is in the allowed users list.
     subs = SubCategory.objects.filter(
         category_id=category_id
     ).filter(
@@ -447,6 +438,7 @@ def get_subcategories(request):
     return JsonResponse({'subcategories': list(subs)})
 
 
+# ─── Admin Dashboard Views ─────────────────────────────────────────────────────
 
 @admin_required
 def admin_dashboard(request):
@@ -454,7 +446,6 @@ def admin_dashboard(request):
     sub_form = SubCategoryForm()
 
     if request.method == 'POST':
-
         if 'add_category' in request.POST:
             cat_form = CategoryForm(request.POST)
             if cat_form.is_valid():
@@ -471,15 +462,9 @@ def admin_dashboard(request):
                 users = sub.users.all()
                 if users:
                     usernames = ", ".join(u.username for u in users)
-                    messages.success(
-                        request,
-                        f"Sub-category '{sub.name}' created — visible only to: {usernames}."
-                    )
+                    messages.success(request, f"Sub-category '{sub.name}' created — visible only to: {usernames}.")
                 else:
-                    messages.success(
-                        request,
-                        f"Sub-category '{sub.name}' created — visible to everyone (Global)."
-                    )
+                    messages.success(request, f"Sub-category '{sub.name}' created — visible to everyone (Global).")
                 return redirect('admin_dashboard')
 
     categories = Category.objects.prefetch_related(
@@ -599,6 +584,27 @@ def admin_user_freeze(request, user_id):
 
 
 @admin_required
+def admin_user_activity(request, user_id):
+    """Specific একজন user এর সব activity, projects, transactions দেখাবে।"""
+    target_user  = get_object_or_404(CustomUser, pk=user_id)
+    logs         = AuditLog.objects.filter(actor=target_user).order_by('-timestamp')
+    transactions = Transaction.objects.filter(
+                       user=target_user, is_deleted=False
+                   ).select_related('project').order_by('-date')
+    projects     = Project.objects.filter(user=target_user).order_by('-created_at')
+
+    context = {
+        'target_user':   target_user,
+        'logs':          logs,
+        'transactions':  transactions,
+        'projects':      projects,
+        'total_income':  sum(t.amount for t in transactions if t.type == 'income'),
+        'total_expense': sum(t.amount for t in transactions if t.type == 'expense'),
+    }
+    return render(request, 'admin/user_activity.html', context)
+
+
+@admin_required
 def admin_delete_requests(request):
     pending = Transaction.objects.filter(
         delete_requested=True, is_deleted=False
@@ -632,8 +638,7 @@ def admin_delete_reject(request, pk):
         transaction.save(update_fields=['delete_requested', 'delete_requested_at'])
         log_action(request.user, 'edit', target=transaction,
                    detail=f"Delete request rejected for '{transaction.title}'", request=request)
-        messages.success(
-            request, f"Delete request for '{transaction.title}' has been rejected.")
+        messages.success(request, f"Delete request for '{transaction.title}' has been rejected.")
         return redirect('admin_delete_requests')
 
     return render(request, 'admin/delete_confirm.html', {
