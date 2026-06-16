@@ -498,6 +498,7 @@ def admin_dashboard(request):
         'categories':         categories,
         'cat_form':           cat_form,
         'sub_form':           sub_form,
+        'all_projects':       Project.objects.select_related('user').order_by('-created_at'),
     }
     return render(request, 'admin/dashboard.html', context)
 
