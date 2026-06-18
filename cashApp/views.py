@@ -126,9 +126,13 @@ def changapassword(request):
 
 @login_required(login_url='login')
 def project_list(request):
-    owned  = request.user.owned_projects.all()
-    joined = request.user.joined_projects.all()
-    projects = (owned | joined).distinct().order_by('-created_at')
+    # Admin দেখবে platform-এর সব project; সাধারণ user দেখবে শুধু নিজের owned/joined project
+    if request.user.is_admin:
+        projects = Project.objects.select_related('user').all().order_by('-created_at')
+    else:
+        owned  = request.user.owned_projects.all()
+        joined = request.user.joined_projects.all()
+        projects = (owned | joined).distinct().order_by('-created_at')
     return render(request, 'project_list.html', {'projects': projects})
 
 
@@ -153,7 +157,12 @@ def project_create(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    if request.user != project.user and request.user not in project.members.all():
+    # Admin: automatic full access, কোনো member check ছাড়াই
+    is_admin_view = request.user.is_admin
+    is_owner      = request.user == project.user
+    is_member     = request.user in project.members.all()
+
+    if not is_admin_view and not is_owner and not is_member:
         messages.error(request, "You do not have permission to access this project.")
         return redirect('project_list')
 
@@ -187,7 +196,7 @@ def project_detail(request, pk):
     if date_to:
         transactions = transactions.filter(date__lte=date_to)
 
-    if request.user.user_type != 'admin':
+    if not is_admin_view:
         transactions = transactions.exclude(delete_requested=True)
 
     return render(request, 'project_detail.html', {
@@ -198,7 +207,8 @@ def project_detail(request, pk):
         'balance':          project.balance(),
         'balance_warning':  project.balance() < 0,
         'contributions':    project.contribution_summary(),
-        'is_owner':         request.user == project.user,
+        'is_owner':         is_owner,
+        'is_admin_view':    is_admin_view,
         'today':            today,
         'active_type':      tx_type,
         'active_month':     month_filter,
@@ -211,7 +221,10 @@ def project_detail(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def project_edit(request, pk):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
+    if request.user.is_admin:
+        project = get_object_or_404(Project, pk=pk)
+    else:
+        project = get_object_or_404(Project, pk=pk, user=request.user)
     if request.method == 'POST':
         form = ProjectForm(request.POST, instance=project)
         if form.is_valid():
@@ -227,7 +240,10 @@ def project_edit(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def project_delete(request, pk):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
+    if request.user.is_admin:
+        project = get_object_or_404(Project, pk=pk)
+    else:
+        project = get_object_or_404(Project, pk=pk, user=request.user)
     if request.method == 'POST':
         project.delete()
         messages.success(request, "Project deleted successfully.")
@@ -240,7 +256,10 @@ def project_delete(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def project_members(request, pk):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
+    if request.user.is_admin:
+        project = get_object_or_404(Project, pk=pk)
+    else:
+        project = get_object_or_404(Project, pk=pk, user=request.user)
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -263,7 +282,10 @@ def project_members(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def project_member_remove(request, pk, user_id):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
+    if request.user.is_admin:
+        project = get_object_or_404(Project, pk=pk)
+    else:
+        project = get_object_or_404(Project, pk=pk, user=request.user)
     member  = get_object_or_404(CustomUser, pk=user_id)
     project.members.remove(member)
     messages.success(request, f"{member.username} has been removed from the project.")
@@ -277,7 +299,9 @@ def project_member_remove(request, pk, user_id):
 def transaction_create(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    if request.user != project.user and request.user not in project.members.all():
+    # Admin: কোনো membership check ছাড়াই contribute করতে পারবে
+    is_admin_view = request.user.is_admin
+    if not is_admin_view and request.user != project.user and request.user not in project.members.all():
         messages.error(request, "You don't have permission to add transactions to this project.")
         return redirect('project_list')
 
@@ -310,13 +334,17 @@ def transaction_create(request, pk):
 
     return render(request, 'transaction_form.html', {
         'form': form, 'project': project, 'balance': balance,
+        'is_admin_view': is_admin_view,
     })
 
 
 @login_required(login_url='login')
 @not_frozen
 def transaction_edit(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    if request.user.is_admin:
+        transaction = get_object_or_404(Transaction, pk=pk)
+    else:
+        transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
     if request.method == 'POST':
         form = TransactionForm(request.POST, instance=transaction, user=request.user)
         if form.is_valid():
@@ -334,7 +362,10 @@ def transaction_edit(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def transaction_delete(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    if request.user.is_admin:
+        transaction = get_object_or_404(Transaction, pk=pk)
+    else:
+        transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
     project_pk  = transaction.project.pk
 
     if request.method == 'POST':
@@ -471,6 +502,20 @@ def admin_dashboard(request):
         Prefetch('subcategories', queryset=SubCategory.objects.all().prefetch_related('users'))
     ).all()
 
+    all_projects = Project.objects.select_related('user').prefetch_related('members').order_by('-created_at')
+
+    # প্রতিটা project-এ সংক্ষিপ্ত totals attach করা হচ্ছে, যাতে template-এ আলাদা query না লাগে
+    projects_with_totals = []
+    for p in all_projects:
+        projects_with_totals.append({
+            'project':  p,
+            'income':   p.total_income(),
+            'expense':  p.total_expense(),
+            'balance':  p.balance(),
+            'owner':    p.user,
+            'members':  p.members.all(),
+        })
+
     context = {
         'total_users':        CustomUser.objects.filter(user_type='user').count(),
         'frozen_users':       CustomUser.objects.filter(is_frozen=True).count(),
@@ -483,7 +528,8 @@ def admin_dashboard(request):
         'categories':         categories,
         'cat_form':           cat_form,
         'sub_form':           sub_form,
-        'all_projects':       Project.objects.select_related('user').order_by('-created_at'),
+        'all_projects':       all_projects,
+        'projects_with_totals': projects_with_totals,
     }
     return render(request, 'admin/dashboard.html', context)
 
