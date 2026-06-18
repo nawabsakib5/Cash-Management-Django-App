@@ -252,6 +252,25 @@
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3);
 }
 
+/* Project balance pill */
+.adm-balance-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+  padding: 3px 9px; border-radius: 99px;
+}
+.adm-balance-pill.positive { color: var(--emerald); background: var(--emerald-fog); }
+.adm-balance-pill.negative { color: var(--rose); background: var(--rose-fog); }
+
+.adm-member-stack { display: flex; align-items: center; }
+.adm-member-chip {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--surface3); border: 1.5px solid var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  margin-left: -7px; font-family: var(--mono);
+}
+.adm-member-chip:first-child { margin-left: 0; }
+
 /* Empty */
 .adm-empty { padding: 56px 24px; text-align: center; }
 .adm-empty-icon {
@@ -402,33 +421,41 @@
           <span class="adm-activity-title-dot"></span>
           All Projects
         </div>
-        <div class="adm-activity-sub">Every project across all users</div>
+        <div class="adm-activity-sub">Every project across all users — you have full access to each one</div>
       </div>
     </div>
 
     {% if all_projects %}
-    <div class="adm-log-thead" style="grid-template-columns: 1fr 140px 100px 100px 100px;">
+    <div class="adm-log-thead" style="grid-template-columns: 1fr 130px 90px 90px 100px 90px;">
       <span>Project</span>
       <span>Owner</span>
       <span>Income</span>
       <span>Expense</span>
+      <span>Balance</span>
       <span style="text-align:right;">Action</span>
     </div>
 
     {% for project in all_projects %}
-    <div class="adm-log-row" style="grid-template-columns: 1fr 140px 100px 100px 100px;">
+    <div class="adm-log-row" style="grid-template-columns: 1fr 130px 90px 90px 100px 90px;">
 
       <!-- Project name -->
-      <div style="display:flex; align-items:center; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px; min-width:0;">
         <div style="width:32px; height:32px; border-radius:8px; background:var(--indigo-fog); border:1px solid var(--indigo-line); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--indigo);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
           </svg>
         </div>
-        <div>
-          <div style="font-size:13.5px; font-weight:600; color:var(--text);">{{ project.name }}</div>
-          {% if project.description %}
-            <div style="font-size:11.5px; color:var(--text3);">{{ project.description|truncatechars:40 }}</div>
+        <div style="min-width:0;">
+          <div style="font-size:13.5px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ project.name }}</div>
+          {% if project.members.all %}
+          <div class="adm-member-stack" style="margin-top:3px;">
+            {% for m in project.members.all|slice:":4" %}
+              <div class="adm-member-chip" title="{{ m.username }}">{{ m.username|first|upper }}</div>
+            {% endfor %}
+            {% if project.members.all|length > 4 %}
+              <div class="adm-member-chip">+{{ project.members.all|length|add:"-4" }}</div>
+            {% endif %}
+          </div>
           {% endif %}
         </div>
       </div>
@@ -447,6 +474,15 @@
       <!-- Expense -->
       <div style="font-family:var(--mono); font-size:13px; color:var(--rose); font-weight:500;">
         ৳{{ project.total_expense|floatformat:0 }}
+      </div>
+
+      <!-- Balance -->
+      <div>
+        {% with bal=project.balance %}
+        <span class="adm-balance-pill {% if bal < 0 %}negative{% else %}positive{% endif %}">
+          ৳{{ bal|floatformat:0 }}
+        </span>
+        {% endwith %}
       </div>
 
       <!-- Action -->
