@@ -126,14 +126,17 @@ def changapassword(request):
 
 @login_required(login_url='login')
 def project_list(request):
-    # Admin দেখবে platform-এর সব project; সাধারণ user দেখবে শুধু নিজের owned/joined project
+    # Admin দেখবে platform-এর সব project (owner + members সহ); সাধারণ user দেখবে শুধু নিজের owned/joined project
     if request.user.is_admin:
-        projects = Project.objects.select_related('user').all().order_by('-created_at')
+        projects = Project.objects.select_related('user').prefetch_related('members').all().order_by('-created_at')
     else:
         owned  = request.user.owned_projects.all()
         joined = request.user.joined_projects.all()
         projects = (owned | joined).distinct().order_by('-created_at')
-    return render(request, 'project_list.html', {'projects': projects})
+    return render(request, 'project_list.html', {
+        'projects': projects,
+        'is_admin_view': request.user.is_admin,
+    })
 
 
 @login_required(login_url='login')
