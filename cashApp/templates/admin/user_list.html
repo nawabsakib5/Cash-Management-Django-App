@@ -17,25 +17,22 @@
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       New User
     </a>
-    <a href="{% url 'admin_dashboard' %}" class="btn-ghost">
+    <a href="{% url 'admin_dashboard' %}" class="btn-secondary">
       ← Dashboard
     </a>
   </div>
 </div>
 
-<!-- ── Search Bar ─────────────────────────────────────────────────────────── -->
+<!-- ── Search Bar ── -->
 <form method="get" class="ul-search-bar">
   <div class="ul-search-wrap">
     <svg class="ul-search-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
     </svg>
     <input
-      type="text"
-      name="q"
-      value="{{ query }}"
+      type="text" name="q" value="{{ query }}"
       placeholder="Search by username or email…"
-      class="ul-search-input"
-      autocomplete="off"
+      class="ul-search-input" autocomplete="off"
     >
     {% if query %}
       <a href="{% url 'admin_user_list' %}" class="ul-search-clear">
@@ -48,7 +45,7 @@
   <button type="submit" class="btn-primary" style="padding: 0 20px;">Search</button>
 </form>
 
-<!-- ── User Count ─────────────────────────────────────────────────────────── -->
+<!-- ── User Count ── -->
 <div class="ul-meta">
   {% if query %}
     <span>Showing results for <strong>"{{ query }}"</strong></span>
@@ -57,299 +54,224 @@
   {% endif %}
 </div>
 
-<!-- ── User Table ─────────────────────────────────────────────────────────── -->
+<!-- ── User Table ── -->
 {% if users %}
-<div class="adm-section">
-  <div class="ul-table-wrap">
-    <table class="ul-table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Email</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Joined</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for u in users %}
-        <tr class="ul-row {% if u.is_frozen %}ul-row--frozen{% endif %}">
+<div class="ul-table-wrap">
+  <table class="ul-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Email</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Joined</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr class="ul-row {% if u.is_frozen %}ul-row--frozen{% endif %}">
 
-          <!-- User -->
-          <td>
-            <div class="ul-user-cell">
-              <div class="ul-avatar {% if u.user_type == 'admin' %}ul-avatar--admin{% endif %}">
-                {{ u.username|first|upper }}
-              </div>
-              <div>
-                <div class="ul-username">
-                  {{ u.username }}
-                  {% if u == request.user %}
-                    <span class="ul-you-tag">you</span>
-                  {% endif %}
-                </div>
-                {% if u.full_name %}
-                  <div class="ul-fullname">{{ u.full_name }}</div>
+        <!-- User -->
+        <td>
+          <div class="ul-user-cell">
+            <div class="ul-avatar {% if u.user_type == 'admin' %}ul-avatar--admin{% endif %}">
+              {{ u.username|first|upper }}
+            </div>
+            <div>
+              <div class="ul-username">
+                {{ u.username }}
+                {% if u == request.user %}
+                  <span class="ul-you-tag">you</span>
                 {% endif %}
               </div>
-            </div>
-          </td>
-
-          <!-- Email -->
-          <td>
-            <span class="ul-email">{{ u.email }}</span>
-          </td>
-
-          <!-- Type -->
-          <td>
-            {% if u.user_type == 'admin' %}
-              <span class="ul-badge" style="background:var(--rose-fog); color:var(--rose);">Admin</span>
-            {% else %}
-              <span class="ul-badge" style="background:var(--indigo-fog); color:var(--indigo);">User</span>
-            {% endif %}
-          </td>
-
-          <!-- Status -->
-          <td>
-            {% if u.is_frozen %}
-              <span class="ul-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">
-                <span class="ul-status-dot" style="background:#f59e0b;"></span>
-                Frozen
-              </span>
-            {% else %}
-              <span class="ul-badge" style="background:rgba(16,185,129,0.1); color:var(--emerald);">
-                <span class="ul-status-dot" style="background:var(--emerald);"></span>
-                Active
-              </span>
-            {% endif %}
-          </td>
-
-          <!-- Joined -->
-          <td>
-            <span class="ul-date">{{ u.date_joined|date:"d M Y" }}</span>
-          </td>
-
-          <!-- Actions -->
-          <td>
-            <div class="ul-actions">
-
-              <a href="{% url 'admin_user_activity' u.pk %}" class="ul-action-btn ul-action-activity" title="View Activity">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
-              </a>
-
-              <a href="{% url 'admin_user_edit' u.pk %}" class="ul-action-btn ul-action-edit" title="Edit">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-              </a>
-
-              {% if u != request.user %}
-
-                <a href="{% url 'admin_user_freeze' u.pk %}"
-                   class="ul-action-btn {% if u.is_frozen %}ul-action-unfreeze{% else %}ul-action-freeze{% endif %}"
-                   title="{% if u.is_frozen %}Unfreeze{% else %}Freeze{% endif %}">
-                  {% if u.is_frozen %}
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      <line x1="12" y1="15" x2="12" y2="17"/>
-                    </svg>
-                  {% else %}
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-                    </svg>
-                  {% endif %}
-                </a>
-
-                <a href="{% url 'admin_user_delete' u.pk %}" class="ul-action-btn ul-action-delete" title="Delete">
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    <path d="M10 11v6"/><path d="M14 11v6"/>
-                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                  </svg>
-                </a>
-
-              {% else %}
-                <!-- Can't act on yourself -->
-                <span class="ul-action-btn ul-action-disabled" title="Cannot modify your own account">
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                  </svg>
-                </span>
+              {% if u.full_name %}
+                <div class="ul-fullname">{{ u.full_name }}</div>
               {% endif %}
-
             </div>
-          </td>
+          </div>
+        </td>
 
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        <!-- Email -->
+        <td><span class="ul-email">{{ u.email }}</span></td>
+
+        <!-- Type -->
+        <td>
+          {% if u.user_type == 'admin' %}
+            <span class="ul-badge" style="background:var(--rose-fog); color:var(--rose);">Admin</span>
+          {% else %}
+            <span class="ul-badge" style="background:var(--indigo-fog); color:var(--indigo);">User</span>
+          {% endif %}
+        </td>
+
+        <!-- Status -->
+        <td>
+          {% if u.is_frozen %}
+            <span class="ul-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">
+              <span class="ul-status-dot" style="background:#f59e0b;"></span>Frozen
+            </span>
+          {% else %}
+            <span class="ul-badge" style="background:rgba(16,185,129,0.1); color:var(--emerald);">
+              <span class="ul-status-dot" style="background:var(--emerald);"></span>Active
+            </span>
+          {% endif %}
+        </td>
+
+        <!-- Joined -->
+        <td><span class="ul-date">{{ u.date_joined|date:"d M Y" }}</span></td>
+
+        <!-- Actions -->
+        <td>
+          <div class="ul-actions">
+
+            <!-- Activity -->
+            <a href="{% url 'admin_user_activity' u.pk %}" class="ul-action-btn ul-action-activity" title="View Activity">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+            </a>
+
+            <!-- Sub-categories -->
+            <a href="{% url 'admin_user_subcategory' u.pk %}" class="ul-action-btn ul-action-subcat" title="Manage Sub-categories">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6h16M4 12h8m-8 6h16"/>
+              </svg>
+            </a>
+
+            <!-- Edit -->
+            <a href="{% url 'admin_user_edit' u.pk %}" class="ul-action-btn ul-action-edit" title="Edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </a>
+
+            {% if u != request.user %}
+
+              <!-- Freeze / Unfreeze -->
+              <a href="{% url 'admin_user_freeze' u.pk %}"
+                 class="ul-action-btn {% if u.is_frozen %}ul-action-unfreeze{% else %}ul-action-freeze{% endif %}"
+                 title="{% if u.is_frozen %}Unfreeze{% else %}Freeze{% endif %}">
+                {% if u.is_frozen %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    <line x1="12" y1="15" x2="12" y2="17"/>
+                  </svg>
+                {% else %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                  </svg>
+                {% endif %}
+              </a>
+
+              <!-- Delete -->
+              <a href="{% url 'admin_user_delete' u.pk %}" class="ul-action-btn ul-action-delete" title="Delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </a>
+
+            {% else %}
+              <span class="ul-action-btn ul-action-disabled" title="Cannot modify your own account">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+              </span>
+            {% endif %}
+
+          </div>
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 {% else %}
-  <div class="empty-state">
-    <div class="empty-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-      </svg>
-    </div>
-    <p class="empty-title">
-      {% if query %}No users found for "{{ query }}"{% else %}No users yet{% endif %}
-    </p>
-    <p class="empty-sub">
-      {% if query %}Try a different search term{% else %}Create the first user to get started{% endif %}
-    </p>
-    {% if not query %}
-      <a href="{% url 'admin_user_create' %}" class="btn-primary" style="margin-top:20px; display:inline-flex;">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Create User
-      </a>
-    {% endif %}
+<div class="empty-state">
+  <div class="empty-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+    </svg>
   </div>
+  <p class="empty-title">{% if query %}No users found for "{{ query }}"{% else %}No users yet{% endif %}</p>
+  <p class="empty-sub">{% if query %}Try a different search term{% else %}Create the first user to get started{% endif %}</p>
+  {% if not query %}
+    <a href="{% url 'admin_user_create' %}" class="btn-primary" style="margin-top:20px; display:inline-flex;">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Create User
+    </a>
+  {% endif %}
+</div>
 {% endif %}
 
 {% endblock %}
 
-
 {% block extra_css %}
 <style>
-
-/* ── Search Bar ───────────────────────────────────────────────────────────── */
-.ul-search-bar {
-  display: flex; gap: 10px; align-items: center;
-  margin-bottom: 12px;
-}
-.ul-search-wrap {
-  position: relative; flex: 1;
-}
-.ul-search-icon {
-  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-  width: 15px; height: 15px; stroke: var(--text3); pointer-events: none;
-}
-.ul-search-input {
-  width: 100%; padding: 10px 40px 10px 38px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-xl); color: var(--text);
-  font-size: 13.5px; outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-.ul-search-input:focus {
-  border-color: var(--indigo);
-  box-shadow: 0 0 0 3px var(--indigo-fog);
-}
+.ul-search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.ul-search-wrap { position: relative; flex: 1; }
+.ul-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text3); pointer-events: none; }
+.ul-search-input { width: 100%; padding: 10px 40px 10px 38px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); color: var(--text); font-size: 13.5px; outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
+.ul-search-input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-fog); }
 .ul-search-input::placeholder { color: var(--text3); }
-.ul-search-clear {
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
-  color: var(--text3); transition: color var(--transition);
-}
+.ul-search-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; color: var(--text3); transition: color var(--transition); }
 .ul-search-clear svg { width: 13px; height: 13px; stroke: currentColor; }
 .ul-search-clear:hover { color: var(--text); }
 
-/* ── Meta ─────────────────────────────────────────────────────────────────── */
-.ul-meta {
-  font-size: 12.5px; color: var(--text3);
-  margin-bottom: 16px; padding-left: 2px;
-}
+.ul-meta { font-size: 12.5px; color: var(--text3); margin-bottom: 16px; padding-left: 2px; }
 .ul-meta strong { color: var(--text); }
 
-/* ── Table ────────────────────────────────────────────────────────────────── */
-.ul-table-wrap { overflow-x: auto; }
-.ul-table {
-  width: 100%; border-collapse: collapse;
-}
-.ul-table thead tr {
-  border-bottom: 1px solid var(--border);
-}
-.ul-table thead th {
-  padding: 12px 20px;
-  font-size: 10.5px; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text3); text-align: left; white-space: nowrap;
-}
-.ul-row {
-  border-bottom: 1px solid var(--border);
-  transition: background var(--transition);
-}
+.ul-table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); }
+.ul-table { width: 100%; border-collapse: collapse; }
+.ul-table thead tr { border-bottom: 1px solid var(--border); }
+.ul-table thead th { padding: 12px 20px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); text-align: left; white-space: nowrap; background: var(--surface2); }
+.ul-row { border-bottom: 1px solid var(--border); transition: background var(--transition); }
 .ul-row:last-child { border-bottom: none; }
-.ul-row:hover { background: var(--surface-hover, rgba(255,255,255,0.02)); }
+.ul-row:hover { background: rgba(255,255,255,0.02); }
 .ul-row--frozen { opacity: 0.65; }
 .ul-row td { padding: 14px 20px; vertical-align: middle; }
 
-/* ── User Cell ────────────────────────────────────────────────────────────── */
 .ul-user-cell { display: flex; align-items: center; gap: 10px; }
-.ul-avatar {
-  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; color: var(--indigo);
-}
-.ul-avatar--admin {
-  background: var(--rose-fog); border-color: rgba(244,63,94,0.2); color: var(--rose);
-}
-.ul-username {
-  font-size: 13.5px; font-weight: 600; color: var(--text);
-  display: flex; align-items: center; gap: 6px;
-}
+.ul-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--indigo); }
+.ul-avatar--admin { background: var(--rose-fog); border-color: rgba(244,63,94,0.2); color: var(--rose); }
+.ul-username { font-size: 13.5px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
 .ul-fullname { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
-.ul-you-tag {
-  font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em;
-  background: var(--indigo-fog); color: var(--indigo);
-  border: 1px solid var(--indigo-line);
-  padding: 1px 6px; border-radius: 99px; text-transform: uppercase;
-}
+.ul-you-tag { font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; background: var(--indigo-fog); color: var(--indigo); border: 1px solid var(--indigo-line); padding: 1px 6px; border-radius: 99px; text-transform: uppercase; }
 
-/* ── Misc Cells ───────────────────────────────────────────────────────────── */
 .ul-email { font-size: 12.5px; color: var(--text3); font-family: var(--mono); }
 .ul-date  { font-size: 12px; color: var(--text3); font-family: var(--mono); white-space: nowrap; }
+.ul-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; }
+.ul-status-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 
-.ul-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap;
-}
-.ul-status-dot {
-  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
-}
-
-/* ── Actions ──────────────────────────────────────────────────────────────── */
 .ul-actions { display: flex; align-items: center; gap: 6px; }
-.ul-action-btn {
-  width: 30px; height: 30px; border-radius: var(--radius);
-  display: flex; align-items: center; justify-content: center;
-  text-decoration: none; border: 1px solid var(--border);
-  background: var(--surface); transition: all var(--transition); flex-shrink: 0;
-}
+.ul-action-btn { width: 30px; height: 30px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--border); background: var(--surface); transition: all var(--transition); flex-shrink: 0; }
 .ul-action-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
 
 .ul-action-activity { color: var(--text3); }
-.ul-action-edit    { color: var(--text3); }
-.ul-action-freeze  { color: var(--text3); }
-.ul-action-unfreeze{ color: #d97706; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
-.ul-action-delete  { color: var(--text3); }
-.ul-action-disabled{ color: var(--border2, rgba(255,255,255,0.1)); cursor: not-allowed; }
+.ul-action-subcat   { color: var(--text3); }
+.ul-action-edit     { color: var(--text3); }
+.ul-action-freeze   { color: var(--text3); }
+.ul-action-unfreeze { color: #d97706; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
+.ul-action-delete   { color: var(--text3); }
+.ul-action-disabled { color: var(--border2, rgba(255,255,255,0.1)); cursor: not-allowed; }
 
-.ul-action-activity:hover{ color: #818cf8; border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.08); }
-.ul-action-edit:hover    { color: var(--indigo); border-color: var(--indigo-line); background: var(--indigo-fog); }
-.ul-action-freeze:hover  { color: #d97706; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
-.ul-action-unfreeze:hover{ color: var(--emerald); border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.08); }
-.ul-action-delete:hover  { color: var(--rose); border-color: rgba(244,63,94,0.3); background: var(--rose-fog); }
+.ul-action-activity:hover { color: #818cf8; border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.08); }
+.ul-action-subcat:hover   { color: var(--emerald); border-color: rgba(16,185,129,0.3); background: var(--emerald-fog); }
+.ul-action-edit:hover     { color: var(--indigo); border-color: var(--indigo-line); background: var(--indigo-fog); }
+.ul-action-freeze:hover   { color: #d97706; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+.ul-action-unfreeze:hover { color: var(--emerald); border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.08); }
+.ul-action-delete:hover   { color: var(--rose); border-color: rgba(244,63,94,0.3); background: var(--rose-fog); }
 
-/* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .ul-table thead th:nth-child(2),
-  .ul-table td:nth-child(2),
-  .ul-table thead th:nth-child(5),
-  .ul-table td:nth-child(5) { display: none; }
+  .ul-table thead th:nth-child(2), .ul-table td:nth-child(2),
+  .ul-table thead th:nth-child(5), .ul-table td:nth-child(5) { display: none; }
 }
-
 </style>
 {% endblock %}

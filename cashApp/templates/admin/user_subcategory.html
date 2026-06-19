@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% block title %}{{ target_user.username }} — Sub-categories — CashManager{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+
+.usc-root { display: flex; flex-direction: column; gap: 24px; }
+
+.usc-back {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 500; color: var(--text3);
+  text-decoration: none; transition: color var(--transition); width: fit-content;
+}
+.usc-back:hover { color: var(--text); }
+.usc-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+/* ── Header ── */
+.usc-header {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding-bottom: 22px; border-bottom: 1px solid var(--border); position: relative;
+}
+.usc-header::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; width: 80px; height: 1px;
+  background: linear-gradient(90deg, var(--indigo), transparent);
+}
+.usc-avatar {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: var(--indigo);
+  font-family: var(--mono); flex-shrink: 0;
+}
+.usc-header-info { flex: 1; }
+.usc-eyebrow {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--rose); display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
+}
+.usc-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rose); box-shadow: 0 0 6px rgba(244,63,94,0.7); }
+.usc-title { font-size: 22px; font-weight: 700; color: var(--text); }
+.usc-sub { font-size: 13px; color: var(--text3); margin-top: 3px; }
+
+/* ── Messages ── */
+.usc-messages { display: flex; flex-direction: column; gap: 8px; }
+.usc-msg {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  border-radius: var(--radius-lg); font-size: 13px; font-weight: 500;
+}
+.usc-msg.success { background: var(--emerald-fog); border: 1px solid rgba(16,185,129,0.2); color: var(--emerald); }
+.usc-msg.error   { background: var(--rose-fog);    border: 1px solid rgba(244,63,94,0.2);  color: var(--rose); }
+.usc-msg svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; }
+
+/* ── Grid ── */
+.usc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .usc-grid { grid-template-columns: 1fr; } }
+
+/* ── Card ── */
+.usc-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); overflow: hidden;
+}
+.usc-card-head {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface), rgba(99,102,241,0.03));
+  display: flex; align-items: center; gap: 10px;
+}
+.usc-card-head-icon {
+  width: 32px; height: 32px; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.usc-card-head-icon svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.usc-card-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.usc-card-sub   { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
+.usc-card-body  { padding: 18px 20px; }
+
+/* ── Assigned list ── */
+.usc-assigned-list { display: flex; flex-direction: column; gap: 8px; }
+.usc-assigned-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 10px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.usc-assigned-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.usc-assigned-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.usc-assigned-cat  { font-size: 11px; color: var(--text3); }
+.usc-unassign-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: var(--radius);
+  border: 1px solid rgba(244,63,94,0.25); background: var(--rose-fog);
+  cursor: pointer; transition: all var(--transition); flex-shrink: 0;
+}
+.usc-unassign-btn svg { width: 11px; height: 11px; stroke: var(--rose); fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.usc-unassign-btn:hover { background: var(--rose); }
+.usc-unassign-btn:hover svg { stroke: #fff; }
+
+.usc-empty-assign {
+  padding: 28px 16px; text-align: center;
+  font-size: 13px; color: var(--text3);
+}
+
+/* ── Form sections ── */
+.usc-form-section { margin-bottom: 22px; }
+.usc-form-section:last-child { margin-bottom: 0; }
+.usc-section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.usc-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* Checkbox list */
+.usc-checkbox-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; padding-right: 4px; }
+.usc-checkbox-list::-webkit-scrollbar { width: 4px; }
+.usc-checkbox-list::-webkit-scrollbar-track { background: transparent; }
+.usc-checkbox-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.usc-checkbox-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-radius: var(--radius); border: 1px solid transparent;
+  cursor: pointer; transition: all var(--transition);
+}
+.usc-checkbox-item:hover { background: var(--surface2); border-color: var(--border); }
+.usc-checkbox-item input[type=checkbox] { accent-color: var(--indigo); width: 14px; height: 14px; flex-shrink: 0; }
+.usc-checkbox-label { display: flex; flex-direction: column; gap: 1px; }
+.usc-checkbox-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.usc-checkbox-cat  { font-size: 11px; color: var(--text3); }
+
+/* Form inputs */
+.usc-form-group { margin-bottom: 14px; }
+.usc-label {
+  display: block; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 7px;
+}
+.usc-input, .usc-select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 10px 13px;
+  font-size: 13.5px; font-family: var(--font); color: var(--text);
+  outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+}
+.usc-input:focus, .usc-select:focus {
+  border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-fog);
+}
+.usc-input::placeholder { color: var(--text3); }
+
+/* Submit buttons */
+.usc-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: var(--font);
+  border: none; cursor: pointer; transition: all var(--transition); width: 100%; justify-content: center;
+}
+.usc-btn-primary { background: var(--indigo); color: #fff; box-shadow: 0 2px 12px rgba(99,102,241,0.35); }
+.usc-btn-primary:hover { background: var(--indigo-mid); box-shadow: 0 4px 20px rgba(99,102,241,0.45); }
+.usc-btn-emerald { background: var(--emerald); color: #0f0f13; box-shadow: 0 2px 12px rgba(16,185,129,0.3); }
+.usc-btn-emerald:hover { background: #059669; }
+.usc-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+/* Category group in checkbox list */
+.usc-cat-group-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--indigo);
+  padding: 6px 10px 4px; margin-top: 4px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="usc-root">
+
+  <a href="{% url 'admin_user_list' %}" class="usc-back">
+    <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Users
+  </a>
+
+  <!-- ── Header ── -->
+  <div class="usc-header">
+    <div class="usc-avatar">{{ target_user.username|first|upper }}</div>
+    <div class="usc-header-info">
+      <div class="usc-eyebrow"><span class="usc-eyebrow-dot"></span>Sub-category Management</div>
+      <div class="usc-title">{{ target_user.username }}</div>
+      <div class="usc-sub">Assign or remove sub-categories for this user</div>
+    </div>
+    <a href="{% url 'admin_user_activity' target_user.pk %}" class="btn-ghost" style="font-size:13px;">
+      View Activity →
+    </a>
+  </div>
+
+  <!-- ── Django Messages ── -->
+  {% if messages %}
+  <div class="usc-messages">
+    {% for msg in messages %}
+    <div class="usc-msg {% if 'error' in msg.tags %}error{% else %}success{% endif %}">
+      {% if 'error' in msg.tags %}
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {% else %}
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      {% endif %}
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Main Grid ── -->
+  <div class="usc-grid">
+
+    <!-- LEFT: Currently Assigned -->
+    <div class="usc-card">
+      <div class="usc-card-head">
+        <div class="usc-card-head-icon" style="background:var(--emerald-fog); border:1px solid rgba(16,185,129,0.2);">
+          <svg viewBox="0 0 24 24" stroke="var(--emerald)"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div class="usc-card-title">Assigned Sub-categories</div>
+          <div class="usc-card-sub">
+            {{ assigned_subs|length }} sub-categor{{ assigned_subs|length|pluralize:"y,ies" }} assigned
+          </div>
+        </div>
+      </div>
+      <div class="usc-card-body">
+        {% if assigned_subs %}
+          <div class="usc-assigned-list">
+            {% for sub in assigned_subs %}
+            <div class="usc-assigned-item">
+              <div class="usc-assigned-info">
+                <span class="usc-assigned-name">{{ sub.name }}</span>
+                <span class="usc-assigned-cat">{{ sub.category.name }}</span>
+              </div>
+              <form method="post" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="unassign_sub" value="{{ sub.pk }}">
+                <button type="submit" class="usc-unassign-btn" title="Remove">
+                  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="usc-empty-assign">
+            <svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:var(--border2);fill:none;stroke-width:1.5;stroke-linecap:round;margin:0 auto 10px;display:block;">
+              <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            No sub-categories assigned yet.<br>Use the form on the right to add some.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: Assign Form -->
+    <div class="usc-card">
+      <div class="usc-card-head">
+        <div class="usc-card-head-icon" style="background:var(--indigo-fog); border:1px solid var(--indigo-line);">
+          <svg viewBox="0 0 24 24" stroke="var(--indigo)"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div>
+          <div class="usc-card-title">Assign Sub-categories</div>
+          <div class="usc-card-sub">Select existing or create new</div>
+        </div>
+      </div>
+      <div class="usc-card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Section 1: Existing subcategories -->
+          <div class="usc-form-section">
+            <div class="usc-section-title">Assign Existing</div>
+            <div class="usc-checkbox-list">
+              {% for category in all_categories %}
+                {% if category.subcategories.all %}
+                  <div class="usc-cat-group-label">{{ category.name }}</div>
+                  {% for sub in category.subcategories.all %}
+                    <label class="usc-checkbox-item">
+                      <input
+                        type="checkbox"
+                        name="subcategories"
+                        value="{{ sub.pk }}"
+                        {% if sub in assigned_subs %}checked{% endif %}
+                      >
+                      <div class="usc-checkbox-label">
+                        <span class="usc-checkbox-name">{{ sub.name }}</span>
+                        {% if sub.users.exists %}
+                          <span class="usc-checkbox-cat">Private ({{ sub.users.count }} user{{ sub.users.count|pluralize }})</span>
+                        {% else %}
+                          <span class="usc-checkbox-cat">Global</span>
+                        {% endif %}
+                      </div>
+                    </label>
+                  {% endfor %}
+                {% endif %}
+              {% empty %}
+                <div style="font-size:13px; color:var(--text3); padding:12px 0;">
+                  No sub-categories exist yet. Create one below.
+                </div>
+              {% endfor %}
+            </div>
+            <button type="submit" class="usc-btn usc-btn-primary" style="margin-top:14px;">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Assign Selected
+            </button>
+          </div>
+
+          <!-- Section 2: Create new subcategory -->
+          <div class="usc-form-section">
+            <div class="usc-section-title">Create & Assign New</div>
+            <div class="usc-form-group">
+              <label class="usc-label">Sub-category Name</label>
+              <input
+                type="text"
+                name="new_sub_category"
+                class="usc-input"
+                placeholder="e.g. Bonus, Taxi, Lunch…"
+                value="{{ form.new_sub_category.value|default:'' }}"
+              >
+            </div>
+            <div class="usc-form-group">
+              <label class="usc-label">Category</label>
+              <select name="new_sub_category_cat" class="usc-select">
+                <option value="">Select category</option>
+                {% for cat in all_categories %}
+                  <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% if form.errors %}
+              <div class="usc-msg error" style="margin-bottom:12px;">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+            <button type="submit" class="usc-btn usc-btn-emerald">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Create & Assign
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

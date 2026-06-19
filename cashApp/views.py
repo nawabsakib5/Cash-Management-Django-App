@@ -126,7 +126,6 @@ def changapassword(request):
 
 @login_required(login_url='login')
 def project_list(request):
-    # Admin দেখবে platform-এর সব project (owner + members সহ); সাধারণ user দেখবে শুধু নিজের owned/joined project
     if request.user.is_admin:
         projects = Project.objects.select_related('user').prefetch_related('members').all().order_by('-created_at')
     else:
@@ -160,7 +159,6 @@ def project_create(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    # Admin: automatic full access, কোনো member check ছাড়াই
     is_admin_view = request.user.is_admin
     is_owner      = request.user == project.user
     is_member     = request.user in project.members.all()
@@ -254,7 +252,6 @@ def project_delete(request, pk):
     return render(request, 'project_confirm_delete.html', {'project': project})
 
 
-# ─── Project Member Views ──────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
@@ -302,7 +299,6 @@ def project_member_remove(request, pk, user_id):
 def transaction_create(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    # Admin: কোনো membership check ছাড়াই contribute করতে পারবে
     is_admin_view = request.user.is_admin
     if not is_admin_view and request.user != project.user and request.user not in project.members.all():
         messages.error(request, "You don't have permission to add transactions to this project.")
@@ -379,7 +375,6 @@ def transaction_delete(request, pk):
     return render(request, 'transaction_confirm_delete.html', {'transaction': transaction})
 
 
-# ─── Category Views ────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 @not_frozen
@@ -507,7 +502,6 @@ def admin_dashboard(request):
 
     all_projects = Project.objects.select_related('user').prefetch_related('members').order_by('-created_at')
 
-    # প্রতিটা project-এ সংক্ষিপ্ত totals attach করা হচ্ছে, যাতে template-এ আলাদা query না লাগে
     projects_with_totals = []
     for p in all_projects:
         projects_with_totals.append({
@@ -634,7 +628,6 @@ def admin_user_freeze(request, user_id):
 
 @admin_required
 def admin_user_activity(request, user_id):
-    """Specific একজন user এর সব activity, projects, transactions দেখাবে।"""
     target_user  = get_object_or_404(CustomUser, pk=user_id)
     logs         = AuditLog.objects.filter(actor=target_user).order_by('-timestamp')
     transactions = Transaction.objects.filter(
@@ -719,3 +712,62 @@ def admin_audit_log(request):
         'date_filter':    date_filter,
     }
     return render(request, 'admin/audit_log.html', context)
+
+
+@admin_required
+def admin_user_subcategory(request, user_id):
+    from .forms import UserSubCategoryForm
+    target_user = get_object_or_404(CustomUser, pk=user_id, user_type='user')
+
+    assigned_subs  = SubCategory.objects.filter(users=target_user).select_related('category')
+    all_categories = Category.objects.prefetch_related('subcategories').all()
+
+    if request.method == 'POST':
+
+        # ── Unassign action ──
+        if 'unassign_sub' in request.POST:
+            sub_id = request.POST.get('unassign_sub')
+            try:
+                sub = SubCategory.objects.get(pk=sub_id)
+                sub.users.remove(target_user)
+                messages.success(request, f"'{sub.name}' removed from {target_user.username}.")
+            except SubCategory.DoesNotExist:
+                messages.error(request, "Sub-category not found.")
+            return redirect('admin_user_subcategory', user_id=user_id)
+
+        form = UserSubCategoryForm(request.POST)
+        if form.is_valid():
+            # ── Existing subcategory assign ──
+            selected_subs = form.cleaned_data.get('subcategories')
+            if selected_subs:
+                for sub in selected_subs:
+                    sub.users.add(target_user)
+                count = selected_subs.count()
+                messages.success(
+                    request,
+                    f"{count} sub-categor{'y' if count == 1 else 'ies'} assigned to {target_user.username}."
+                )
+
+            new_name = form.cleaned_data.get('new_sub_category', '').strip()
+            new_cat  = form.cleaned_data.get('new_sub_category_cat')
+            if new_name and new_cat:
+                sub, created = SubCategory.objects.get_or_create(
+                    category=new_cat,
+                    name=new_name,
+                )
+                sub.users.add(target_user)
+                if created:
+                    messages.success(request, f"New sub-category '{new_name}' created and assigned to {target_user.username}.")
+                else:
+                    messages.success(request, f"Existing sub-category '{new_name}' assigned to {target_user.username}.")
+
+            return redirect('admin_user_subcategory', user_id=user_id)
+    else:
+        form = UserSubCategoryForm()
+
+    return render(request, 'admin/user_subcategory.html', {
+        'target_user':    target_user,
+        'form':           form,
+        'assigned_subs':  assigned_subs,
+        'all_categories': all_categories,
+    })

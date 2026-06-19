@@ -1,4 +1,3 @@
-
 from django import forms
 from django.db import models
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -63,13 +62,52 @@ class SubCategoryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset    = Category.objects.all()
         self.fields['category'].empty_label = 'Select a category'
-
-        
         self.fields['users'].queryset  = CustomUser.objects.filter(
             user_type='user'
         ).order_by('username')
         self.fields['users'].required  = False
         self.fields['users'].label     = 'Restrict to users (optional)'
+
+
+# ── নতুন: একটি user-এর জন্য subcategory assign করার form ──────────────
+class UserSubCategoryForm(forms.Form):
+    """
+    Admin একজন specific user-কে existing subcategory assign করতে পারবে,
+    অথবা নতুন subcategory বানিয়ে সরাসরি assign করতে পারবে।
+    """
+    # Existing subcategory assign
+    subcategories = forms.ModelMultipleChoiceField(
+        queryset=SubCategory.objects.all(),
+        required=False,
+        label='Assign Existing Sub-categories',
+        widget=forms.CheckboxSelectMultiple(),
+    )
+
+    # নতুন subcategory বানিয়ে assign
+    new_sub_category   = forms.CharField(
+        max_length=100,
+        required=False,
+        label='New Sub-category Name',
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. Bonus, Taxi…'}),
+    )
+    new_sub_category_cat = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        required=False,
+        label='Category for new sub-category',
+        empty_label='Select category',
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        new_name = cleaned.get('new_sub_category', '').strip()
+        new_cat  = cleaned.get('new_sub_category_cat')
+
+        # নতুন নাম দিলে category বাধ্যতামূলক
+        if new_name and not new_cat:
+            raise forms.ValidationError(
+                "Please select a category for the new sub-category."
+            )
+        return cleaned
 
 
 class TransactionForm(forms.ModelForm):
@@ -81,7 +119,6 @@ class TransactionForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
@@ -93,7 +130,6 @@ class TransactionForm(forms.ModelForm):
         self.fields['sub_category'].empty_label = 'Select sub-category (optional)'
         self.fields['sub_category'].required    = False
 
-        
         if self.user is not None:
             visible_subs = SubCategory.objects.filter(
                 models.Q(users__isnull=True) | models.Q(users=self.user)
@@ -101,7 +137,6 @@ class TransactionForm(forms.ModelForm):
         else:
             visible_subs = SubCategory.objects.filter(users__isnull=True)
 
-        
         if 'category' in self.data:
             try:
                 category_id = int(self.data.get('category'))
@@ -110,7 +145,6 @@ class TransactionForm(forms.ModelForm):
                 )
             except (ValueError, TypeError):
                 pass
-        
         elif self.instance.pk and self.instance.category:
             self.fields['sub_category'].queryset = visible_subs.filter(
                 category=self.instance.category
@@ -121,7 +155,6 @@ class TransactionForm(forms.ModelForm):
         if amount is not None and amount <= 0:
             raise forms.ValidationError("Amount must be greater than 0.")
         return amount
-
 
 
 class AdminUserCreateForm(forms.ModelForm):
