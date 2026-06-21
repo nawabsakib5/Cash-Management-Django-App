@@ -523,6 +523,8 @@ def admin_dashboard(request):
         })
 
     context = {
+        'total_income_all':  sum(p.total_income() for p in all_projects),
+        'total_expense_all': sum(p.total_expense() for p in all_projects),
         'total_users':        CustomUser.objects.filter(user_type='user').count(),
         'frozen_users':       CustomUser.objects.filter(is_frozen=True).count(),
         'total_projects':     Project.objects.count(),
