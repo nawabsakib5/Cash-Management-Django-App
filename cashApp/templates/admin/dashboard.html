@@ -4,576 +4,953 @@
 
 {% block extra_css %}
 <style>
+/* ── Reset main-wrapper for full-width sidebar layout ── */
+.main-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+  animation: none !important;
+}
 
-.adm-root { display: flex; flex-direction: column; gap: 28px; }
+/* ── Root layout ── */
+.adm-layout {
+  display: flex;
+  min-height: calc(100vh - 60px);
+}
 
-/* ── Header ── */
-.adm-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  flex-wrap: wrap; gap: 16px; padding-bottom: 24px;
-  border-bottom: 1px solid var(--border); position: relative;
+/* ══ SIDEBAR ══════════════════════════════════════════ */
+.adm-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  position: sticky;
+  top: 60px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
 }
-.adm-header::after {
-  content: ''; position: absolute; bottom: -1px; left: 0;
-  width: 80px; height: 1px;
-  background: linear-gradient(90deg, var(--indigo), transparent);
+
+.adm-sidebar-section { padding: 0 16px; margin-bottom: 6px; }
+.adm-sidebar-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text3); padding: 12px 8px 6px;
 }
-.adm-eyebrow {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--rose); margin-bottom: 8px;
+
+.adm-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius);
+  font-size: 13.5px; font-weight: 500; color: var(--text3);
+  text-decoration: none; transition: all var(--transition);
+  position: relative; margin-bottom: 2px;
 }
-.adm-eyebrow-dot {
-  width: 5px; height: 5px; border-radius: 50%; background: var(--rose);
-  box-shadow: 0 0 8px rgba(244,63,94,0.8);
-  animation: pulse-dot 2s ease-in-out infinite;
+.adm-nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.adm-nav-item:hover { color: var(--text2); background: var(--surface2); }
+.adm-nav-item.active { color: var(--indigo); background: var(--indigo-fog); font-weight: 600; }
+.adm-nav-item.active::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--indigo); border-radius: 0 3px 3px 0; }
+.adm-nav-badge { margin-left: auto; background: var(--rose); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; min-width: 18px; text-align: center; }
+
+.adm-sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 12px 16px; }
+
+/* User card at bottom of sidebar (Dasher-style) */
+.adm-sidebar-foot {
+  margin-top: auto; padding: 14px 16px 0; border-top: 1px solid var(--border);
 }
-@keyframes pulse-dot {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.6; transform: scale(0.8); }
+.adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; }
+.adm-sidebar-user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--indigo); font-family: var(--mono);
+  flex-shrink: 0; text-transform: uppercase;
 }
-.adm-title {
-  font-size: 30px; font-weight: 700; color: var(--text);
-  letter-spacing: -0.6px; line-height: 1.1;
+.adm-sidebar-user-name { font-size: 12.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.adm-sidebar-user-role { font-size: 11px; color: var(--text3); }
+
+/* ══ MAIN CONTENT ══════════════════════════════════════ */
+.adm-main { flex: 1; padding: 28px 32px; overflow-x: hidden; min-width: 0; }
+
+/* ── Hero greeting (Dasher-style) ── */
+.adm-hero {
+  background: linear-gradient(120deg, var(--indigo-fog), var(--surface) 60%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  margin-bottom: 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
 }
-.adm-title span {
-  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #a78bfa 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.adm-subtitle { font-size: 13.5px; color: var(--text3); margin-top: 5px; }
-.adm-header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.adm-hero-greeting { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; margin-bottom: 4px; }
+.adm-hero-sub { font-size: 13px; color: var(--text3); max-width: 480px; }
+.adm-hero-icon { width: 22px; display: inline-block; }
+
+/* ── Page header ── */
+.adm-page-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+.adm-breadcrumb { font-size: 12px; color: var(--text3); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.adm-breadcrumb svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; stroke-width: 2; }
+.adm-page-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
+.adm-page-actions { display: flex; gap: 10px; align-items: center; }
 
 .adm-btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 20px; border-radius: var(--radius);
-  font-size: 13.5px; font-weight: 600; font-family: var(--font);
-  color: #fff; background: var(--indigo); border: 1px solid rgba(99,102,241,0.6);
+  padding: 9px 18px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: var(--font);
+  color: #fff; background: var(--indigo);
+  border: 1px solid rgba(99,102,241,0.6);
   text-decoration: none; cursor: pointer;
-  box-shadow: 0 2px 16px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
+  box-shadow: 0 2px 12px rgba(99,102,241,0.35);
   transition: all var(--transition);
 }
-.adm-btn-primary:hover {
-  background: var(--indigo-mid);
-  box-shadow: 0 4px 24px rgba(99,102,241,0.5);
-  transform: translateY(-1px);
-}
-.adm-btn-primary svg {
-  width: 14px; height: 14px; stroke: currentColor; fill: none;
-  stroke-width: 2.5; stroke-linecap: round;
-}
+.adm-btn-primary:hover { background: var(--indigo-mid); transform: translateY(-1px); }
+.adm-btn-primary svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 
 .adm-btn-ghost {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 18px; border-radius: var(--radius);
-  font-size: 13.5px; font-weight: 500; font-family: var(--font);
-  color: var(--text2); background: var(--surface2); border: 1px solid var(--border2);
-  text-decoration: none; cursor: pointer; transition: all var(--transition);
-}
-.adm-btn-ghost:hover {
-  background: var(--surface3); border-color: var(--border3); color: var(--text);
-}
-.adm-btn-ghost svg {
-  width: 14px; height: 14px; stroke: currentColor; fill: none;
-  stroke-width: 2; stroke-linecap: round;
-}
-
-.adm-pending-pill {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 20px; height: 20px; padding: 0 6px;
-  background: var(--rose); color: #fff; font-size: 10px; font-weight: 700;
-  border-radius: 99px; box-shadow: 0 0 8px rgba(244,63,94,0.5);
-}
-
-/* ── Stats ── */
-.adm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-@media (max-width: 900px) { .adm-stats { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px)  { .adm-stats { grid-template-columns: 1fr; } }
-
-.adm-stat {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-xl); padding: 22px 20px 18px;
-  display: flex; flex-direction: column; gap: 14px;
-  position: relative; overflow: hidden; text-decoration: none;
-  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-}
-.adm-stat:hover {
-  border-color: var(--border2); transform: translateY(-3px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-.adm-stat-glow {
-  position: absolute; top: 0; right: 0;
-  width: 100px; height: 100px;
-  border-radius: 0 var(--radius-xl) 0 100%;
-  opacity: 0.6; pointer-events: none;
-}
-.adm-stat-top-bar {
-  position: absolute; top: 0; left: 24px; right: 24px;
-  height: 2px; border-radius: 0 0 4px 4px;
-  opacity: 0; transition: opacity var(--transition);
-}
-.adm-stat:hover .adm-stat-top-bar { opacity: 1; }
-.adm-stat-icon {
-  width: 40px; height: 40px; border-radius: var(--radius); border: 1px solid;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.adm-stat-icon svg {
-  width: 18px; height: 18px; fill: none;
-  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-}
-.adm-stat-body   { display: flex; flex-direction: column; gap: 3px; }
-.adm-stat-num    { font-family: var(--mono); font-size: 32px; font-weight: 700; line-height: 1; letter-spacing: -1px; }
-.adm-stat-label  { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text3); }
-.adm-stat-link   {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 500; text-decoration: none;
-  transition: gap var(--transition), opacity var(--transition);
-  opacity: 0.6; margin-top: auto;
-}
-.adm-stat-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
-.adm-stat:hover .adm-stat-link { gap: 8px; opacity: 1; }
-
-.adm-stat--indigo .adm-stat-glow    { background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%); }
-.adm-stat--indigo .adm-stat-top-bar { background: linear-gradient(90deg, var(--indigo), #818cf8); }
-.adm-stat--indigo .adm-stat-icon    { background: var(--indigo-fog); border-color: var(--indigo-line); }
-.adm-stat--indigo .adm-stat-icon svg{ stroke: var(--indigo); }
-.adm-stat--indigo .adm-stat-num     { color: var(--indigo); }
-.adm-stat--indigo .adm-stat-link    { color: var(--indigo); }
-
-.adm-stat--amber .adm-stat-glow    { background: radial-gradient(circle, rgba(245,158,11,0.12), transparent 70%); }
-.adm-stat--amber .adm-stat-top-bar { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
-.adm-stat--amber .adm-stat-icon    { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
-.adm-stat--amber .adm-stat-icon svg{ stroke: #f59e0b; }
-.adm-stat--amber .adm-stat-num     { color: #f59e0b; }
-.adm-stat--amber .adm-stat-link    { color: #f59e0b; }
-
-.adm-stat--emerald .adm-stat-glow    { background: radial-gradient(circle, rgba(16,185,129,0.12), transparent 70%); }
-.adm-stat--emerald .adm-stat-top-bar { background: linear-gradient(90deg, var(--emerald), #34d399); }
-.adm-stat--emerald .adm-stat-icon    { background: var(--emerald-fog); border-color: rgba(16,185,129,0.2); }
-.adm-stat--emerald .adm-stat-icon svg{ stroke: var(--emerald); }
-.adm-stat--emerald .adm-stat-num     { color: var(--emerald); }
-.adm-stat--emerald .adm-stat-link    { color: var(--emerald); }
-
-.adm-stat--rose .adm-stat-glow    { background: radial-gradient(circle, rgba(244,63,94,0.15), transparent 70%); }
-.adm-stat--rose .adm-stat-top-bar { background: linear-gradient(90deg, var(--rose), #fb7185); }
-.adm-stat--rose .adm-stat-icon    { background: var(--rose-fog); border-color: rgba(244,63,94,0.2); }
-.adm-stat--rose .adm-stat-icon svg{ stroke: var(--rose); }
-.adm-stat--rose .adm-stat-num     { color: var(--rose); }
-.adm-stat--rose .adm-stat-link    { color: var(--rose); }
-.adm-stat--rose                   { border-color: rgba(244,63,94,0.18); }
-
-/* ── Quick Actions ── */
-.adm-actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-@media (max-width: 700px) { .adm-actions-row { grid-template-columns: repeat(2, 1fr); } }
-
-.adm-action-card {
-  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); text-decoration: none;
+  padding: 9px 16px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 500; font-family: var(--font);
+  color: var(--text2); background: var(--surface);
+  border: 1px solid var(--border2);
+  text-decoration: none; cursor: pointer;
   transition: all var(--transition);
 }
-.adm-action-card:hover {
-  border-color: var(--border2); background: var(--surface2);
-  transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-.adm-action-icon {
-  width: 36px; height: 36px; border-radius: var(--radius); border: 1px solid;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.adm-action-icon svg { width: 15px; height: 15px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.adm-action-label { font-size: 13px; font-weight: 600; color: var(--text); }
-.adm-action-sub   { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.adm-btn-ghost:hover { background: var(--surface2); border-color: var(--border3); color: var(--text); }
+.adm-btn-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 
-/* ── Activity / Table Panel ── */
-.adm-activity {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-xl); overflow: hidden;
+/* ── Section title ── */
+.adm-section-head {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 14px; margin-top: 28px;
+  display: flex; align-items: center; gap: 10px;
 }
-.adm-activity-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(99,102,241,0.03) 100%);
-}
-.adm-activity-title {
-  font-size: 14px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 9px;
-}
-.adm-activity-title-dot {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--indigo);
-  box-shadow: 0 0 10px rgba(99,102,241,0.7);
-}
-.adm-activity-sub  { font-size: 12px; color: var(--text3); margin-top: 2px; }
-.adm-activity-link {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12.5px; font-weight: 500; color: var(--indigo);
-  text-decoration: none; transition: gap var(--transition);
-}
-.adm-activity-link:hover { gap: 8px; }
-.adm-activity-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.adm-section-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.adm-section-head:first-child { margin-top: 0; }
+.adm-section-head-link { font-size: 11px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--indigo); text-decoration: none; }
 
-/* Log rows */
-.adm-log-row {
-  display: grid;
-  grid-template-columns: 90px 160px 1fr 1fr 90px;
-  align-items: center; gap: 12px;
-  padding: 13px 24px; border-bottom: 1px solid var(--border);
-  transition: background var(--transition);
-}
-.adm-log-row:last-child { border-bottom: none; }
-.adm-log-row:hover { background: rgba(255,255,255,0.015); }
+/* ══ STAT CARDS ═══════════════════════════════════════ */
+.adm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+@media (max-width: 1100px) { .adm-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px)  { .adm-stats { grid-template-columns: 1fr; } }
 
-.adm-log-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 4px 10px; border-radius: 99px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap;
+.adm-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 20px; transition: box-shadow var(--transition), transform var(--transition);
 }
-.adm-log-actor   { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.adm-log-avatar  {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; color: var(--indigo);
-  flex-shrink: 0; font-family: var(--mono);
-}
-.adm-log-username   { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.adm-log-target     { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.adm-log-target-type{ font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
-.adm-log-target-name{ font-size: 12.5px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.adm-log-detail     { font-size: 12px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.adm-log-time       { font-family: var(--mono); font-size: 11px; color: var(--text3); text-align: right; white-space: nowrap; }
+.adm-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.18); transform: translateY(-2px); }
 
-.adm-log-thead {
-  display: grid;
-  grid-template-columns: 90px 160px 1fr 1fr 90px;
-  gap: 12px; padding: 9px 24px;
-  background: var(--surface2); border-bottom: 1px solid var(--border);
-}
-.adm-log-thead span {
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3);
-}
+.adm-stat-card { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; text-decoration: none; }
+.adm-stat-label { font-size: 12px; font-weight: 600; color: var(--text3); letter-spacing: 0.04em; margin-bottom: 8px; }
+.adm-stat-num { font-size: 28px; font-weight: 700; color: var(--text); font-family: var(--mono); letter-spacing: -1px; line-height: 1; }
+.adm-stat-sub { font-size: 11.5px; color: var(--text3); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+.adm-stat-sub span { font-weight: 600; }
+.adm-stat-trend { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; }
+.adm-stat-trend svg { width: 11px; height: 11px; stroke-width: 3; }
+.adm-stat-trend.up { color: var(--emerald); }
+.adm-stat-trend.down { color: var(--rose); }
+.adm-stat-icon-box { width: 48px; height: 48px; border-radius: 12px; border: 1px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.adm-stat-icon-box svg { width: 20px; height: 20px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-/* Project balance pill */
-.adm-balance-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--mono); font-size: 12.5px; font-weight: 600;
-  padding: 3px 9px; border-radius: 99px;
-}
-.adm-balance-pill.positive { color: var(--emerald); background: var(--emerald-fog); }
-.adm-balance-pill.negative { color: var(--rose); background: var(--rose-fog); }
+.adm-stat-card--indigo .adm-stat-icon-box { background: var(--indigo-fog); border-color: var(--indigo-line); }
+.adm-stat-card--indigo .adm-stat-icon-box svg { stroke: var(--indigo); }
+.adm-stat-card--indigo .adm-stat-num { color: var(--indigo); }
 
+.adm-stat-card--amber .adm-stat-icon-box { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.22); }
+.adm-stat-card--amber .adm-stat-icon-box svg { stroke: #f59e0b; }
+.adm-stat-card--amber .adm-stat-num { color: #f59e0b; }
+
+.adm-stat-card--emerald .adm-stat-icon-box { background: var(--emerald-fog); border-color: rgba(16,185,129,0.22); }
+.adm-stat-card--emerald .adm-stat-icon-box svg { stroke: var(--emerald); }
+.adm-stat-card--emerald .adm-stat-num { color: var(--emerald); }
+
+.adm-stat-card--rose .adm-stat-icon-box { background: var(--rose-fog); border-color: rgba(244,63,94,0.22); }
+.adm-stat-card--rose .adm-stat-icon-box svg { stroke: var(--rose); }
+.adm-stat-card--rose .adm-stat-num { color: var(--rose); }
+
+/* ══ CHARTS ROW (Dasher-style) ═══════════════════════════ */
+.adm-charts-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 8px; }
+@media (max-width: 1100px) { .adm-charts-grid { grid-template-columns: 1fr; } }
+
+.adm-chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+.adm-chart-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; gap: 12px; flex-wrap: wrap; }
+.adm-chart-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.adm-chart-legend { display: flex; gap: 14px; font-size: 11.5px; color: var(--text3); }
+.adm-chart-legend-item { display: flex; align-items: center; gap: 6px; }
+.adm-chart-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.adm-chart-totals { display: flex; gap: 22px; margin: 10px 0 14px; flex-wrap: wrap; }
+.adm-chart-total-label { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
+.adm-chart-total-num { font-size: 18px; font-weight: 700; font-family: var(--mono); }
+.adm-chart-canvas-wrap { position: relative; height: 230px; }
+.adm-chart-canvas-wrap.donut { height: 200px; display: flex; align-items: center; justify-content: center; }
+
+.adm-donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+.adm-donut-center-num { font-size: 20px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+.adm-donut-center-label { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+
+.adm-cat-legend-list { display: flex; flex-direction: column; gap: 9px; margin-top: 14px; }
+.adm-cat-legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; }
+.adm-cat-legend-name { display: flex; align-items: center; gap: 8px; color: var(--text2); }
+.adm-cat-legend-val { font-family: var(--mono); color: var(--text3); font-weight: 600; }
+
+/* ══ TABLE CARD ════════════════════════════════════════ */
+.adm-table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
+.adm-table-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
+.adm-table-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.adm-table-title svg { width: 15px; height: 15px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; }
+.adm-table-title-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--indigo); box-shadow: 0 0 8px rgba(99,102,241,0.7); flex-shrink: 0; }
+
+.adm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.adm-table thead th { padding: 10px 20px; text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); background: var(--surface2); border-bottom: 1px solid var(--border); }
+.adm-table tbody tr { border-bottom: 1px solid var(--border); transition: background var(--transition); }
+.adm-table tbody tr:last-child { border-bottom: none; }
+.adm-table tbody tr:hover { background: rgba(255,255,255,0.015); }
+.adm-table tbody td { padding: 12px 20px; color: var(--text2); vertical-align: middle; }
+.adm-table tbody td:first-child { color: var(--text); font-weight: 500; }
+
+/* Avatar + name cell */
+.adm-cell-user { display: flex; align-items: center; gap: 10px; }
+.adm-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--indigo); font-family: var(--mono); flex-shrink: 0; text-transform: uppercase; }
+.adm-cell-name { font-weight: 600; color: var(--text); }
+.adm-cell-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+/* Badge */
+.adm-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; border: 1px solid; white-space: nowrap; }
+.adm-badge-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.adm-badge--green { background: var(--emerald-fog); color: var(--emerald); border-color: rgba(16,185,129,0.22); }
+.adm-badge--green .adm-badge-dot { background: var(--emerald); }
+.adm-badge--rose  { background: var(--rose-fog); color: var(--rose); border-color: rgba(244,63,94,0.22); }
+.adm-badge--rose  .adm-badge-dot { background: var(--rose); }
+.adm-badge--amber { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.22); }
+.adm-badge--amber .adm-badge-dot { background: #d97706; }
+.adm-badge--indigo { background: var(--indigo-fog); color: var(--indigo); border-color: var(--indigo-line); }
+.adm-badge--indigo .adm-badge-dot { background: var(--indigo); }
+.adm-badge--muted { background: var(--surface3); color: var(--text3); border-color: var(--border); }
+.adm-badge--muted .adm-badge-dot { background: var(--text3); }
+
+/* Balance pill */
+.adm-balance { font-family: var(--mono); font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+.adm-balance.pos { color: var(--emerald); background: var(--emerald-fog); }
+.adm-balance.neg { color: var(--rose); background: var(--rose-fog); }
+
+/* Action button */
+.adm-btn-sm { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; font-family: var(--font); color: var(--text2); background: var(--surface2); border: 1px solid var(--border); text-decoration: none; cursor: pointer; transition: all var(--transition); }
+.adm-btn-sm:hover { background: var(--surface3); border-color: var(--border2); color: var(--text); }
+.adm-btn-sm svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+/* Search bar */
+.adm-search { position: relative; min-width: 200px; }
+.adm-search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; stroke: var(--text3); fill: none; stroke-width: 2; pointer-events: none; }
+.adm-search input { width: 100%; padding: 7px 12px 7px 32px; background: var(--surface2); border: 1px solid var(--border); border-radius: 99px; font-size: 12.5px; font-family: var(--font); color: var(--text); outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
+.adm-search input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-fog); }
+.adm-search input::placeholder { color: var(--text3); }
+
+/* Filter chips */
+.adm-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.adm-chip { font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 99px; background: var(--surface2); border: 1px solid var(--border); color: var(--text3); cursor: pointer; transition: all var(--transition); user-select: none; }
+.adm-chip:hover { border-color: var(--border2); color: var(--text2); }
+.adm-chip.active { background: var(--indigo); border-color: rgba(99,102,241,0.6); color: #fff; }
+
+/* Member stack */
 .adm-member-stack { display: flex; align-items: center; }
-.adm-member-chip {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--surface3); border: 1.5px solid var(--surface);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; color: var(--text3);
-  margin-left: -7px; font-family: var(--mono);
-}
+.adm-member-chip { width: 22px; height: 22px; border-radius: 50%; background: var(--surface3); border: 1.5px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--text3); margin-left: -7px; font-family: var(--mono); }
 .adm-member-chip:first-child { margin-left: 0; }
 
 /* Empty */
-.adm-empty { padding: 56px 24px; text-align: center; }
-.adm-empty-icon {
-  width: 48px; height: 48px; border-radius: var(--radius-lg);
-  background: var(--surface2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 14px;
-}
+.adm-empty { padding: 48px 24px; text-align: center; }
+.adm-empty-icon { width: 48px; height: 48px; border-radius: var(--radius-lg); background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
 .adm-empty-icon svg { width: 20px; height: 20px; stroke: var(--text3); fill: none; stroke-width: 1.5; }
 .adm-empty-title { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
 .adm-empty-sub   { font-size: 12.5px; color: var(--text3); }
 
+/* Hidden rows */
+.adm-row-hidden { display: none !important; }
+
+/* ══ CATEGORY SECTION ══════════════════════════════════ */
+.adm-cat-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+@media (max-width: 900px) { .adm-cat-grid { grid-template-columns: 1fr; } }
+
+.adm-cat-row { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 8px; }
+.adm-cat-row-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; transition: background var(--transition); }
+.adm-cat-row-head:hover { background: var(--surface3); }
+.adm-cat-name { font-size: 13.5px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.adm-cat-name svg { width: 13px; height: 13px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; }
+.adm-cat-meta { font-size: 11px; color: var(--text3); }
+.adm-cat-chevron { width: 14px; height: 14px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; transition: transform 0.2s; flex-shrink: 0; }
+.adm-cat-row.open .adm-cat-chevron { transform: rotate(180deg); }
+.adm-cat-subs { display: none; padding: 0 14px 12px; border-top: 1px solid var(--border); padding-top: 10px; flex-wrap: wrap; gap: 6px; }
+.adm-cat-row.open .adm-cat-subs { display: flex; }
+.adm-sub-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface3); border: 1px solid var(--border2); border-radius: 99px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: var(--text2); }
+.adm-sub-del { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--text3); transition: color var(--transition); }
+.adm-sub-del:hover { color: var(--rose); }
+.adm-sub-del svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.adm-cat-no-sub { font-size: 12px; color: var(--text3); font-style: italic; }
+
+.adm-form-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 16px; }
+.adm-form-panel-head { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.adm-form-panel-head svg { width: 13px; height: 13px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; }
+.adm-form-panel-body { padding: 14px 16px; }
+.adm-inline-form { display: flex; gap: 8px; }
+.adm-inline-form .form-control { flex: 1; padding: 8px 12px; font-size: 13px; }
+.adm-inline-form select.form-control { flex: 1; }
+.adm-inline-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: var(--font); color: #fff; background: var(--indigo); border: none; cursor: pointer; transition: background var(--transition); white-space: nowrap; flex-shrink: 0; }
+.adm-inline-btn:hover { background: var(--indigo-mid); }
+.adm-inline-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
 @media (max-width: 768px) {
-  .adm-log-thead { display: none; }
-  .adm-log-row   { grid-template-columns: 80px 1fr 90px; grid-template-rows: auto auto; }
-  .adm-log-target, .adm-log-detail { display: none; }
+  .adm-sidebar { display: none; }
+  .adm-main { padding: 20px 16px; }
+  .adm-stats { grid-template-columns: repeat(2, 1fr); }
+  .adm-charts-grid { grid-template-columns: 1fr; }
 }
 </style>
 {% endblock %}
 
-
 {% block content %}
-<div class="adm-root">
+<div class="adm-layout">
 
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
-  <div class="adm-header">
-    <div class="adm-header-left">
-      <div class="adm-eyebrow"><span class="adm-eyebrow-dot"></span>Admin Panel</div>
-      <h1 class="adm-title"><span>Admin</span> Dashboard</h1>
-      <p class="adm-subtitle">Platform overview — users, projects, and live activity</p>
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="adm-sidebar">
+    <div class="adm-sidebar-section">
+      <div class="adm-sidebar-label">Main</div>
+
+      <a href="{% url 'admin_dashboard' %}" class="adm-nav-item active">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+
+      <a href="{% url 'admin_user_list' %}" class="adm-nav-item">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
+        {% if total_users %}<span class="adm-nav-badge" style="background:var(--indigo);">{{ total_users }}</span>{% endif %}
+      </a>
+
+      <a href="{% url 'admin_user_create' %}" class="adm-nav-item">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Create User
+      </a>
     </div>
-    <div class="adm-header-actions">
+
+    <hr class="adm-sidebar-divider">
+
+    <div class="adm-sidebar-section">
+      <div class="adm-sidebar-label">Moderation</div>
+
+      <a href="{% url 'admin_delete_requests' %}" class="adm-nav-item">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Delete Requests
+        {% if pending_deletes %}<span class="adm-nav-badge">{{ pending_deletes }}</span>{% endif %}
+      </a>
+
+      <a href="{% url 'admin_audit_log' %}" class="adm-nav-item">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Audit Log
+      </a>
+    </div>
+
+    <hr class="adm-sidebar-divider">
+
+    <div class="adm-sidebar-section">
+      <div class="adm-sidebar-label">Content</div>
+
+      <a href="{% url 'category_list' %}" class="adm-nav-item">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+        Categories
+      </a>
+
+      <a href="{% url 'project_list' %}" class="adm-nav-item">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Projects
+      </a>
+    </div>
+
+    <div class="adm-sidebar-foot">
+      <div class="adm-sidebar-user">
+        <div class="adm-sidebar-user-avatar">{{ request.user.username|first|upper }}</div>
+        <div>
+          <div class="adm-sidebar-user-name">{{ request.user.username }}</div>
+          <div class="adm-sidebar-user-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <main class="adm-main">
+
+    <!-- Hero greeting -->
+    <div class="adm-hero">
+      <div>
+        <div class="adm-hero-greeting">👋 Hello, {{ request.user.username|default:"Admin" }}</div>
+        <div class="adm-hero-sub">Here's what's happening across CashManager today — users, projects, and recent activity at a glance.</div>
+      </div>
       <a href="{% url 'admin_user_create' %}" class="adm-btn-primary">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New User
       </a>
-      <a href="{% url 'admin_delete_requests' %}" class="adm-btn-ghost">
-        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-        Delete Requests
-        {% if pending_deletes %}<span class="adm-pending-pill">{{ pending_deletes }}</span>{% endif %}
+    </div>
+
+    <!-- Page header -->
+    <div class="adm-page-head">
+      <div>
+        <div class="adm-breadcrumb">
+          Admin Panel
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          Dashboard
+        </div>
+        <h1 class="adm-page-title">Overview</h1>
+      </div>
+      <div class="adm-page-actions">
+        {% if pending_deletes %}
+        <a href="{% url 'admin_delete_requests' %}" class="adm-btn-ghost" style="color:var(--rose); border-color:rgba(244,63,94,0.3);">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          {{ pending_deletes }} Delete Request{{ pending_deletes|pluralize }}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="adm-stats">
+
+      <a href="{% url 'admin_user_list' %}" class="adm-card adm-stat-card adm-stat-card--indigo">
+        <div class="adm-stat-left">
+          <div class="adm-stat-label">Total Users</div>
+          <div class="adm-stat-num">{{ total_users }}</div>
+          <div class="adm-stat-sub">Regular accounts</div>
+        </div>
+        <div class="adm-stat-icon-box">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
       </a>
-    </div>
-  </div>
 
-  <!-- ── Stats ──────────────────────────────────────────────────────────── -->
-  <div class="adm-stats">
-
-    <a href="{% url 'admin_user_list' %}" class="adm-stat adm-stat--indigo">
-      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ total_users }}</span>
-        <span class="adm-stat-label">Total Users</span>
-      </div>
-      <span class="adm-stat-link">View all <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
-    </a>
-
-    <a href="{% url 'admin_user_list' %}?frozen=1" class="adm-stat adm-stat--amber">
-      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ frozen_users }}</span>
-        <span class="adm-stat-label">Frozen Users</span>
-      </div>
-      <span class="adm-stat-link">View all <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
-    </a>
-
-    <a href="{% url 'project_list' %}" class="adm-stat adm-stat--emerald">
-      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ total_projects }}</span>
-        <span class="adm-stat-label">Total Projects</span>
-      </div>
-      <span class="adm-stat-link">View all <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
-    </a>
-
-    <a href="{% url 'admin_delete_requests' %}" class="adm-stat adm-stat--rose">
-      <div class="adm-stat-glow"></div><div class="adm-stat-top-bar"></div>
-      <div class="adm-stat-icon">
-        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      </div>
-      <div class="adm-stat-body">
-        <span class="adm-stat-num">{{ pending_deletes }}</span>
-        <span class="adm-stat-label">Pending Deletes</span>
-      </div>
-      <span class="adm-stat-link">Review <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
-    </a>
-
-  </div>
-
-  <!-- ── Quick Actions ──────────────────────────────────────────────────── -->
-  <div class="adm-actions-row">
-
-    <a href="{% url 'admin_user_list' %}" class="adm-action-card">
-      <div class="adm-action-icon" style="background:var(--indigo-fog); border-color:var(--indigo-line);">
-        <svg viewBox="0 0 24 24" stroke="var(--indigo)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
-      <div>
-        <div class="adm-action-label">Manage Users</div>
-        <div class="adm-action-sub">{{ total_users }} total</div>
-      </div>
-    </a>
-
-    <a href="{% url 'admin_delete_requests' %}" class="adm-action-card">
-      <div class="adm-action-icon" style="background:var(--rose-fog); border-color:rgba(244,63,94,0.2);">
-        <svg viewBox="0 0 24 24" stroke="var(--rose)"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      </div>
-      <div>
-        <div class="adm-action-label">Delete Requests</div>
-        <div class="adm-action-sub">{{ pending_deletes }} pending</div>
-      </div>
-    </a>
-
-    <a href="{% url 'admin_audit_log' %}" class="adm-action-card">
-      <div class="adm-action-icon" style="background:rgba(99,102,241,0.07); border-color:rgba(99,102,241,0.15);">
-        <svg viewBox="0 0 24 24" stroke="#6366f1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      </div>
-      <div>
-        <div class="adm-action-label">Audit Log</div>
-        <div class="adm-action-sub">Full history</div>
-      </div>
-    </a>
-
-    <a href="{% url 'admin_user_create' %}" class="adm-action-card">
-      <div class="adm-action-icon" style="background:var(--emerald-fog); border-color:rgba(16,185,129,0.2);">
-        <svg viewBox="0 0 24 24" stroke="var(--emerald)"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-      </div>
-      <div>
-        <div class="adm-action-label">Create User</div>
-        <div class="adm-action-sub">Add new account</div>
-      </div>
-    </a>
-
-  </div>
-
-  <!-- ── All Projects ───────────────────────────────────────────────────── -->
-  <div class="adm-activity">
-    <div class="adm-activity-head">
-      <div>
-        <div class="adm-activity-title">
-          <span class="adm-activity-title-dot"></span>
-          All Projects
+      <a href="{% url 'admin_user_list' %}?frozen=1" class="adm-card adm-stat-card adm-stat-card--amber">
+        <div class="adm-stat-left">
+          <div class="adm-stat-label">Frozen Users</div>
+          <div class="adm-stat-num">{{ frozen_users }}</div>
+          <div class="adm-stat-sub">Access restricted</div>
         </div>
-        <div class="adm-activity-sub">Every project across all users — you have full access to each one</div>
-      </div>
-    </div>
-
-    {% if all_projects %}
-    <div class="adm-log-thead" style="grid-template-columns: 1fr 130px 90px 90px 100px 90px;">
-      <span>Project</span>
-      <span>Owner</span>
-      <span>Income</span>
-      <span>Expense</span>
-      <span>Balance</span>
-      <span style="text-align:right;">Action</span>
-    </div>
-
-    {% for project in all_projects %}
-    <div class="adm-log-row" style="grid-template-columns: 1fr 130px 90px 90px 100px 90px;">
-
-      <!-- Project name -->
-      <div style="display:flex; align-items:center; gap:10px; min-width:0;">
-        <div style="width:32px; height:32px; border-radius:8px; background:var(--indigo-fog); border:1px solid var(--indigo-line); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--indigo);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-          </svg>
+        <div class="adm-stat-icon-box">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <div style="min-width:0;">
-          <div style="font-size:13.5px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ project.name }}</div>
-          {% if project.members.all %}
-          <div class="adm-member-stack" style="margin-top:3px;">
-            {% for m in project.members.all|slice:":4" %}
-              <div class="adm-member-chip" title="{{ m.username }}">{{ m.username|first|upper }}</div>
-            {% endfor %}
-            {% if project.members.all|length > 4 %}
-              <div class="adm-member-chip">+{{ project.members.all|length|add:"-4" }}</div>
-            {% endif %}
+      </a>
+
+      <a href="{% url 'project_list' %}" class="adm-card adm-stat-card adm-stat-card--emerald">
+        <div class="adm-stat-left">
+          <div class="adm-stat-label">Total Projects</div>
+          <div class="adm-stat-num">{{ total_projects }}</div>
+          <div class="adm-stat-sub">Across all users</div>
+        </div>
+        <div class="adm-stat-icon-box">
+          <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </div>
+      </a>
+
+      <a href="{% url 'admin_delete_requests' %}" class="adm-card adm-stat-card adm-stat-card--rose">
+        <div class="adm-stat-left">
+          <div class="adm-stat-label">Pending Deletes</div>
+          <div class="adm-stat-num">{{ pending_deletes }}</div>
+          <div class="adm-stat-sub">Awaiting review</div>
+        </div>
+        <div class="adm-stat-icon-box">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- ── Charts (Dasher-style: Revenue trend + Top projects donut) ── -->
+    <div class="adm-charts-grid">
+
+      <!-- Income vs Expense trend -->
+      <div class="adm-chart-card">
+        <div class="adm-chart-head">
+          <div class="adm-chart-title">Income vs Expense — All Projects</div>
+          <div class="adm-chart-legend">
+            <span class="adm-chart-legend-item"><span class="adm-chart-dot" style="background:var(--emerald);"></span>Income</span>
+            <span class="adm-chart-legend-item"><span class="adm-chart-dot" style="background:var(--rose);"></span>Expense</span>
           </div>
+        </div>
+        <div class="adm-chart-totals">
+          <div>
+            <div class="adm-chart-total-label">Total Income</div>
+            <div class="adm-chart-total-num" style="color:var(--emerald);">৳{{ total_income_all|default:0|floatformat:0 }}</div>
+          </div>
+          <div>
+            <div class="adm-chart-total-label">Total Expense</div>
+            <div class="adm-chart-total-num" style="color:var(--rose);">৳{{ total_expense_all|default:0|floatformat:0 }}</div>
+          </div>
+        </div>
+        <div class="adm-chart-canvas-wrap">
+          <canvas id="incomeExpenseChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Project balance health donut -->
+      <div class="adm-chart-card">
+        <div class="adm-chart-head">
+          <div class="adm-chart-title">Project Balance Health</div>
+        </div>
+        <div class="adm-chart-canvas-wrap donut" style="position:relative;">
+          <canvas id="balanceDonutChart"></canvas>
+          <div class="adm-donut-center">
+            <div class="adm-donut-center-num">{{ total_projects }}</div>
+            <div class="adm-donut-center-label">Projects</div>
+          </div>
+        </div>
+        <div class="adm-cat-legend-list">
+          <div class="adm-cat-legend-row">
+            <span class="adm-cat-legend-name"><span class="adm-chart-dot" style="background:var(--emerald);"></span>Positive balance</span>
+            <span class="adm-cat-legend-val" id="positiveCount">—</span>
+          </div>
+          <div class="adm-cat-legend-row">
+            <span class="adm-cat-legend-name"><span class="adm-chart-dot" style="background:var(--rose);"></span>Negative balance</span>
+            <span class="adm-cat-legend-val" id="negativeCount">—</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Categories ── -->
+    <div class="adm-section-head">Categories</div>
+    <div class="adm-cat-grid">
+
+      <!-- Category list -->
+      <div class="adm-table-card">
+        <div class="adm-table-head">
+          <div class="adm-table-title">
+            <span class="adm-table-title-dot"></span>
+            All Categories
+            <span style="font-size:11px; color:var(--text3); font-weight:500;">({{ categories|length }})</span>
+          </div>
+          <a href="{% url 'category_list' %}" style="font-size:12px; color:var(--indigo); text-decoration:none; font-weight:500;">View all →</a>
+        </div>
+        <div style="padding: 16px;">
+          {% if categories %}
+            {% for cat in categories %}
+            <div class="adm-cat-row" id="cat-{{ cat.pk }}">
+              <div class="adm-cat-row-head" onclick="toggleCat('cat-{{ cat.pk }}')">
+                <div class="adm-cat-name">
+                  <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  {{ cat.name }}
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span class="adm-cat-meta">{{ cat.subcategories.count }} sub</span>
+                  <svg class="adm-cat-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+              </div>
+              <div class="adm-cat-subs">
+                {% if cat.subcategories.all %}
+                  {% for sub in cat.subcategories.all %}
+                    <span class="adm-sub-chip">
+                      {{ sub.name }}
+                      <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="margin:0; display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="adm-sub-del" onclick="return confirm('Delete \'{{ sub.name }}\'?')">
+                          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </form>
+                    </span>
+                  {% endfor %}
+                {% else %}
+                  <span class="adm-cat-no-sub">No sub-categories yet.</span>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="adm-empty">
+              <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
+              <p class="adm-empty-title">No categories yet</p>
+              <p class="adm-empty-sub">Add one using the form.</p>
+            </div>
           {% endif %}
         </div>
       </div>
 
-      <!-- Owner -->
-      <div class="adm-log-actor">
-        <div class="adm-log-avatar">{{ project.user.username|first|upper }}</div>
-        <span class="adm-log-username">{{ project.user.username }}</span>
-      </div>
-
-      <!-- Income -->
-      <div style="font-family:var(--mono); font-size:13px; color:var(--emerald); font-weight:500;">
-        ৳{{ project.total_income|floatformat:0 }}
-      </div>
-
-      <!-- Expense -->
-      <div style="font-family:var(--mono); font-size:13px; color:var(--rose); font-weight:500;">
-        ৳{{ project.total_expense|floatformat:0 }}
-      </div>
-
-      <!-- Balance -->
+      <!-- Forms -->
       <div>
-        {% with bal=project.balance %}
-        <span class="adm-balance-pill {% if bal < 0 %}negative{% else %}positive{% endif %}">
-          ৳{{ bal|floatformat:0 }}
-        </span>
-        {% endwith %}
-      </div>
-
-      <!-- Action -->
-      <div style="text-align:right;">
-        <a href="{% url 'project_detail' project.pk %}" class="adm-btn-ghost" style="padding:6px 14px; font-size:12px;">
-          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-          View
-        </a>
-      </div>
-
-    </div>
-    {% endfor %}
-
-    {% else %}
-    <div class="adm-empty">
-      <div class="adm-empty-icon">
-        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <p class="adm-empty-title">No projects yet</p>
-      <p class="adm-empty-sub">Projects created by users will appear here</p>
-    </div>
-    {% endif %}
-  </div>
-
-  <!-- ── Recent Activity ────────────────────────────────────────────────── -->
-  <div class="adm-activity">
-    <div class="adm-activity-head">
-      <div>
-        <div class="adm-activity-title">
-          <span class="adm-activity-title-dot"></span>
-          Recent Activity
+        <div class="adm-form-panel">
+          <div class="adm-form-panel-head">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Category
+          </div>
+          <div class="adm-form-panel-body">
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="add_category" value="1">
+              <div class="adm-inline-form">
+                <input type="text" name="name" class="form-control" placeholder="e.g. Food, Transport…" value="{{ cat_form.name.value|default:'' }}" required>
+                <button type="submit" class="adm-inline-btn">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Add
+                </button>
+              </div>
+              {% if cat_form.name.errors %}<p class="form-error" style="margin-top:6px;">{{ cat_form.name.errors.0 }}</p>{% endif %}
+            </form>
+          </div>
         </div>
-        <div class="adm-activity-sub">Last 20 actions across the platform</div>
+
+        <div class="adm-form-panel">
+          <div class="adm-form-panel-head">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Sub-category
+          </div>
+          <div class="adm-form-panel-body">
+            {% if categories %}
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="add_subcategory" value="1">
+              <div class="form-group" style="margin-bottom:10px;">
+                <select name="category" class="form-control" required>
+                  <option value="">— Select category —</option>
+                  {% for cat in categories %}
+                    <option value="{{ cat.pk }}" {% if sub_form.category.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="adm-inline-form">
+                <input type="text" name="name" class="form-control" placeholder="Sub-category name…" value="{{ sub_form.name.value|default:'' }}" required>
+                <button type="submit" class="adm-inline-btn">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Add
+                </button>
+              </div>
+              {% if sub_form.name.errors %}<p class="form-error" style="margin-top:6px;">{{ sub_form.name.errors.0 }}</p>{% endif %}
+            </form>
+            {% else %}
+              <p style="font-size:13px; color:var(--text3);">Create a category first.</p>
+            {% endif %}
+          </div>
+        </div>
       </div>
-      <a href="{% url 'admin_audit_log' %}" class="adm-activity-link">
-        Full log
-        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </a>
     </div>
 
-    {% if recent_logs %}
-    <div class="adm-log-thead">
-      <span>Action</span><span>User</span><span>Target</span><span>Detail</span>
-      <span style="text-align:right">Time</span>
-    </div>
-
-    {% for log in recent_logs %}
-    <div class="adm-log-row">
-      <div>
-        {% if log.action == 'create' %}<span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Create</span>
-        {% elif log.action == 'edit' %}<span class="adm-log-badge" style="background:var(--indigo-fog); color:var(--indigo);">Edit</span>
-        {% elif log.action == 'delete_request' %}<span class="adm-log-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Del Req</span>
-        {% elif log.action == 'delete_confirm' %}<span class="adm-log-badge" style="background:var(--rose-fog); color:var(--rose);">Deleted</span>
-        {% elif log.action == 'login' %}<span class="adm-log-badge" style="background:rgba(99,102,241,0.1); color:#6366f1;">Login</span>
-        {% elif log.action == 'logout' %}<span class="adm-log-badge" style="background:var(--surface3); color:var(--text3);">Logout</span>
-        {% elif log.action == 'freeze' %}<span class="adm-log-badge" style="background:rgba(245,158,11,0.12); color:#d97706;">Frozen</span>
-        {% elif log.action == 'unfreeze' %}<span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">Unfrozen</span>
-        {% elif log.action == 'user_create' %}<span class="adm-log-badge" style="background:rgba(16,185,129,0.12); color:var(--emerald);">User +</span>
-        {% elif log.action == 'user_delete' %}<span class="adm-log-badge" style="background:var(--rose-fog); color:var(--rose);">User –</span>
-        {% else %}<span class="adm-log-badge" style="background:var(--surface3); color:var(--text3);">{{ log.action }}</span>
+    <!-- ── All Projects ── -->
+    <div class="adm-section-head">All Projects</div>
+    <div class="adm-table-card">
+      <div class="adm-table-head">
+        <div class="adm-table-title">
+          <span class="adm-table-title-dot"></span>
+          Projects
+        </div>
+        {% if all_projects %}
+        <div class="adm-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="adm-project-search" placeholder="Search project or owner…">
+        </div>
         {% endif %}
       </div>
-      <div class="adm-log-actor">
-        <div class="adm-log-avatar">{{ log.actor.username|first|upper }}</div>
-        <span class="adm-log-username">{% if log.actor %}{{ log.actor.username }}{% else %}—{% endif %}</span>
+
+      {% if all_projects %}
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Owner</th>
+            <th>Members</th>
+            <th>Income</th>
+            <th>Expense</th>
+            <th>Balance</th>
+            <th style="text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="adm-project-rows">
+          {% for project in all_projects %}
+          <tr data-search="{{ project.name|lower }} {{ project.user.username|lower }}">
+            <td>
+              <div class="adm-cell-user">
+                <div class="adm-avatar" style="border-radius:8px;">
+                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--indigo);fill:none;stroke-width:2;stroke-linecap:round;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="adm-cell-name">{{ project.name }}</div>
+                  {% if project.description %}<div class="adm-cell-sub">{{ project.description|truncatechars:40 }}</div>{% endif %}
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="adm-cell-user">
+                <div class="adm-avatar">{{ project.user.username|first|upper }}</div>
+                <span>{{ project.user.username }}</span>
+              </div>
+            </td>
+            <td>
+              {% if project.members.all %}
+                <div class="adm-member-stack">
+                  {% for m in project.members.all|slice:":4" %}
+                    <div class="adm-member-chip" title="{{ m.username }}">{{ m.username|first|upper }}</div>
+                  {% endfor %}
+                  {% if project.members.count > 4 %}
+                    <div class="adm-member-chip">+{{ project.members.count|add:"-4" }}</div>
+                  {% endif %}
+                </div>
+              {% else %}
+                <span style="font-size:12px; color:var(--text3);">—</span>
+              {% endif %}
+            </td>
+            <td style="font-family:var(--mono); color:var(--emerald); font-size:13px;">৳{{ project.total_income|floatformat:0 }}</td>
+            <td style="font-family:var(--mono); color:var(--rose); font-size:13px;">৳{{ project.total_expense|floatformat:0 }}</td>
+            <td>
+              {% with bal=project.balance %}
+              <span class="adm-balance {% if bal < 0 %}neg{% else %}pos{% endif %}" data-balance="{{ bal }}">৳{{ bal|floatformat:0 }}</span>
+              {% endwith %}
+            </td>
+            <td style="text-align:right;">
+              <a href="{% url 'project_detail' project.pk %}" class="adm-btn-sm">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                View
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div id="adm-project-empty" class="adm-empty" style="display:none;">
+        <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+        <p class="adm-empty-title">No matching projects</p>
       </div>
-      <div class="adm-log-target">
-        {% if log.target_repr %}
-          <span class="adm-log-target-type">{{ log.target_type }}</span>
-          <span class="adm-log-target-name">{{ log.target_repr|truncatechars:32 }}</span>
-        {% else %}
-          <span class="adm-log-target-name" style="color:var(--text3)">—</span>
+      {% else %}
+      <div class="adm-empty">
+        <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+        <p class="adm-empty-title">No projects yet</p>
+        <p class="adm-empty-sub">Projects will appear here once users create them.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Recent Activity ── -->
+    <div class="adm-section-head">Recent Activity</div>
+    <div class="adm-table-card">
+      <div class="adm-table-head">
+        <div class="adm-table-title">
+          <span class="adm-table-title-dot"></span>
+          Activity Log
+          <span style="font-size:11px; color:var(--text3); font-weight:400;">Last 20 actions</span>
+        </div>
+        {% if recent_logs %}
+        <div class="adm-chips" id="adm-log-filters">
+          <span class="adm-chip active" data-filter="all">All</span>
+          <span class="adm-chip" data-filter="create">Create</span>
+          <span class="adm-chip" data-filter="edit">Edit</span>
+          <span class="adm-chip" data-filter="login">Login</span>
+          <span class="adm-chip" data-filter="freeze">Freeze</span>
+          <span class="adm-chip" data-filter="delete_request">Del Req</span>
+          <span class="adm-chip" data-filter="delete_confirm">Deleted</span>
+        </div>
         {% endif %}
+        <a href="{% url 'admin_audit_log' %}" style="font-size:12px; color:var(--indigo); text-decoration:none; font-weight:500; white-space:nowrap;">Full log →</a>
       </div>
-      <div class="adm-log-detail">{% if log.detail %}{{ log.detail|truncatechars:40 }}{% else %}—{% endif %}</div>
-      <div class="adm-log-time">{{ log.timestamp|date:"d M, H:i" }}</div>
-    </div>
-    {% endfor %}
 
-    {% else %}
-    <div class="adm-empty">
-      <div class="adm-empty-icon">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      {% if recent_logs %}
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>User</th>
+            <th>Target</th>
+            <th>Detail</th>
+            <th style="text-align:right;">Time</th>
+          </tr>
+        </thead>
+        <tbody id="adm-log-rows">
+          {% for log in recent_logs %}
+          <tr data-action="{{ log.action }}">
+            <td>
+              {% if log.action == 'create' %}<span class="adm-badge adm-badge--green"><span class="adm-badge-dot"></span>Create</span>
+              {% elif log.action == 'edit' %}<span class="adm-badge adm-badge--indigo"><span class="adm-badge-dot"></span>Edit</span>
+              {% elif log.action == 'delete_request' %}<span class="adm-badge adm-badge--amber"><span class="adm-badge-dot"></span>Del Req</span>
+              {% elif log.action == 'delete_confirm' %}<span class="adm-badge adm-badge--rose"><span class="adm-badge-dot"></span>Deleted</span>
+              {% elif log.action == 'login' %}<span class="adm-badge adm-badge--indigo"><span class="adm-badge-dot"></span>Login</span>
+              {% elif log.action == 'logout' %}<span class="adm-badge adm-badge--muted"><span class="adm-badge-dot"></span>Logout</span>
+              {% elif log.action == 'freeze' %}<span class="adm-badge adm-badge--amber"><span class="adm-badge-dot"></span>Frozen</span>
+              {% elif log.action == 'unfreeze' %}<span class="adm-badge adm-badge--green"><span class="adm-badge-dot"></span>Unfrozen</span>
+              {% elif log.action == 'user_create' %}<span class="adm-badge adm-badge--green"><span class="adm-badge-dot"></span>User +</span>
+              {% elif log.action == 'user_delete' %}<span class="adm-badge adm-badge--rose"><span class="adm-badge-dot"></span>User –</span>
+              {% else %}<span class="adm-badge adm-badge--muted"><span class="adm-badge-dot"></span>{{ log.action }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="adm-cell-user">
+                <div class="adm-avatar">{% if log.actor %}{{ log.actor.username|first|upper }}{% else %}?{% endif %}</div>
+                <span>{% if log.actor %}{{ log.actor.username }}{% else %}—{% endif %}</span>
+              </div>
+            </td>
+            <td>
+              {% if log.target_repr %}
+                <div>
+                  <div style="font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:0.08em;">{{ log.target_type }}</div>
+                  <div style="font-size:13px; color:var(--text2);">{{ log.target_repr|truncatechars:32 }}</div>
+                </div>
+              {% else %}—{% endif %}
+            </td>
+            <td style="font-size:12px; color:var(--text3);">{% if log.detail %}{{ log.detail|truncatechars:40 }}{% else %}—{% endif %}</td>
+            <td style="text-align:right; font-family:var(--mono); font-size:11.5px; color:var(--text3);">{{ log.timestamp|date:"d M, H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div id="adm-log-empty" class="adm-empty" style="display:none;">
+        <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <p class="adm-empty-title">No matching activity</p>
       </div>
-      <p class="adm-empty-title">No activity yet</p>
-      <p class="adm-empty-sub">Actions taken by users will appear here</p>
+      {% else %}
+      <div class="adm-empty">
+        <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <p class="adm-empty-title">No activity yet</p>
+        <p class="adm-empty-sub">User actions will appear here.</p>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
-  </div>
 
+  </main>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+(function () {
+  // Project search
+  var searchInput = document.getElementById('adm-project-search');
+  if (searchInput) {
+    var rows = document.querySelectorAll('#adm-project-rows tr');
+    var emptyEl = document.getElementById('adm-project-empty');
+    searchInput.addEventListener('input', function () {
+      var q = this.value.trim().toLowerCase();
+      var count = 0;
+      rows.forEach(function (row) {
+        var match = !q || row.dataset.search.includes(q);
+        row.classList.toggle('adm-row-hidden', !match);
+        if (match) count++;
+      });
+      if (emptyEl) emptyEl.style.display = (count === 0 && q) ? 'block' : 'none';
+    });
+  }
+
+  // Log filter chips
+  var filterBar = document.getElementById('adm-log-filters');
+  if (filterBar) {
+    var chips = filterBar.querySelectorAll('.adm-chip');
+    var logRows = document.querySelectorAll('#adm-log-rows tr');
+    var logEmpty = document.getElementById('adm-log-empty');
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var filter = chip.dataset.filter;
+        var count = 0;
+        logRows.forEach(function (row) {
+          var match = filter === 'all' || row.dataset.action === filter;
+          row.classList.toggle('adm-row-hidden', !match);
+          if (match) count++;
+        });
+        if (logEmpty) logEmpty.style.display = count === 0 ? 'block' : 'none';
+      });
+    });
+  }
+
+  // Category toggle
+  window.toggleCat = function (id) {
+    document.getElementById(id).classList.toggle('open');
+  };
+
+  // ── Charts ──
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888';
+  }
+
+  // Income vs Expense bar chart — built from the projects table already rendered
+  var balanceEls = document.querySelectorAll('#adm-project-rows .adm-balance');
+  var projectNames = [];
+  var incomeVals = [];
+  var expenseVals = [];
+  var positiveCount = 0;
+  var negativeCount = 0;
+
+  document.querySelectorAll('#adm-project-rows tr').forEach(function (row) {
+    var nameEl = row.querySelector('.adm-cell-name');
+    var incomeEl = row.children[3];
+    var expenseEl = row.children[4];
+    var balEl = row.querySelector('.adm-balance');
+    if (!nameEl || !incomeEl || !expenseEl || !balEl) return;
+
+    projectNames.push(nameEl.textContent.trim());
+    incomeVals.push(parseFloat(incomeEl.textContent.replace(/[^\d.-]/g, '')) || 0);
+    expenseVals.push(parseFloat(expenseEl.textContent.replace(/[^\d.-]/g, '')) || 0);
+
+    var bal = parseFloat(balEl.dataset.balance);
+    if (bal < 0) { negativeCount++; } else { positiveCount++; }
+  });
+
+  var posCountEl = document.getElementById('positiveCount');
+  var negCountEl = document.getElementById('negativeCount');
+  if (posCountEl) posCountEl.textContent = positiveCount;
+  if (negCountEl) negCountEl.textContent = negativeCount;
+
+  var ieCanvas = document.getElementById('incomeExpenseChart');
+  if (ieCanvas && window.Chart) {
+    var labels = projectNames.length ? projectNames.slice(0, 8) : ['No data'];
+    var incomeData = incomeVals.length ? incomeVals.slice(0, 8) : [0];
+    var expenseData = expenseVals.length ? expenseVals.slice(0, 8) : [0];
+
+    new Chart(ieCanvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Income',
+            data: incomeData,
+            backgroundColor: cssVar('--emerald') || '#10b981',
+            borderRadius: 5,
+            maxBarThickness: 22,
+          },
+          {
+            label: 'Expense',
+            data: expenseData,
+            backgroundColor: cssVar('--rose') || '#f43f5e',
+            borderRadius: 5,
+            maxBarThickness: 22,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: cssVar('--text3') || '#888', font: { size: 11 }, maxRotation: 0, autoSkip: true }
+          },
+          y: {
+            grid: { color: cssVar('--border') || 'rgba(255,255,255,0.06)' },
+            ticks: { color: cssVar('--text3') || '#888', font: { size: 11 } }
+          }
+        }
+      }
+    });
+  }
+
+  var donutCanvas = document.getElementById('balanceDonutChart');
+  if (donutCanvas && window.Chart) {
+    var hasData = (positiveCount + negativeCount) > 0;
+    new Chart(donutCanvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Positive balance', 'Negative balance'],
+        datasets: [{
+          data: hasData ? [positiveCount, negativeCount] : [1, 0],
+          backgroundColor: [cssVar('--emerald') || '#10b981', cssVar('--rose') || '#f43f5e'],
+          borderWidth: 0,
+          spacing: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: { legend: { display: false }, tooltip: { enabled: hasData } }
+      }
+    });
+  }
+})();
+</script>
 {% endblock %}

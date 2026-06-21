@@ -1,7 +1,8 @@
-# cashProject/settings.py
 
 from pathlib import Path
 import os
+from decouple import config
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,7 +53,7 @@ TEMPLATES = [
     },
 ]
 
-# SQLite — /data persistent disk on Render, local fallback
+
 RENDER_DISK = Path('/data')
 DB_PATH = (RENDER_DISK / 'db.sqlite3') if RENDER_DISK.exists() else (BASE_DIR / 'db.sqlite3')
 
@@ -86,3 +87,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DEBUG = True
+
+
+# ─── Email Configuration ───────────────────────────────────
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL  = config('EMAIL_HOST_USER', default='')

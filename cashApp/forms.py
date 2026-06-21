@@ -69,13 +69,9 @@ class SubCategoryForm(forms.ModelForm):
         self.fields['users'].label     = 'Restrict to users (optional)'
 
 
-# ── নতুন: একটি user-এর জন্য subcategory assign করার form ──────────────
+
 class UserSubCategoryForm(forms.Form):
-    """
-    Admin একজন specific user-কে existing subcategory assign করতে পারবে,
-    অথবা নতুন subcategory বানিয়ে সরাসরি assign করতে পারবে।
-    """
-    # Existing subcategory assign
+    
     subcategories = forms.ModelMultipleChoiceField(
         queryset=SubCategory.objects.all(),
         required=False,
@@ -83,7 +79,6 @@ class UserSubCategoryForm(forms.Form):
         widget=forms.CheckboxSelectMultiple(),
     )
 
-    # নতুন subcategory বানিয়ে assign
     new_sub_category   = forms.CharField(
         max_length=100,
         required=False,
@@ -102,7 +97,6 @@ class UserSubCategoryForm(forms.Form):
         new_name = cleaned.get('new_sub_category', '').strip()
         new_cat  = cleaned.get('new_sub_category_cat')
 
-        # নতুন নাম দিলে category বাধ্যতামূলক
         if new_name and not new_cat:
             raise forms.ValidationError(
                 "Please select a category for the new sub-category."

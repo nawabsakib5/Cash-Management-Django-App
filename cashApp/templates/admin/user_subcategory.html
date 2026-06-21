@@ -144,6 +144,10 @@
 }
 .usc-input::placeholder { color: var(--text3); }
 
+.usc-field-error {
+  font-size: 11.5px; color: var(--rose); margin-top: 5px;
+}
+
 /* Submit buttons */
 .usc-btn {
   display: inline-flex; align-items: center; gap: 8px;
@@ -305,6 +309,14 @@
           <!-- Section 2: Create new subcategory -->
           <div class="usc-form-section">
             <div class="usc-section-title">Create & Assign New</div>
+
+            {% if form.non_field_errors %}
+              <div class="usc-msg error" style="margin-bottom:12px;">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+
             <div class="usc-form-group">
               <label class="usc-label">Sub-category Name</label>
               <input
@@ -314,22 +326,26 @@
                 placeholder="e.g. Bonus, Taxi, Lunch…"
                 value="{{ form.new_sub_category.value|default:'' }}"
               >
+              {% if form.new_sub_category.errors %}
+                <div class="usc-field-error">{{ form.new_sub_category.errors|join:", " }}</div>
+              {% endif %}
             </div>
+
             <div class="usc-form-group">
               <label class="usc-label">Category</label>
               <select name="new_sub_category_cat" class="usc-select">
                 <option value="">Select category</option>
                 {% for cat in all_categories %}
-                  <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                  <option value="{{ cat.pk }}" {% if form.new_sub_category_cat.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ cat.name }}
+                  </option>
                 {% endfor %}
               </select>
+              {% if form.new_sub_category_cat.errors %}
+                <div class="usc-field-error">{{ form.new_sub_category_cat.errors|join:", " }}</div>
+              {% endif %}
             </div>
-            {% if form.errors %}
-              <div class="usc-msg error" style="margin-bottom:12px;">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-              </div>
-            {% endif %}
+
             <button type="submit" class="usc-btn usc-btn-emerald">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Create & Assign

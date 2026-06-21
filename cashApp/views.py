@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory
 from .forms import *
 from .decorators import admin_required, not_frozen, log_action
-
+from .utils import *
 
 
 def Signup(request):
@@ -51,6 +51,7 @@ def Signup(request):
             password  = password,
         )
         login(request, user)
+        send_welcome_email(user)
         messages.success(request, f"Welcome {username}! Your account has been created.")
         if user.user_type == 'admin':
             return redirect('admin_dashboard')
@@ -116,6 +117,7 @@ def changapassword(request):
         request.user.set_password(new_pass)
         request.user.save()
         update_session_auth_hash(request, request.user)
+        send_password_change_email(request.user)
         messages.success(request, "Password changed successfully.")
         return redirect('project_list')
 
@@ -316,6 +318,9 @@ def transaction_create(request, pk):
             tx.user    = request.user
             tx.project = project
             tx.save()
+
+            send_transaction_confirmation(tx)
+
             log_action(request.user, 'create', target=tx,
                        detail=f"{tx_type} {amount}", request=request)
 
@@ -335,6 +340,7 @@ def transaction_create(request, pk):
         'form': form, 'project': project, 'balance': balance,
         'is_admin_view': is_admin_view,
     })
+
 
 
 @login_required(login_url='login')
@@ -357,7 +363,6 @@ def transaction_edit(request, pk):
         'form': form, 'project': transaction.project,
     })
 
-
 @login_required(login_url='login')
 @not_frozen
 def transaction_delete(request, pk):
@@ -365,10 +370,14 @@ def transaction_delete(request, pk):
         transaction = get_object_or_404(Transaction, pk=pk)
     else:
         transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
-    project_pk  = transaction.project.pk
+    project_pk = transaction.project.pk
 
     if request.method == 'POST':
         transaction.request_delete()
+        admin_emails = list(
+            CustomUser.objects.filter(user_type='admin').values_list('email', flat=True)
+        )
+        send_delete_request_email(transaction, admin_emails)
         log_action(request.user, 'delete_request', target=transaction, request=request)
         return redirect('project_detail', pk=project_pk)
 
@@ -614,11 +623,13 @@ def admin_user_freeze(request, user_id):
             target_user.is_frozen = False
             target_user.save(update_fields=['is_frozen'])
             log_action(request.user, 'unfreeze', target=target_user, request=request)
+            send_account_unfrozen_email(target_user)
             messages.success(request, f"'{target_user.username}' has been unfrozen.")
         else:
             target_user.is_frozen = True
             target_user.save(update_fields=['is_frozen'])
             log_action(request.user, 'freeze', target=target_user, request=request)
+            send_account_frozen_email(target_user)
             messages.success(request, f"'{target_user.username}' has been frozen.")
 
         return redirect('admin_user_list')
