@@ -2,6 +2,100 @@
 {% block title %}Categories — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+
+.cl-search-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.cl-count-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--text2);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 99px; padding: 5px 12px;
+}
+.cl-count-pill strong { color: var(--text); font-family: var(--mono); }
+
+.cl-search { position: relative; flex: 1; max-width: 320px; min-width: 200px; }
+.cl-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; stroke: var(--text3); fill: none; stroke-width: 2; pointer-events: none; }
+.cl-search input {
+  width: 100%; padding: 9px 14px 9px 34px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 99px; font-size: 13px; font-family: var(--font); color: var(--text);
+  outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+}
+.cl-search input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-fog); }
+.cl-search input::placeholder { color: var(--text3); }
+
+/* Add category card */
+.cl-add-card { margin-bottom: 24px; }
+.cl-add-row { display: flex; gap: 10px; align-items: flex-end; }
+.cl-add-input-wrap { position: relative; flex: 1; margin-bottom: 0; }
+.cl-add-input-wrap svg.prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text3); fill: none; stroke-width: 2; pointer-events: none; }
+.cl-add-input-wrap input.form-control { padding-left: 38px; }
+@media (max-width: 520px) { .cl-add-row { flex-direction: column; align-items: stretch; } }
+
+/* Category card */
+.cl-cards { display: flex; flex-direction: column; gap: 14px; }
+.cl-cat-card { transition: border-color var(--transition); }
+.cl-cat-card.cl-row-hidden { display: none; }
+.cl-cat-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.cl-cat-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cl-cat-icon { width: 40px; height: 40px; border-radius: var(--radius); border: 1px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cl-cat-icon svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cl-cat-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-cat-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.cl-cat-meta strong { color: var(--text2); font-weight: 600; }
+
+.cl-cat-icon--indigo  { background: var(--indigo-fog); border-color: var(--indigo-line); color: var(--indigo); }
+.cl-cat-icon--emerald { background: var(--emerald-fog); border-color: rgba(16,185,129,0.22); color: var(--emerald); }
+.cl-cat-icon--amber   { background: var(--amber-fog); border-color: rgba(245,158,11,0.22); color: var(--amber); }
+.cl-cat-icon--rose    { background: var(--rose-fog); border-color: rgba(244,63,94,0.22); color: var(--rose); }
+
+.cl-cat-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.cl-btn-mini {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600; font-family: var(--font);
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+  text-decoration: none; cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
+.cl-btn-mini:hover { background: var(--surface3); border-color: var(--border2); color: var(--text); }
+.cl-btn-mini svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+.cl-btn-mini.danger { color: var(--rose); border-color: rgba(244,63,94,0.22); }
+.cl-btn-mini.danger:hover { background: var(--rose-fog); border-color: rgba(244,63,94,0.35); }
+
+/* Sub-category chips */
+.cl-sub-zone { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+.cl-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 99px; padding: 6px 7px 6px 12px; transition: border-color var(--transition);
+}
+.cl-chip:hover { border-color: var(--border2); }
+.cl-chip.private { background: var(--indigo-fog); border-color: var(--indigo-line); }
+.cl-chip-name { font-size: 12.5px; font-weight: 500; color: var(--text2); }
+.cl-chip.private .cl-chip-name { color: var(--text); }
+.cl-chip-icon { width: 12px; height: 12px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.cl-chip-owner {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--indigo); background: rgba(99,102,241,0.14);
+  border-radius: 99px; padding: 2px 7px; white-space: nowrap;
+}
+.cl-chip-del {
+  background: none; border: none; cursor: pointer; padding: 2px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; transition: background var(--transition); flex-shrink: 0;
+}
+.cl-chip-del:hover { background: var(--rose-fog); }
+.cl-chip-del svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; transition: stroke var(--transition); }
+.cl-chip-del:hover svg { stroke: var(--rose); }
+
+.cl-no-sub { font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); padding-top: 14px; }
+.cl-no-sub a { color: var(--indigo); text-decoration: none; font-weight: 500; }
+.cl-no-sub a:hover { text-decoration: underline; }
+
+#cl-no-results { display: none; }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <div class="page-header">
@@ -19,7 +113,7 @@
 </div>
 
 <!-- Add Category Form -->
-<div class="card" style="margin-bottom: 24px;">
+<div class="card cl-add-card">
   <div class="card-header">
     <div class="card-title">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -28,9 +122,10 @@
   </div>
   <form method="post">
     {% csrf_token %}
-    <div style="display: flex; gap: 10px; align-items: flex-end;">
-      <div class="form-group" style="margin-bottom: 0; flex: 1;">
+    <div class="cl-add-row">
+      <div class="form-group cl-add-input-wrap">
         <label class="form-label">Category Name <span class="required"></span></label>
+        <svg class="prefix" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
         <input
           type="text"
           name="name"
@@ -56,44 +151,51 @@
 
 <!-- Categories List -->
 {% if categories %}
-  <div style="display: flex; flex-direction: column; gap: 14px;">
+
+  <div class="cl-search-row">
+    <span class="cl-count-pill">
+      <strong>{{ categories|length }}</strong> categor{{ categories|length|pluralize:"y,ies" }}
+    </span>
+    <div class="cl-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="cl-search-input" placeholder="Search categories…" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="cl-cards" id="cl-cards">
     {% for category in categories %}
-      <div class="card">
+      {% cycle 'indigo' 'emerald' 'amber' 'rose' as cat_accent silent %}
+      <div class="card cl-cat-card" data-search="{{ category.name|lower }}">
+
         <!-- Category Header -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="
-              width: 36px; height: 36px; border-radius: 9px;
-              background: var(--indigo-fog); border: 1px solid var(--indigo-line);
-              display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-              <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--indigo);fill:none;stroke-width:2;stroke-linecap:round;">
-                <path d="M4 6h16M4 12h16M4 18h7"/>
-              </svg>
+        <div class="cl-cat-head">
+          <div class="cl-cat-info">
+            <div class="cl-cat-icon cl-cat-icon--{{ cat_accent }}">
+              <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
             </div>
-            <div>
-              <div style="font-size:15px; font-weight:600; color:var(--text);">{{ category.name }}</div>
-              <div style="font-size:12px; color:var(--text3); margin-top:2px;">
-                {{ category.subcategories.count }} sub-categor{% if category.subcategories.count == 1 %}y{% else %}ies{% endif %}
+            <div style="min-width:0;">
+              <div class="cl-cat-name">{{ category.name }}</div>
+              <div class="cl-cat-meta">
+                <strong>{{ category.subcategories.all|length }}</strong> sub-categor{{ category.subcategories.all|length|pluralize:"y,ies" }}
                 {% if category.created_by %}
-                  · Created by <span style="color:var(--text2);">{{ category.created_by.username }}</span>
+                  · Created by <strong>{{ category.created_by.username }}</strong>
                 {% endif %}
               </div>
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="cl-cat-actions">
             {% if user.is_admin %}
-            <a href="{% url 'subcategory_create' %}?category={{ category.pk }}" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+            <a href="{% url 'subcategory_create' %}?category={{ category.pk }}" class="cl-btn-mini">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Add Sub
             </a>
             {% endif %}
             {% if user.is_admin or category.created_by == user %}
-            <form method="post" action="{% url 'category_delete' category.pk %}" style="display:inline;">
+            <form method="post" action="{% url 'category_delete' category.pk %}" style="display:inline; margin:0;">
               {% csrf_token %}
               <button type="submit"
-                class="btn-secondary"
-                style="padding:6px 12px; font-size:12px; color:var(--rose); border-color:rgba(244,63,94,0.2);"
+                class="cl-btn-mini danger"
                 onclick="return confirm('Delete category \'{{ category.name }}\'? All sub-categories will also be deleted.')">
                 <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                 Delete
@@ -105,45 +207,30 @@
 
         <!-- Sub-Categories -->
         {% if category.subcategories.all %}
-          <div style="
-            border-top: 1px solid var(--border);
-            padding-top: 14px;
-            display: flex; flex-wrap: wrap; gap: 8px;">
+          <div class="cl-sub-zone">
             {% for sub in category.subcategories.all %}
-              <div style="
-                display: flex; align-items: center; gap: 8px;
-                background: {% if sub.user %}var(--indigo-fog){% else %}var(--surface2){% endif %};
-                border: 1px solid {% if sub.user %}var(--indigo-line){% else %}var(--border){% endif %};
-                border-radius: 8px;
-                padding: 6px 12px;">
+              <div class="cl-chip {% if sub.user %}private{% endif %}">
 
                 {% if sub.user %}
-                  <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--indigo);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" title="Private sub-category">
+                  <svg class="cl-chip-icon" viewBox="0 0 24 24" title="Private sub-category">
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 {% endif %}
 
-                <span style="font-size: 13px; font-weight: 500; color: var(--text2);">{{ sub.name }}</span>
+                <span class="cl-chip-name">{{ sub.name }}</span>
 
                 {% if sub.user %}
-                  <span style="
-                    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
-                    color: var(--indigo); background: rgba(99,102,241,0.12);
-                    border-radius: 100px; padding: 2px 7px;">
-                    {% if sub.user == user %}You{% else %}{{ sub.user.username }}{% endif %}
-                  </span>
+                  <span class="cl-chip-owner">{% if sub.user == user %}You{% else %}{{ sub.user.username }}{% endif %}</span>
                 {% endif %}
 
                 {% if user.is_admin %}
                 <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="display:inline; margin:0;">
                   {% csrf_token %}
                   <button type="submit"
-                    style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;"
+                    class="cl-chip-del"
                     onclick="return confirm('Delete sub-category \'{{ sub.name }}\'?')"
                     title="Delete">
-                    <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--rose);fill:none;stroke-width:2;stroke-linecap:round;">
-                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </form>
                 {% endif %}
@@ -151,20 +238,24 @@
             {% endfor %}
           </div>
         {% else %}
-          <div style="
-            border-top: 1px solid var(--border);
-            padding-top: 14px;">
-            <p style="font-size: 13px; color: var(--text3);">
-              No sub-categories yet.
-              {% if user.is_admin %}
-                <a href="{% url 'subcategory_create' %}?category={{ category.pk }}" style="color:var(--indigo); text-decoration:none; font-weight:500;">Add one →</a>
-              {% endif %}
-            </p>
+          <div class="cl-no-sub">
+            No sub-categories yet.
+            {% if user.is_admin %}
+              <a href="{% url 'subcategory_create' %}?category={{ category.pk }}">Add one →</a>
+            {% endif %}
           </div>
         {% endif %}
 
       </div>
     {% endfor %}
+  </div>
+
+  <div id="cl-no-results" class="empty-state">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </div>
+    <div class="empty-title">No matching categories</div>
+    <div class="empty-sub">Try a different search term.</div>
   </div>
 
 {% else %}
@@ -177,4 +268,26 @@
   </div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var searchInput = document.getElementById('cl-search-input');
+  if (!searchInput) return;
+  var cards = document.querySelectorAll('#cl-cards .cl-cat-card');
+  var noResults = document.getElementById('cl-no-results');
+
+  searchInput.addEventListener('input', function () {
+    var q = this.value.trim().toLowerCase();
+    var visible = 0;
+    cards.forEach(function (card) {
+      var match = card.dataset.search.indexOf(q) !== -1;
+      card.classList.toggle('cl-row-hidden', !match);
+      if (match) visible++;
+    });
+    noResults.style.display = (visible === 0 && q) ? 'block' : 'none';
+  });
+})();
+</script>
 {% endblock %}
