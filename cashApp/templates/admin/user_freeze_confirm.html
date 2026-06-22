@@ -13,15 +13,13 @@
       {% if target_user.is_frozen %}Unfreeze{% else %}Freeze{% endif %} User
     </h1>
     <p class="page-sub">
-      {% if target_user.is_frozen %}
-        Restore full access to this account
-      {% else %}
-        Restrict this account from performing any actions
-      {% endif %}
+      {% if target_user.is_frozen %}Restore full access to this account.
+      {% else %}Restrict this account from performing any actions.{% endif %}
     </p>
   </div>
-  <a href="{% url 'admin_user_list' %}" class="btn-ghost">
-    ← Back to Users
+  <a href="{% url 'admin_user_list' %}" class="btn-back">
+    <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Users
   </a>
 </div>
 
@@ -32,26 +30,20 @@
 
   <div class="frz-card-body">
 
-    <!-- Icon -->
+    <!-- ── Icon ── -->
     <div class="frz-icon-wrap {% if target_user.is_frozen %}frz-icon-wrap--unfreeze{% else %}frz-icon-wrap--freeze{% endif %}">
       {% if target_user.is_frozen %}
-        <!-- Unlock icon -->
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-          <line x1="12" y1="15" x2="12" y2="17"/>
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/><line x1="12" y1="15" x2="12" y2="17"/>
         </svg>
       {% else %}
-        <!-- Lock icon -->
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          <line x1="12" y1="15" x2="12" y2="17"/>
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><line x1="12" y1="15" x2="12" y2="17"/>
         </svg>
       {% endif %}
     </div>
 
-    <!-- Title -->
+    <!-- ── Heading ── -->
     <h2 class="frz-title">
       {% if target_user.is_frozen %}Unfreeze this account?{% else %}Freeze this account?{% endif %}
     </h2>
@@ -63,7 +55,7 @@
       {% endif %}
     </p>
 
-    <!-- User Preview -->
+    <!-- ── User Preview ── -->
     <div class="frz-user-preview">
       <div class="frz-preview-avatar {% if target_user.user_type == 'admin' %}frz-preview-avatar--admin{% endif %}">
         {{ target_user.username|first|upper }}
@@ -72,113 +64,84 @@
         <div class="frz-preview-name">
           {{ target_user.username }}
           {% if target_user.user_type == 'admin' %}
-            <span class="frz-preview-tag" style="background:var(--rose-fog); color:var(--rose);">Admin</span>
+            <span class="frz-preview-tag" style="background:var(--rose-fog); color:var(--rose); border-color:rgba(244,63,94,0.25);">Admin</span>
           {% else %}
-            <span class="frz-preview-tag" style="background:var(--indigo-fog); color:var(--indigo);">User</span>
+            <span class="frz-preview-tag" style="background:var(--indigo-fog); color:var(--indigo); border-color:var(--indigo-line);">User</span>
           {% endif %}
         </div>
         <div class="frz-preview-email">{{ target_user.email }}</div>
         <div class="frz-preview-meta">
-          Current status:&nbsp;
+          Status change:&nbsp;
           {% if target_user.is_frozen %}
-            <span style="color:#d97706; font-weight:600;">Frozen</span>
-            &nbsp;→&nbsp;
-            <span style="color:var(--emerald); font-weight:600;">Active</span>
+            <span class="frz-meta-tag frz-meta-tag--frozen">Frozen</span>
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;display:inline-block;vertical-align:middle;margin:0 4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <span class="frz-meta-tag frz-meta-tag--active">Active</span>
           {% else %}
-            <span style="color:var(--emerald); font-weight:600;">Active</span>
-            &nbsp;→&nbsp;
-            <span style="color:#d97706; font-weight:600;">Frozen</span>
+            <span class="frz-meta-tag frz-meta-tag--active">Active</span>
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;display:inline-block;vertical-align:middle;margin:0 4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <span class="frz-meta-tag frz-meta-tag--frozen">Frozen</span>
           {% endif %}
         </div>
       </div>
-
-      <!-- Status indicator -->
       <div class="frz-status-pill {% if target_user.is_frozen %}frz-status-pill--frozen{% else %}frz-status-pill--active{% endif %}">
         <span class="frz-status-dot"></span>
         {% if target_user.is_frozen %}Frozen{% else %}Active{% endif %}
       </div>
     </div>
 
-    <!-- What changes -->
+    <!-- ── Effect list ── -->
     <div class="frz-effect-list">
       <div class="frz-effect-title">
         {% if target_user.is_frozen %}After unfreezing, the user can:
-        {% else %}After freezing, the user cannot:
-        {% endif %}
+        {% else %}After freezing, the user cannot:{% endif %}
       </div>
-
       {% if target_user.is_frozen %}
         <div class="frz-effect-item frz-effect-item--allow">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+          <div class="frz-effect-dot frz-effect-dot--allow"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
           <span>Create and manage projects</span>
         </div>
         <div class="frz-effect-item frz-effect-item--allow">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+          <div class="frz-effect-dot frz-effect-dot--allow"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
           <span>Add, edit and delete transactions</span>
         </div>
         <div class="frz-effect-item frz-effect-item--allow">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+          <div class="frz-effect-dot frz-effect-dot--allow"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
           <span>Invite and remove project members</span>
         </div>
       {% else %}
         <div class="frz-effect-item frz-effect-item--deny">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+          <div class="frz-effect-dot frz-effect-dot--deny"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
           <span>Create or manage projects</span>
         </div>
         <div class="frz-effect-item frz-effect-item--deny">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+          <div class="frz-effect-dot frz-effect-dot--deny"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
           <span>Add, edit or delete transactions</span>
         </div>
         <div class="frz-effect-item frz-effect-item--deny">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+          <div class="frz-effect-dot frz-effect-dot--deny"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
           <span>Invite or remove project members</span>
         </div>
-        <div class="frz-effect-item" style="color:var(--text3);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
+        <div class="frz-effect-item frz-effect-item--note">
+          <div class="frz-effect-dot frz-effect-dot--note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
           <span>They can still log in and view their data</span>
         </div>
       {% endif %}
     </div>
 
-    <!-- Actions -->
+    <!-- ── Actions ── -->
     <div class="frz-actions">
-      <a href="{% url 'admin_user_list' %}" class="btn-ghost frz-cancel">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"/>
-          <polyline points="12 19 5 12 12 5"/>
-        </svg>
+      <a href="{% url 'admin_user_list' %}" class="btn-secondary">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         Cancel
       </a>
       <form method="post" style="display:inline;">
         {% csrf_token %}
         <button type="submit" class="frz-confirm-btn {% if target_user.is_frozen %}frz-confirm-btn--unfreeze{% else %}frz-confirm-btn--freeze{% endif %}">
           {% if target_user.is_frozen %}
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2"/>
-              <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
             Yes, Unfreeze Account
           {% else %}
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Yes, Freeze Account
           {% endif %}
         </button>
@@ -196,151 +159,175 @@
 
 /* ── Card ─────────────────────────────────────────────────────────────────── */
 .frz-card {
-  max-width: 520px;
-  background: var(--surface);
+  max-width: 540px;
+  background: linear-gradient(165deg, var(--surface2), var(--surface));
   border-radius: var(--radius-xl);
   overflow: hidden;
+  box-shadow: var(--shadow-card, 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -12px rgba(0,0,0,0.5));
 }
-.frz-card--freeze  { border: 1px solid rgba(245,158,11,0.25); }
-.frz-card--unfreeze{ border: 1px solid rgba(16,185,129,0.25); }
+.frz-card--freeze   { border: 1px solid rgba(245,158,11,0.28); }
+.frz-card--unfreeze { border: 1px solid rgba(16,185,129,0.28); }
 
 .frz-card-top { height: 3px; }
-.frz-card--freeze  .frz-card-top { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.frz-card--unfreeze .frz-card-top{ background: linear-gradient(90deg, var(--emerald), #34d399); }
+.frz-card--freeze   .frz-card-top { background: linear-gradient(90deg, #f59e0b, #fbbf24, rgba(245,158,11,0.3)); box-shadow: 0 0 14px rgba(245,158,11,0.35); }
+.frz-card--unfreeze .frz-card-top { background: linear-gradient(90deg, var(--emerald), #34d399, rgba(16,185,129,0.3)); box-shadow: 0 0 14px rgba(16,185,129,0.35); }
 
 .frz-card-body {
-  padding: 36px 32px 32px;
+  padding: 40px 36px 36px;
   display: flex; flex-direction: column;
   align-items: center; text-align: center;
 }
 
 /* ── Icon ─────────────────────────────────────────────────────────────────── */
 .frz-icon-wrap {
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 72px; height: 72px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 22px; flex-shrink: 0;
 }
-.frz-icon-wrap svg { width: 28px; height: 28px; }
+.frz-icon-wrap svg { width: 30px; height: 30px; }
 
 .frz-icon-wrap--freeze {
-  background: rgba(245,158,11,0.1);
-  border: 1px solid rgba(245,158,11,0.25);
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.3);
+  box-shadow: 0 0 28px rgba(245,158,11,0.18);
 }
 .frz-icon-wrap--freeze svg { stroke: #f59e0b; }
 
 .frz-icon-wrap--unfreeze {
-  background: rgba(16,185,129,0.1);
-  border: 1px solid rgba(16,185,129,0.25);
+  background: var(--emerald-fog);
+  border: 1px solid rgba(16,185,129,0.3);
+  box-shadow: 0 0 28px rgba(16,185,129,0.18);
 }
 .frz-icon-wrap--unfreeze svg { stroke: var(--emerald); }
 
 /* ── Text ─────────────────────────────────────────────────────────────────── */
 .frz-title {
-  font-size: 20px; font-weight: 700; color: var(--text);
-  margin: 0 0 8px;
+  font-size: 21px; font-weight: 700; color: var(--text);
+  margin: 0 0 10px; letter-spacing: -0.4px;
 }
 .frz-sub {
-  font-size: 13.5px; color: var(--text3); line-height: 1.6;
-  margin: 0 0 24px; max-width: 380px;
+  font-size: 13.5px; color: var(--text3); line-height: 1.65;
+  margin: 0 0 28px; max-width: 400px;
 }
 
 /* ── User Preview ─────────────────────────────────────────────────────────── */
 .frz-user-preview {
   display: flex; align-items: center; gap: 14px; text-align: left;
   width: 100%;
-  background: var(--bg, #0f1117);
+  background: var(--surface3);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: 16px 18px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 }
 .frz-preview-avatar {
-  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
+  width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(155deg, var(--indigo), var(--indigo-deep));
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px; font-weight: 700; color: var(--indigo);
+  font-size: 18px; font-weight: 700; color: #fff; font-family: var(--mono);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 12px rgba(99,102,241,0.3);
 }
 .frz-preview-avatar--admin {
-  background: var(--rose-fog); border-color: rgba(244,63,94,0.2); color: var(--rose);
+  background: linear-gradient(155deg, var(--rose), #e11d48);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 12px rgba(244,63,94,0.3);
 }
 .frz-preview-info { flex: 1; min-width: 0; }
 .frz-preview-name {
   font-size: 14px; font-weight: 600; color: var(--text);
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 3px;
 }
 .frz-preview-tag {
-  font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em;
-  text-transform: uppercase; padding: 2px 7px; border-radius: 99px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 99px; border: 1px solid;
 }
 .frz-preview-email {
-  font-size: 12px; color: var(--text3);
-  font-family: var(--mono); margin-top: 3px;
+  font-size: 11.5px; color: var(--text3); font-family: var(--mono); margin-bottom: 5px;
 }
-.frz-preview-meta { font-size: 12px; color: var(--text3); margin-top: 4px; }
+.frz-preview-meta { font-size: 12px; color: var(--text3); display: flex; align-items: center; flex-wrap: wrap; gap: 3px; }
+.frz-meta-tag { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+.frz-meta-tag--frozen { background: var(--amber-fog); color: var(--amber); }
+.frz-meta-tag--active { background: var(--emerald-fog); color: var(--emerald); }
 
 .frz-status-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 12px; border-radius: 99px;
-  font-size: 11px; font-weight: 600; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 13px; border-radius: 99px;
+  font-size: 11.5px; font-weight: 600; flex-shrink: 0; border: 1px solid;
 }
-.frz-status-pill--frozen {
-  background: rgba(245,158,11,0.12); color: #d97706;
-}
-.frz-status-pill--active {
-  background: rgba(16,185,129,0.1); color: var(--emerald);
-}
-.frz-status-dot {
-  width: 6px; height: 6px; border-radius: 50%; background: currentColor;
-}
+.frz-status-pill--frozen { background: var(--amber-fog); color: var(--amber); border-color: rgba(245,158,11,0.25); }
+.frz-status-pill--active { background: var(--emerald-fog); color: var(--emerald); border-color: rgba(16,185,129,0.25); }
+.frz-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
 
 /* ── Effect List ──────────────────────────────────────────────────────────── */
 .frz-effect-list {
   width: 100%; text-align: left;
-  display: flex; flex-direction: column; gap: 8px;
-  margin-bottom: 28px;
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 32px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
 }
 .frz-effect-title {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--text3);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .frz-effect-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  font-size: 13px; line-height: 1.5;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; font-weight: 500;
 }
-.frz-effect-item svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.frz-effect-dot {
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.frz-effect-dot svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
 .frz-effect-item--allow { color: var(--emerald); }
-.frz-effect-item--allow svg { stroke: var(--emerald); }
+.frz-effect-dot--allow { background: var(--emerald-fog); border: 1px solid rgba(16,185,129,0.22); color: var(--emerald); }
+
 .frz-effect-item--deny  { color: var(--rose); }
-.frz-effect-item--deny svg  { stroke: var(--rose); }
+.frz-effect-dot--deny  { background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.22); color: var(--rose); }
+
+.frz-effect-item--note  { color: var(--text3); }
+.frz-effect-dot--note  { background: var(--surface4); border: 1px solid var(--border); color: var(--text3); }
 
 /* ── Actions ──────────────────────────────────────────────────────────────── */
 .frz-actions {
   display: flex; gap: 10px; width: 100%; justify-content: flex-end;
+  align-items: center;
 }
-.frz-cancel {
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.frz-cancel svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
 
 .frz-confirm-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 20px; border: none; border-radius: var(--radius-xl);
-  font-size: 13.5px; font-weight: 600; cursor: pointer;
-  transition: opacity var(--transition), transform var(--transition);
+  padding: 11px 22px; border: none; border-radius: var(--radius);
+  font-size: 13.5px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; transition: all var(--transition); white-space: nowrap;
 }
-.frz-confirm-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
-.frz-confirm-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
-.frz-confirm-btn:active { transform: translateY(0); }
+.frz-confirm-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.frz-confirm-btn:active { transform: scale(0.97); }
 
-.frz-confirm-btn--freeze  { background: #f59e0b; color: #fff; }
-.frz-confirm-btn--unfreeze{ background: var(--emerald); color: #fff; }
+.frz-confirm-btn--freeze {
+  background: linear-gradient(155deg, #f59e0b, #d97706);
+  color: #fff;
+  border: 1px solid rgba(245,158,11,0.6);
+  box-shadow: 0 2px 14px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.14);
+}
+.frz-confirm-btn--freeze:hover { transform: translateY(-1.5px); box-shadow: 0 6px 22px rgba(245,158,11,0.5), inset 0 1px 0 rgba(255,255,255,0.16); }
+
+.frz-confirm-btn--unfreeze {
+  background: linear-gradient(155deg, var(--emerald), #059669);
+  color: #fff;
+  border: 1px solid rgba(16,185,129,0.6);
+  box-shadow: 0 2px 14px rgba(16,185,129,0.4), inset 0 1px 0 rgba(255,255,255,0.14);
+}
+.frz-confirm-btn--unfreeze:hover { transform: translateY(-1.5px); box-shadow: 0 6px 22px rgba(16,185,129,0.5), inset 0 1px 0 rgba(255,255,255,0.16); }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   .frz-card-body { padding: 28px 20px 24px; }
   .frz-actions { flex-direction: column-reverse; }
-  .frz-confirm-btn { justify-content: center; }
+  .frz-confirm-btn { width: 100%; justify-content: center; }
   .frz-status-pill { display: none; }
 }
 

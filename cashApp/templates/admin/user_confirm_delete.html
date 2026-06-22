@@ -9,144 +9,190 @@
   padding: 0 !important;
   animation: none !important;
 }
+.adm-layout { display: flex; min-height: calc(100vh - 60px); }
 
-.ua-layout {
-  display: flex;
-  min-height: calc(100vh - 60px);
-}
-
-/* ══ SIDEBAR ══ */
-.ua-sidebar {
+/* ══ SIDEBAR (dashboard থেকে exact copy) ══ */
+.adm-sidebar {
   width: 240px; flex-shrink: 0;
   background: var(--surface); border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
   padding: 24px 0; position: sticky; top: 60px;
   height: calc(100vh - 60px); overflow-y: auto;
 }
-.ua-sidebar-section { padding: 0 16px; margin-bottom: 6px; }
-.ua-sidebar-label {
+.adm-sidebar-section { padding: 0 16px; margin-bottom: 6px; }
+.adm-sidebar-label {
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--text3); padding: 12px 8px 6px;
 }
-.ua-nav-item {
+.adm-nav-item {
   display: flex; align-items: center; gap: 10px;
   padding: 9px 12px; border-radius: var(--radius);
   font-size: 13.5px; font-weight: 500; color: var(--text3);
   text-decoration: none; transition: all var(--transition);
   position: relative; margin-bottom: 2px;
 }
-.ua-nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-.ua-nav-item:hover { color: var(--text2); background: var(--surface2); }
-.ua-nav-item.active { color: var(--indigo); background: var(--indigo-fog); font-weight: 600; }
-.ua-nav-item.active::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--indigo); border-radius: 0 3px 3px 0; }
-.ua-sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 12px 16px; }
-.ua-sidebar-foot { margin-top: auto; padding: 14px 16px 0; border-top: 1px solid var(--border); }
-.ua-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; }
-.ua-sidebar-avatar {
+.adm-nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.adm-nav-item:hover { color: var(--text2); background: var(--surface2); }
+.adm-nav-item.active { color: var(--indigo); background: var(--indigo-fog); font-weight: 600; }
+.adm-nav-item.active::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--indigo); border-radius: 0 3px 3px 0; }
+.adm-nav-badge { margin-left: auto; background: var(--rose); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; min-width: 18px; text-align: center; }
+.adm-sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 12px 16px; }
+.adm-sidebar-foot { margin-top: auto; padding: 14px 16px 0; border-top: 1px solid var(--border); }
+.adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; }
+.adm-sidebar-user-avatar {
   width: 34px; height: 34px; border-radius: 50%;
   background: var(--indigo-fog); border: 1px solid var(--indigo-line);
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700; color: var(--indigo); font-family: var(--mono);
   flex-shrink: 0; text-transform: uppercase;
 }
-.ua-sidebar-name { font-size: 12.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
-.ua-sidebar-role { font-size: 11px; color: var(--text3); }
+.adm-sidebar-user-name { font-size: 12.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.adm-sidebar-user-role { font-size: 11px; color: var(--text3); }
 
 /* ══ MAIN ══ */
-.ua-main { flex: 1; padding: 28px 32px; overflow-x: hidden; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+.adm-main {
+  flex: 1; padding: 28px 32px;
+  overflow-x: hidden; min-width: 0;
+  display: flex; flex-direction: column; align-items: center;
+}
 
-/* ── Breadcrumb ── */
-.ua-breadcrumb {
+/* ── Breadcrumb (dashboard থেকে) ── */
+.adm-breadcrumb {
   display: flex; align-items: center; gap: 6px;
-  font-size: 12px; color: var(--text3); margin-bottom: 28px;
-  width: 100%; max-width: 520px;
+  font-size: 12px; color: var(--text3);
+  margin-bottom: 28px; width: 100%; max-width: 560px;
 }
-.ua-breadcrumb a { color: var(--text3); text-decoration: none; transition: color var(--transition); }
-.ua-breadcrumb a:hover { color: var(--indigo); }
-.ua-breadcrumb svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; stroke-width: 2; flex-shrink: 0; }
+.adm-breadcrumb a { color: var(--text3); text-decoration: none; transition: color var(--transition); }
+.adm-breadcrumb a:hover { color: var(--indigo); }
+.adm-breadcrumb svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; stroke-width: 2; flex-shrink: 0; }
 
-/* ── Delete Card ── */
+/* ══ DELETE CARD ══ */
 .del-card {
-  width: 100%; max-width: 520px;
+  width: 100%; max-width: 560px;
   background: var(--surface);
-  border: 1px solid rgba(244,63,94,0.2);
-  border-radius: var(--radius-xl);
+  border: 1px solid rgba(244,63,94,0.22);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(244,63,94,0.06), 0 8px 32px rgba(0,0,0,0.25);
 }
+
+/* Top danger bar — like dashboard stat card top-bar */
 .del-card-top {
   height: 3px;
-  background: linear-gradient(90deg, var(--rose), #fb7185);
+  background: linear-gradient(90deg, var(--rose), #fb7185, transparent);
 }
+
 .del-card-body {
-  padding: 36px 32px 32px;
-  display: flex; flex-direction: column;
-  align-items: center; text-align: center;
+  padding: 40px 36px 36px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
 }
 
 /* ── Warning icon ── */
 .del-icon-wrap {
-  width: 68px; height: 68px;
+  width: 72px; height: 72px;
   background: var(--rose-fog);
-  border: 1px solid rgba(244,63,94,0.2);
+  border: 1px solid rgba(244,63,94,0.22);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 20px;
-  box-shadow: 0 0 0 8px rgba(244,63,94,0.06);
+  margin-bottom: 22px;
+  box-shadow: 0 0 0 6px rgba(244,63,94,0.07), 0 0 0 12px rgba(244,63,94,0.03);
+  animation: del-pulse 3s ease-in-out infinite;
 }
-.del-icon-wrap svg { width: 30px; height: 30px; }
+@keyframes del-pulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(244,63,94,0.07), 0 0 0 12px rgba(244,63,94,0.03); }
+  50%       { box-shadow: 0 0 0 8px rgba(244,63,94,0.1),  0 0 0 16px rgba(244,63,94,0.04); }
+}
+.del-icon-wrap svg { width: 32px; height: 32px; }
 
 /* ── Text ── */
-.del-title { font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 8px; }
-.del-sub { font-size: 13.5px; color: var(--text3); line-height: 1.65; margin: 0 0 24px; max-width: 380px; }
+.del-title {
+  font-size: 21px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.3px; margin: 0 0 8px;
+}
+.del-sub {
+  font-size: 13.5px; color: var(--text3); line-height: 1.65;
+  margin: 0 0 28px; max-width: 400px;
+}
 
-/* ── User Preview ── */
+/* ── User preview (like adm-table-card style) ── */
 .del-user-preview {
-  display: flex; align-items: center; gap: 14px; text-align: left;
+  display: flex; align-items: center; gap: 16px; text-align: left;
   width: 100%;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px 18px;
-  margin-bottom: 20px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.del-user-preview::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--rose);
 }
 .del-preview-avatar {
-  width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
   background: var(--indigo-fog); border: 1px solid var(--indigo-line);
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700; color: var(--indigo); font-family: var(--mono);
+  font-size: 20px; font-weight: 700; color: var(--indigo); font-family: var(--mono);
   text-transform: uppercase;
 }
-.del-preview-avatar--admin { background: var(--rose-fog); border-color: rgba(244,63,94,0.2); color: var(--rose); }
-.del-preview-info { min-width: 0; }
+.del-preview-avatar--admin {
+  background: var(--rose-fog); border-color: rgba(244,63,94,0.22); color: var(--rose);
+}
+.del-preview-info { min-width: 0; flex: 1; }
 .del-preview-name {
-  font-size: 14px; font-weight: 600; color: var(--text);
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-size: 14.5px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 4px;
 }
 .del-preview-tag {
   font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em;
   text-transform: uppercase; padding: 2px 8px; border-radius: 99px;
 }
-.del-preview-email { font-size: 12px; color: var(--text3); font-family: var(--mono); margin-top: 3px; }
-.del-preview-meta { font-size: 11.5px; color: var(--text3); margin-top: 3px; }
+.del-preview-email {
+  font-size: 12px; color: var(--text3); font-family: var(--mono); margin-bottom: 3px;
+}
+.del-preview-meta { font-size: 11.5px; color: var(--text3); }
+.del-preview-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 99px;
+}
 
-/* ── Consequence list ── */
+/* ── Consequence list (like adm-card style) ── */
 .del-consequence-list {
   width: 100%; text-align: left;
-  display: flex; flex-direction: column; gap: 9px;
+  display: flex; flex-direction: column; gap: 0;
   margin-bottom: 28px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px 18px;
+  overflow: hidden;
 }
 .del-consequence-item {
-  display: flex; align-items: flex-start; gap: 10px;
+  display: flex; align-items: center; gap: 12px;
   font-size: 13px; color: var(--text3); line-height: 1.5;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
 }
-.del-consequence-item svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.del-consequence-item:last-child { border-bottom: none; }
+.del-consequence-item:hover { background: rgba(244,63,94,0.03); }
+.del-consequence-icon {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.15);
+  display: flex; align-items: center; justify-content: center;
+}
+.del-consequence-icon svg { width: 12px; height: 12px; stroke: var(--rose); fill: none; stroke-width: 2.5; stroke-linecap: round; }
 
 /* ── Actions ── */
-.del-actions { display: flex; gap: 10px; width: 100%; justify-content: flex-end; }
+.del-actions {
+  display: flex; gap: 10px; width: 100%; justify-content: space-between; align-items: center;
+}
+.del-actions-note {
+  font-size: 11.5px; color: var(--text3);
+  display: flex; align-items: center; gap: 5px;
+}
+.del-actions-note svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; stroke-width: 2; flex-shrink: 0; }
+.del-actions-btns { display: flex; gap: 10px; }
 
 .del-btn-ghost {
   display: inline-flex; align-items: center; gap: 7px;
@@ -161,95 +207,100 @@
 
 .del-confirm-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 20px; border-radius: var(--radius);
+  padding: 10px 22px; border-radius: var(--radius);
   font-size: 13.5px; font-weight: 600; font-family: var(--font);
   color: #fff; background: var(--rose);
-  border: 1px solid rgba(244,63,94,0.6);
+  border: 1px solid rgba(244,63,94,0.5);
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(244,63,94,0.35);
+  box-shadow: 0 2px 14px rgba(244,63,94,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
   transition: all var(--transition);
 }
-.del-confirm-btn:hover { background: #e11d48; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(244,63,94,0.45); }
+.del-confirm-btn:hover {
+  background: #e11d48; transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(244,63,94,0.5);
+}
 .del-confirm-btn:active { transform: translateY(0); }
 .del-confirm-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 
 @media (max-width: 768px) {
-  .ua-sidebar { display: none; }
-  .ua-main { padding: 20px 16px; }
+  .adm-sidebar { display: none; }
+  .adm-main { padding: 20px 16px; }
 }
 @media (max-width: 560px) {
   .del-card-body { padding: 28px 20px 24px; }
-  .del-actions { flex-direction: column-reverse; }
-  .del-confirm-btn { justify-content: center; }
+  .del-actions { flex-direction: column; gap: 12px; }
+  .del-actions-btns { width: 100%; flex-direction: column-reverse; }
+  .del-confirm-btn, .del-btn-ghost { justify-content: center; width: 100%; }
+  .del-actions-note { justify-content: center; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="ua-layout">
+<div class="adm-layout">
 
   <!-- ══ SIDEBAR ══ -->
-  <aside class="ua-sidebar">
-    <div class="ua-sidebar-section">
-      <div class="ua-sidebar-label">Main</div>
-      <a href="{% url 'admin_dashboard' %}" class="ua-nav-item">
+  <aside class="adm-sidebar">
+    <div class="adm-sidebar-section">
+      <div class="adm-sidebar-label">Main</div>
+      <a href="{% url 'admin_dashboard' %}" class="adm-nav-item">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Dashboard
       </a>
-      <a href="{% url 'admin_user_list' %}" class="ua-nav-item active">
+      <a href="{% url 'admin_user_list' %}" class="adm-nav-item active">
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Users
       </a>
-      <a href="{% url 'admin_user_create' %}" class="ua-nav-item">
+      <a href="{% url 'admin_user_create' %}" class="adm-nav-item">
         <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         Create User
       </a>
     </div>
 
-    <hr class="ua-sidebar-divider">
+    <hr class="adm-sidebar-divider">
 
-    <div class="ua-sidebar-section">
-      <div class="ua-sidebar-label">Moderation</div>
-      <a href="{% url 'admin_delete_requests' %}" class="ua-nav-item">
+    <div class="adm-sidebar-section">
+      <div class="adm-sidebar-label">Moderation</div>
+      <a href="{% url 'admin_delete_requests' %}" class="adm-nav-item">
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         Delete Requests
       </a>
-      <a href="{% url 'admin_audit_log' %}" class="ua-nav-item">
+      <a href="{% url 'admin_audit_log' %}" class="adm-nav-item">
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Audit Log
       </a>
     </div>
 
-    <hr class="ua-sidebar-divider">
+    <hr class="adm-sidebar-divider">
 
-    <div class="ua-sidebar-section">
-      <div class="ua-sidebar-label">Content</div>
-      <a href="{% url 'category_list' %}" class="ua-nav-item">
+    <div class="adm-sidebar-section">
+      <div class="adm-sidebar-label">Content</div>
+      <a href="{% url 'category_list' %}" class="adm-nav-item">
         <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
         Categories
       </a>
-      <a href="{% url 'project_list' %}" class="ua-nav-item">
+      <a href="{% url 'project_list' %}" class="adm-nav-item">
         <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         Projects
       </a>
     </div>
 
-    <div class="ua-sidebar-foot">
-      <div class="ua-sidebar-user">
-        <div class="ua-sidebar-avatar">{{ request.user.username|first|upper }}</div>
+    <div class="adm-sidebar-foot">
+      <div class="adm-sidebar-user">
+        <div class="adm-sidebar-user-avatar">{{ request.user.username|first|upper }}</div>
         <div>
-          <div class="ua-sidebar-name">{{ request.user.username }}</div>
-          <div class="ua-sidebar-role">Administrator</div>
+          <div class="adm-sidebar-user-name">{{ request.user.username }}</div>
+          <div class="adm-sidebar-user-role">Administrator</div>
         </div>
       </div>
     </div>
   </aside>
 
   <!-- ══ MAIN ══ -->
-  <main class="ua-main">
+  <main class="adm-main">
 
     <!-- Breadcrumb -->
-    <div class="ua-breadcrumb">
+    <div class="adm-breadcrumb">
       <a href="{% url 'admin_dashboard' %}">Admin Panel</a>
       <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       <a href="{% url 'admin_user_list' %}">Users</a>
@@ -271,10 +322,9 @@
           </svg>
         </div>
 
-        <h2 class="del-title">Are you sure?</h2>
+        <h2 class="del-title">Delete User Account?</h2>
         <p class="del-sub">
-          You are about to permanently delete the following user account.
-          All their data including projects and transactions will also be removed.
+          This is a permanent action. The following account and all associated data will be irreversibly removed from CashManager.
         </p>
 
         <!-- User Preview -->
@@ -295,59 +345,70 @@
             {% if target_user.full_name %}
               <div class="del-preview-meta">{{ target_user.full_name }}</div>
             {% endif %}
-            <div class="del-preview-meta">
-              Joined {{ target_user.date_joined|date:"d M Y" }}
-              &nbsp;·&nbsp;
+            <div class="del-preview-meta" style="margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span>Joined {{ target_user.date_joined|date:"d M Y" }}</span>
               {% if target_user.is_frozen %}
-                <span style="color:#d97706;">Account Frozen</span>
+                <span class="del-preview-status" style="background:rgba(245,158,11,0.1); color:#d97706; border: 1px solid rgba(245,158,11,0.2);">
+                  <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  Frozen
+                </span>
               {% else %}
-                <span style="color:var(--emerald);">Active</span>
+                <span class="del-preview-status" style="background:var(--emerald-fog); color:var(--emerald); border:1px solid rgba(16,185,129,0.2);">
+                  <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+                  Active
+                </span>
               {% endif %}
             </div>
           </div>
         </div>
 
-        <!-- Consequences -->
+        <!-- Consequences — table row style like adm-table -->
         <div class="del-consequence-list">
           <div class="del-consequence-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <div class="del-consequence-icon">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
             <span>User account will be permanently deleted</span>
           </div>
           <div class="del-consequence-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <div class="del-consequence-icon">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
             <span>All owned projects will be removed</span>
           </div>
           <div class="del-consequence-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <div class="del-consequence-icon">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
             <span>All transactions created by this user will be lost</span>
           </div>
           <div class="del-consequence-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-            <span>This action cannot be reversed</span>
+            <div class="del-consequence-icon">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <span>This action cannot be reversed or undone</span>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="del-actions">
-          <a href="{% url 'admin_user_list' %}" class="del-btn-ghost">
-            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            Cancel
-          </a>
-          <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="del-confirm-btn">
-              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-              Yes, Delete User
-            </button>
-          </form>
+          <div class="del-actions-note">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            No going back after confirm
+          </div>
+          <div class="del-actions-btns">
+            <a href="{% url 'admin_user_list' %}" class="del-btn-ghost">
+              <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              Cancel
+            </a>
+            <form method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="del-confirm-btn">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                Yes, Delete User
+              </button>
+            </form>
+          </div>
         </div>
 
       </div>
