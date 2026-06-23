@@ -1,293 +1,764 @@
-{% extends 'base.html' %}
-{% block title %}Categories — CashManager{% endblock %}
-{% block nav_projects %}active{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Categories — CashManager</title>
 
-{% block extra_css %}
-<style>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Tabler Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-.cl-search-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
-.cl-count-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 600; color: var(--text2);
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 99px; padding: 5px 12px;
-}
-.cl-count-pill strong { color: var(--text); font-family: var(--mono); }
+  <style>
+    :root {
+      --sidebar-width: 260px;
+      --topbar-height: 64px;
 
-.cl-search { position: relative; flex: 1; max-width: 320px; min-width: 200px; }
-.cl-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; stroke: var(--text3); fill: none; stroke-width: 2; pointer-events: none; }
-.cl-search input {
-  width: 100%; padding: 9px 14px 9px 34px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 99px; font-size: 13px; font-family: var(--font); color: var(--text);
-  outline: none; transition: border-color var(--transition), box-shadow var(--transition);
-}
-.cl-search input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-fog); }
-.cl-search input::placeholder { color: var(--text3); }
+      /* Dasher-style palette */
+      --primary: #6366f1;
+      --primary-soft: rgba(99,102,241,0.1);
+      --primary-border: rgba(99,102,241,0.25);
 
-/* Add category card */
-.cl-add-card { margin-bottom: 24px; }
-.cl-add-row { display: flex; gap: 10px; align-items: flex-end; }
-.cl-add-input-wrap { position: relative; flex: 1; margin-bottom: 0; }
-.cl-add-input-wrap svg.prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text3); fill: none; stroke-width: 2; pointer-events: none; }
-.cl-add-input-wrap input.form-control { padding-left: 38px; }
-@media (max-width: 520px) { .cl-add-row { flex-direction: column; align-items: stretch; } }
+      --emerald: #10b981;
+      --emerald-soft: rgba(16,185,129,0.1);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245,158,11,0.1);
+      --rose: #f43f5e;
+      --rose-soft: rgba(244,63,94,0.1);
 
-/* Category card */
-.cl-cards { display: flex; flex-direction: column; gap: 14px; }
-.cl-cat-card { transition: border-color var(--transition); }
-.cl-cat-card.cl-row-hidden { display: none; }
-.cl-cat-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-.cl-cat-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.cl-cat-icon { width: 40px; height: 40px; border-radius: var(--radius); border: 1px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.cl-cat-icon svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.cl-cat-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cl-cat-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
-.cl-cat-meta strong { color: var(--text2); font-weight: 600; }
+      --body-bg: #f3f4f6;
+      --sidebar-bg: #ffffff;
+      --topbar-bg: #ffffff;
+      --card-bg: #ffffff;
 
-.cl-cat-icon--indigo  { background: var(--indigo-fog); border-color: var(--indigo-line); color: var(--indigo); }
-.cl-cat-icon--emerald { background: var(--emerald-fog); border-color: rgba(16,185,129,0.22); color: var(--emerald); }
-.cl-cat-icon--amber   { background: var(--amber-fog); border-color: rgba(245,158,11,0.22); color: var(--amber); }
-.cl-cat-icon--rose    { background: var(--rose-fog); border-color: rgba(244,63,94,0.22); color: var(--rose); }
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
 
-.cl-cat-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.cl-btn-mini {
-  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius);
-  font-size: 12px; font-weight: 600; font-family: var(--font);
-  background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
-  text-decoration: none; cursor: pointer; transition: all var(--transition); white-space: nowrap;
-}
-.cl-btn-mini:hover { background: var(--surface3); border-color: var(--border2); color: var(--text); }
-.cl-btn-mini svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
-.cl-btn-mini.danger { color: var(--rose); border-color: rgba(244,63,94,0.22); }
-.cl-btn-mini.danger:hover { background: var(--rose-fog); border-color: rgba(244,63,94,0.35); }
+      --border-color: #e5e7eb;
+      --border-radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,.06), 0 2px 4px -1px rgba(0,0,0,.04);
 
-/* Sub-category chips */
-.cl-sub-zone { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
-.cl-chip {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 99px; padding: 6px 7px 6px 12px; transition: border-color var(--transition);
-}
-.cl-chip:hover { border-color: var(--border2); }
-.cl-chip.private { background: var(--indigo-fog); border-color: var(--indigo-line); }
-.cl-chip-name { font-size: 12.5px; font-weight: 500; color: var(--text2); }
-.cl-chip.private .cl-chip-name { color: var(--text); }
-.cl-chip-icon { width: 12px; height: 12px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-.cl-chip-owner {
-  font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--indigo); background: rgba(99,102,241,0.14);
-  border-radius: 99px; padding: 2px 7px; white-space: nowrap;
-}
-.cl-chip-del {
-  background: none; border: none; cursor: pointer; padding: 2px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; transition: background var(--transition); flex-shrink: 0;
-}
-.cl-chip-del:hover { background: var(--rose-fog); }
-.cl-chip-del svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; transition: stroke var(--transition); }
-.cl-chip-del:hover svg { stroke: var(--rose); }
+      --font: 'Inter', sans-serif;
+    }
 
-.cl-no-sub { font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); padding-top: 14px; }
-.cl-no-sub a { color: var(--indigo); text-decoration: none; font-weight: 500; }
-.cl-no-sub a:hover { text-decoration: underline; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      background: var(--body-bg);
+      color: var(--text-primary);
+      margin: 0;
+      font-size: 14px;
+    }
 
-#cl-no-results { display: none; }
-</style>
-{% endblock %}
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex; flex-direction: column;
+      z-index: 200;
+      transition: transform .25s ease;
+    }
+    .sidebar-brand {
+      height: var(--topbar-height);
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 17px; font-weight: 700; color: var(--text-primary);
+      text-decoration: none;
+    }
+    .sidebar-brand .brand-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--primary); display: flex; align-items: center; justify-content: center;
+    }
+    .sidebar-brand .brand-icon i { color: #fff; font-size: 16px; }
 
-{% block content %}
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 16px 12px; }
+    .nav-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-muted); padding: 0 10px; margin: 16px 0 6px;
+    }
+    .nav-label:first-child { margin-top: 0; }
 
-<div class="page-header">
-  <div>
-    <span class="eyebrow"><span class="eyebrow-dot"></span>Settings</span>
-    <h1 class="page-title">Categories</h1>
-    <p class="page-sub">Manage categories and sub-categories for your transactions.</p>
-  </div>
-  {% if user.is_admin %}
-  <a href="{% url 'subcategory_create' %}" class="btn-secondary">
-    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Add Sub-Category
+    .nav-item a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 13.5px; font-weight: 500; color: var(--text-secondary);
+      text-decoration: none; transition: all .15s;
+    }
+    .nav-item a i { font-size: 17px; flex-shrink: 0; }
+    .nav-item a:hover { background: var(--body-bg); color: var(--text-primary); }
+    .nav-item a.active {
+      background: var(--primary-soft); color: var(--primary); font-weight: 600;
+    }
+    .nav-item a .nav-badge {
+      margin-left: auto; font-size: 10px; font-weight: 700;
+      background: var(--primary); color: #fff;
+      border-radius: 99px; padding: 2px 7px;
+    }
+
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border-color);
+    }
+    .user-card {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
+      background: var(--primary-soft); display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--primary); flex-shrink: 0;
+    }
+    .user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: fixed; top: 0; left: var(--sidebar-width); right: 0;
+      height: var(--topbar-height);
+      background: var(--topbar-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .breadcrumb-top {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12.5px; color: var(--text-muted);
+    }
+    .breadcrumb-top span { color: var(--text-secondary); font-weight: 500; }
+    .breadcrumb-sep { color: var(--border-color); }
+
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: transparent; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-secondary); transition: all .15s; position: relative;
+    }
+    .topbar-btn:hover { background: var(--body-bg); color: var(--text-primary); }
+    .topbar-btn i { font-size: 18px; }
+    .notif-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--rose); border: 2px solid #fff;
+    }
+
+    /* ── Main Content ── */
+    .main {
+      margin-left: var(--sidebar-width);
+      padding-top: var(--topbar-height);
+      min-height: 100vh;
+    }
+    .content { padding: 28px 28px 40px; max-width: 960px; }
+
+    /* ── Page Header ── */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .page-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--primary); margin-bottom: 6px;
+    }
+    .page-eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary); display: inline-block;
+    }
+    .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+    .page-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+    /* ── Cards ── */
+    .ds-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+    }
+    .ds-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+    }
+    .ds-card-title {
+      font-size: 14px; font-weight: 600; color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ds-card-title i { font-size: 17px; color: var(--primary); }
+    .ds-card-body { padding: 20px; }
+
+    /* ── Buttons ── */
+    .btn-primary-ds {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 8px; padding: 9px 18px;
+      font-size: 13px; font-weight: 600; font-family: var(--font);
+      cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none;
+    }
+    .btn-primary-ds:hover { background: #4f46e5; color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,.35); }
+    .btn-primary-ds i { font-size: 15px; }
+
+    .btn-outline-ds {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: transparent; color: var(--primary);
+      border: 1.5px solid var(--primary-border); border-radius: 8px; padding: 8px 16px;
+      font-size: 12.5px; font-weight: 600; font-family: var(--font);
+      cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none;
+    }
+    .btn-outline-ds:hover { background: var(--primary-soft); color: var(--primary); }
+    .btn-outline-ds i { font-size: 14px; }
+
+    .btn-danger-ds {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; color: var(--rose);
+      border: 1.5px solid rgba(244,63,94,.22); border-radius: 8px; padding: 7px 13px;
+      font-size: 12px; font-weight: 600; font-family: var(--font);
+      cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .btn-danger-ds:hover { background: var(--rose-soft); border-color: rgba(244,63,94,.4); }
+    .btn-danger-ds i { font-size: 14px; }
+
+    /* ── Form ── */
+    .ds-input {
+      width: 100%;
+      padding: 9px 14px 9px 38px;
+      background: var(--body-bg); border: 1.5px solid var(--border-color);
+      border-radius: 8px; font-size: 13.5px; font-family: var(--font); color: var(--text-primary);
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .ds-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); background: #fff; }
+    .ds-input::placeholder { color: var(--text-muted); }
+    .input-wrap { position: relative; }
+    .input-wrap .input-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 15px; pointer-events: none;
+    }
+    .form-label-ds {
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      display: block; margin-bottom: 6px; letter-spacing: .01em;
+    }
+    .form-error { font-size: 12px; color: var(--rose); margin-top: 5px; }
+
+    /* ── Search & Count Row ── */
+    .filter-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .count-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 99px; padding: 5px 12px;
+    }
+    .count-badge strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+    .search-wrap { position: relative; flex: 1; max-width: 300px; min-width: 180px; }
+    .search-wrap .search-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 15px; pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%; padding: 8px 14px 8px 36px;
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 99px; font-size: 13px; font-family: var(--font); color: var(--text-primary);
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .search-wrap input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+    .search-wrap input::placeholder { color: var(--text-muted); }
+
+    /* ── Category Card ── */
+    .cat-list { display: flex; flex-direction: column; gap: 12px; }
+    .cat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 20px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .cat-card:hover { border-color: #d1d5db; box-shadow: var(--shadow); }
+    .cat-card.hidden { display: none; }
+
+    .cat-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .cat-info { display: flex; align-items: center; gap: 14px; min-width: 0; }
+
+    .cat-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 19px;
+    }
+    .cat-icon.indigo  { background: var(--primary-soft); color: var(--primary); }
+    .cat-icon.emerald { background: var(--emerald-soft); color: var(--emerald); }
+    .cat-icon.amber   { background: var(--amber-soft);   color: var(--amber);   }
+    .cat-icon.rose    { background: var(--rose-soft);    color: var(--rose);    }
+
+    .cat-name { font-size: 14.5px; font-weight: 700; color: var(--text-primary); }
+    .cat-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .cat-meta strong { color: var(--text-secondary); font-weight: 600; }
+
+    .cat-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    /* ── Sub-category chips ── */
+    .sub-zone {
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--body-bg); border: 1px solid var(--border-color);
+      border-radius: 99px; padding: 5px 7px 5px 12px;
+      transition: border-color .15s;
+    }
+    .chip:hover { border-color: #d1d5db; }
+    .chip.private { background: var(--primary-soft); border-color: var(--primary-border); }
+
+    .chip-name { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); }
+    .chip.private .chip-name { color: var(--text-primary); }
+
+    .chip-icon { font-size: 13px; color: var(--primary); flex-shrink: 0; }
+
+    .chip-owner {
+      font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      color: var(--primary); background: rgba(99,102,241,.12);
+      border-radius: 99px; padding: 2px 8px; white-space: nowrap;
+    }
+    .chip-del {
+      background: none; border: none; cursor: pointer; padding: 3px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; transition: background .15s; flex-shrink: 0; color: var(--text-muted);
+      font-size: 14px;
+    }
+    .chip-del:hover { background: var(--rose-soft); color: var(--rose); }
+
+    .no-sub {
+      font-size: 13px; color: var(--text-muted);
+      border-top: 1px solid var(--border-color); padding-top: 14px;
+    }
+    .no-sub a { color: var(--primary); text-decoration: none; font-weight: 500; }
+    .no-sub a:hover { text-decoration: underline; }
+
+    /* ── Empty States ── */
+    .empty-box {
+      text-align: center; padding: 52px 20px;
+    }
+    .empty-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--body-bg); border: 1px solid var(--border-color);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 24px; color: var(--text-muted); margin-bottom: 14px;
+    }
+    .empty-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; color: var(--text-muted); }
+
+    #no-results { display: none; }
+
+    /* ── Divider ── */
+    .section-gap { margin-bottom: 24px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .topbar { left: 0; }
+      .content { padding: 20px 16px 40px; }
+    }
+    @media (max-width: 480px) {
+      .cat-head { flex-direction: column; align-items: flex-start; }
+      .cat-actions { width: 100%; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <a href="#" class="sidebar-brand">
+    <div class="brand-icon"><i class="ti ti-currency-dollar"></i></div>
+    CashManager
   </a>
-  {% endif %}
-</div>
 
-<!-- Add Category Form -->
-<div class="card cl-add-card">
-  <div class="card-header">
-    <div class="card-title">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add New Category
+  <nav class="sidebar-nav">
+    <p class="nav-label">Main</p>
+
+    <div class="nav-item">
+      <a href="#"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    </div>
+    <div class="nav-item">
+      <a href="#"><i class="ti ti-arrows-right-left"></i> Transactions <span class="nav-badge">12</span></a>
+    </div>
+    <div class="nav-item">
+      <a href="#"><i class="ti ti-chart-bar"></i> Reports</a>
+    </div>
+    <div class="nav-item">
+      <a href="#"><i class="ti ti-wallet"></i> Budgets</a>
+    </div>
+
+    <p class="nav-label">Settings</p>
+
+    <div class="nav-item">
+      <a href="#" class="active"><i class="ti ti-tags"></i> Categories</a>
+    </div>
+    <div class="nav-item">
+      <a href="#"><i class="ti ti-users"></i> Users</a>
+    </div>
+    <div class="nav-item">
+      <a href="#"><i class="ti ti-settings"></i> Preferences</a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">JD</div>
+      <div>
+        <div class="user-name">John Doe</div>
+        <div class="user-role">Administrator</div>
+      </div>
     </div>
   </div>
-  <form method="post">
-    {% csrf_token %}
-    <div class="cl-add-row">
-      <div class="form-group cl-add-input-wrap">
-        <label class="form-label">Category Name <span class="required"></span></label>
-        <svg class="prefix" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
-        <input
-          type="text"
-          name="name"
-          class="form-control"
-          placeholder="e.g. Food, Transport, Salary…"
-          value="{{ form.name.value|default:'' }}"
-          required
-          autofocus
-        >
-        {% if form.name.errors %}
-          <p class="form-error">{{ form.name.errors.0 }}</p>
-        {% endif %}
-      </div>
-      <div style="margin-bottom: 0;">
-        <button type="submit" class="btn-primary">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Create
-        </button>
-      </div>
-    </div>
-  </form>
-</div>
+</aside>
 
-<!-- Categories List -->
-{% if categories %}
-
-  <div class="cl-search-row">
-    <span class="cl-count-pill">
-      <strong>{{ categories|length }}</strong> categor{{ categories|length|pluralize:"y,ies" }}
-    </span>
-    <div class="cl-search">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="cl-search-input" placeholder="Search categories…" autocomplete="off">
+<!-- ═══════════════════════ TOPBAR ═══════════════════════ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="breadcrumb-top">
+      <span>Settings</span>
+      <span class="breadcrumb-sep">/</span>
+      <span style="color:var(--text-primary); font-weight:600;">Categories</span>
     </div>
   </div>
+  <div class="topbar-right">
+    <button class="topbar-btn" title="Search">
+      <i class="ti ti-search"></i>
+    </button>
+    <button class="topbar-btn" title="Notifications">
+      <i class="ti ti-bell"></i>
+      <span class="notif-dot"></span>
+    </button>
+    <button class="topbar-btn" title="Toggle theme">
+      <i class="ti ti-moon"></i>
+    </button>
+    <div class="user-avatar" style="width:34px;height:34px;font-size:12px;cursor:pointer;margin-left:4px;">JD</div>
+  </div>
+</header>
 
-  <div class="cl-cards" id="cl-cards">
-    {% for category in categories %}
-      {% cycle 'indigo' 'emerald' 'amber' 'rose' as cat_accent silent %}
-      <div class="card cl-cat-card" data-search="{{ category.name|lower }}">
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+  <div class="content">
 
-        <!-- Category Header -->
-        <div class="cl-cat-head">
-          <div class="cl-cat-info">
-            <div class="cl-cat-icon cl-cat-icon--{{ cat_accent }}">
-              <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
-            </div>
-            <div style="min-width:0;">
-              <div class="cl-cat-name">{{ category.name }}</div>
-              <div class="cl-cat-meta">
-                <strong>{{ category.subcategories.all|length }}</strong> sub-categor{{ category.subcategories.all|length|pluralize:"y,ies" }}
-                {% if category.created_by %}
-                  · Created by <strong>{{ category.created_by.username }}</strong>
-                {% endif %}
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Settings</div>
+        <h1 class="page-title">Categories</h1>
+        <p class="page-sub">Manage categories and sub-categories for your transactions.</p>
+      </div>
+      <a href="#" class="btn-outline-ds">
+        <i class="ti ti-plus"></i> Add Sub-Category
+      </a>
+    </div>
+
+    <!-- Add Category Card -->
+    <div class="ds-card section-gap">
+      <div class="ds-card-header">
+        <div class="ds-card-title">
+          <i class="ti ti-folder-plus"></i>
+          Add New Category
+        </div>
+      </div>
+      <div class="ds-card-body">
+        <form method="post" id="add-category-form">
+          <div class="row g-3 align-items-end">
+            <div class="col">
+              <label class="form-label-ds">Category Name <span style="color:var(--rose)">*</span></label>
+              <div class="input-wrap">
+                <i class="ti ti-tag input-icon"></i>
+                <input
+                  type="text"
+                  name="name"
+                  class="ds-input"
+                  placeholder="e.g. Food, Transport, Salary…"
+                  required
+                />
               </div>
             </div>
-          </div>
-
-          <div class="cl-cat-actions">
-            {% if user.is_admin %}
-            <a href="{% url 'subcategory_create' %}?category={{ category.pk }}" class="cl-btn-mini">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Sub
-            </a>
-            {% endif %}
-            {% if user.is_admin or category.created_by == user %}
-            <form method="post" action="{% url 'category_delete' category.pk %}" style="display:inline; margin:0;">
-              {% csrf_token %}
-              <button type="submit"
-                class="cl-btn-mini danger"
-                onclick="return confirm('Delete category \'{{ category.name }}\'? All sub-categories will also be deleted.')">
-                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                Delete
+            <div class="col-auto">
+              <button type="submit" class="btn-primary-ds">
+                <i class="ti ti-check"></i> Create
               </button>
-            </form>
-            {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Search & Count Row -->
+    <div class="filter-row">
+      <span class="count-badge">
+        <strong>6</strong> categories
+      </span>
+      <div class="search-wrap">
+        <i class="ti ti-search search-icon"></i>
+        <input type="text" id="search-input" placeholder="Search categories…" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Categories List -->
+    <div class="cat-list" id="cat-list">
+
+      <!-- Category 1 — indigo -->
+      <div class="cat-card" data-search="food & dining">
+        <div class="cat-head">
+          <div class="cat-info">
+            <div class="cat-icon indigo"><i class="ti ti-tools-kitchen-2"></i></div>
+            <div>
+              <div class="cat-name">Food &amp; Dining</div>
+              <div class="cat-meta"><strong>4</strong> sub-categories · Created by <strong>admin</strong></div>
+            </div>
+          </div>
+          <div class="cat-actions">
+            <a href="#" class="btn-outline-ds" style="padding:7px 12px; font-size:12px;">
+              <i class="ti ti-plus" style="font-size:13px;"></i> Add Sub
+            </a>
+            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
+              <i class="ti ti-trash"></i> Delete
+            </button>
           </div>
         </div>
-
-        <!-- Sub-Categories -->
-        {% if category.subcategories.all %}
-          <div class="cl-sub-zone">
-            {% for sub in category.subcategories.all %}
-              <div class="cl-chip {% if sub.user %}private{% endif %}">
-
-                {% if sub.user %}
-                  <svg class="cl-chip-icon" viewBox="0 0 24 24" title="Private sub-category">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                  </svg>
-                {% endif %}
-
-                <span class="cl-chip-name">{{ sub.name }}</span>
-
-                {% if sub.user %}
-                  <span class="cl-chip-owner">{% if sub.user == user %}You{% else %}{{ sub.user.username }}{% endif %}</span>
-                {% endif %}
-
-                {% if user.is_admin %}
-                <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="display:inline; margin:0;">
-                  {% csrf_token %}
-                  <button type="submit"
-                    class="cl-chip-del"
-                    onclick="return confirm('Delete sub-category \'{{ sub.name }}\'?')"
-                    title="Delete">
-                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </form>
-                {% endif %}
-              </div>
-            {% endfor %}
+        <div class="sub-zone">
+          <div class="chip">
+            <span class="chip-name">Restaurants</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
           </div>
-        {% else %}
-          <div class="cl-no-sub">
-            No sub-categories yet.
-            {% if user.is_admin %}
-              <a href="{% url 'subcategory_create' %}?category={{ category.pk }}">Add one →</a>
-            {% endif %}
+          <div class="chip">
+            <span class="chip-name">Groceries</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
           </div>
-        {% endif %}
-
+          <div class="chip private">
+            <i class="ti ti-user chip-icon"></i>
+            <span class="chip-name">Personal Snacks</span>
+            <span class="chip-owner">You</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="chip">
+            <span class="chip-name">Coffee</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
       </div>
-    {% endfor %}
-  </div>
 
-  <div id="cl-no-results" class="empty-state">
-    <div class="empty-icon">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <!-- Category 2 — emerald -->
+      <div class="cat-card" data-search="income & salary">
+        <div class="cat-head">
+          <div class="cat-info">
+            <div class="cat-icon emerald"><i class="ti ti-trending-up"></i></div>
+            <div>
+              <div class="cat-name">Income &amp; Salary</div>
+              <div class="cat-meta"><strong>3</strong> sub-categories · Created by <strong>admin</strong></div>
+            </div>
+          </div>
+          <div class="cat-actions">
+            <a href="#" class="btn-outline-ds" style="padding:7px 12px; font-size:12px;">
+              <i class="ti ti-plus" style="font-size:13px;"></i> Add Sub
+            </a>
+            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
+              <i class="ti ti-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+        <div class="sub-zone">
+          <div class="chip">
+            <span class="chip-name">Monthly Salary</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="chip">
+            <span class="chip-name">Freelance</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="chip private">
+            <i class="ti ti-user chip-icon"></i>
+            <span class="chip-name">Bonus</span>
+            <span class="chip-owner">sarah</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 3 — amber -->
+      <div class="cat-card" data-search="transport & travel">
+        <div class="cat-head">
+          <div class="cat-info">
+            <div class="cat-icon amber"><i class="ti ti-car"></i></div>
+            <div>
+              <div class="cat-name">Transport &amp; Travel</div>
+              <div class="cat-meta"><strong>2</strong> sub-categories · Created by <strong>admin</strong></div>
+            </div>
+          </div>
+          <div class="cat-actions">
+            <a href="#" class="btn-outline-ds" style="padding:7px 12px; font-size:12px;">
+              <i class="ti ti-plus" style="font-size:13px;"></i> Add Sub
+            </a>
+            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
+              <i class="ti ti-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+        <div class="sub-zone">
+          <div class="chip">
+            <span class="chip-name">Fuel</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="chip">
+            <span class="chip-name">Rideshare</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 4 — rose -->
+      <div class="cat-card" data-search="health & medical">
+        <div class="cat-head">
+          <div class="cat-info">
+            <div class="cat-icon rose"><i class="ti ti-heart-plus"></i></div>
+            <div>
+              <div class="cat-name">Health &amp; Medical</div>
+              <div class="cat-meta"><strong>0</strong> sub-categories · Created by <strong>admin</strong></div>
+            </div>
+          </div>
+          <div class="cat-actions">
+            <a href="#" class="btn-outline-ds" style="padding:7px 12px; font-size:12px;">
+              <i class="ti ti-plus" style="font-size:13px;"></i> Add Sub
+            </a>
+            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
+              <i class="ti ti-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+        <div class="no-sub">
+          No sub-categories yet. <a href="#">Add one →</a>
+        </div>
+      </div>
+
+      <!-- Category 5 — indigo -->
+      <div class="cat-card" data-search="utilities & bills">
+        <div class="cat-head">
+          <div class="cat-info">
+            <div class="cat-icon indigo"><i class="ti ti-bolt"></i></div>
+            <div>
+              <div class="cat-name">Utilities &amp; Bills</div>
+              <div class="cat-meta"><strong>3</strong> sub-categories · Created by <strong>admin</strong></div>
+            </div>
+          </div>
+          <div class="cat-actions">
+            <a href="#" class="btn-outline-ds" style="padding:7px 12px; font-size:12px;">
+              <i class="ti ti-plus" style="font-size:13px;"></i> Add Sub
+            </a>
+            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
+              <i class="ti ti-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+        <div class="sub-zone">
+          <div class="chip">
+            <span class="chip-name">Electricity</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="chip">
+            <span class="chip-name">Internet</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="chip">
+            <span class="chip-name">Water</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 6 — emerald -->
+      <div class="cat-card" data-search="entertainment">
+        <div class="cat-head">
+          <div class="cat-info">
+            <div class="cat-icon emerald"><i class="ti ti-devicegamepad-2"></i></div>
+            <div>
+              <div class="cat-name">Entertainment</div>
+              <div class="cat-meta"><strong>2</strong> sub-categories · Created by <strong>john</strong></div>
+            </div>
+          </div>
+          <div class="cat-actions">
+            <a href="#" class="btn-outline-ds" style="padding:7px 12px; font-size:12px;">
+              <i class="ti ti-plus" style="font-size:13px;"></i> Add Sub
+            </a>
+            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
+              <i class="ti ti-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+        <div class="sub-zone">
+          <div class="chip">
+            <span class="chip-name">Streaming</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="chip">
+            <span class="chip-name">Gaming</span>
+            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.cat-list -->
+
+    <!-- No Results -->
+    <div id="no-results" class="ds-card">
+      <div class="empty-box">
+        <div class="empty-icon"><i class="ti ti-search-off"></i></div>
+        <div class="empty-title">No matching categories</div>
+        <div class="empty-sub">Try a different search term.</div>
+      </div>
     </div>
-    <div class="empty-title">No matching categories</div>
-    <div class="empty-sub">Try a different search term.</div>
-  </div>
 
-{% else %}
-  <div class="empty-state">
-    <div class="empty-icon">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
-    </div>
-    <div class="empty-title">No categories yet</div>
-    <div class="empty-sub">Create your first category using the form above.</div>
-  </div>
-{% endif %}
+  </div><!-- /.content -->
+</main>
 
-{% endblock %}
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-{% block extra_js %}
 <script>
-(function () {
-  var searchInput = document.getElementById('cl-search-input');
-  if (!searchInput) return;
-  var cards = document.querySelectorAll('#cl-cards .cl-cat-card');
-  var noResults = document.getElementById('cl-no-results');
+  // Search filter
+  (function () {
+    var input = document.getElementById('search-input');
+    if (!input) return;
+    var cards = document.querySelectorAll('#cat-list .cat-card');
+    var noResults = document.getElementById('no-results');
 
-  searchInput.addEventListener('input', function () {
-    var q = this.value.trim().toLowerCase();
-    var visible = 0;
-    cards.forEach(function (card) {
-      var match = card.dataset.search.indexOf(q) !== -1;
-      card.classList.toggle('cl-row-hidden', !match);
-      if (match) visible++;
+    input.addEventListener('input', function () {
+      var q = this.value.trim().toLowerCase();
+      var visible = 0;
+      cards.forEach(function (c) {
+        var match = c.dataset.search.indexOf(q) !== -1;
+        c.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      noResults.style.display = (visible === 0 && q) ? 'block' : 'none';
     });
-    noResults.style.display = (visible === 0 && q) ? 'block' : 'none';
+  })();
+
+  // Mobile sidebar toggle
+  document.addEventListener('DOMContentLoaded', function () {
+    var sidebar = document.getElementById('sidebar');
+    // could wire a burger button here
   });
-})();
 </script>
-{% endblock %}
+
+</body>
+</html>

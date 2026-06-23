@@ -1,234 +1,540 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login – Cash Management</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Sign In — CashManager</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #060608; --surface: #0e0e12; --surface2: #141418;
-      --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11);
-      --indigo: #6366f1; --indigo-mid: #4f46e5;
-      --indigo-glow: rgba(99,102,241,0.35); --indigo-fog: rgba(99,102,241,0.08);
-      --indigo-line: rgba(99,102,241,0.3);
-      --emerald: #10b981; --rose: #f43f5e; --rose-fog: rgba(244,63,94,0.1);
-      --text: #f8f8fc; --text2: #a8a8c0; --text3: #52526a;
-      --font: 'Space Grotesk', system-ui, sans-serif;
-      --mono: 'DM Mono', monospace;
-      --radius: 10px; --radius-lg: 14px; --radius-xl: 20px;
-      --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-soft: rgba(99,102,241,0.09);
+      --primary-border: rgba(99,102,241,0.22);
+      --primary-glow: rgba(99,102,241,0.28);
+
+      --emerald: #10b981;
+      --emerald-soft: rgba(16,185,129,0.1);
+      --rose: #f43f5e;
+      --rose-soft: rgba(244,63,94,0.09);
+      --amber: #f59e0b;
+
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --surface: #f9fafb;
+      --surface2: #f3f4f6;
+
+      --text: #111827;
+      --text2: #374151;
+      --text3: #6b7280;
+      --text4: #9ca3af;
+
+      --border: #e5e7eb;
+      --border2: #d1d5db;
+
+      --radius: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    html, body { height: 100%; }
     body {
-      font-family: var(--font); background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 24px; position: relative; overflow: hidden;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
       -webkit-font-smoothing: antialiased;
-    }
-    body::before {
-      content: ''; position: fixed; top: -160px; left: 50%; transform: translateX(-50%);
-      width: 700px; height: 500px; pointer-events: none;
-      background: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%);
-    }
-    body::after {
-      content: ''; position: fixed; bottom: -100px; right: -80px;
-      width: 400px; height: 400px; pointer-events: none;
-      background: radial-gradient(ellipse, rgba(16,185,129,0.05) 0%, transparent 70%);
+      display: flex;
+      min-height: 100vh;
     }
 
-    .login-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 40px; width: 100%; max-width: 420px;
-      position: relative; animation: slideUp 0.4s cubic-bezier(0.22,1,0.36,1);
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .login-card::before {
-      content: ''; position: absolute; top: 0; left: 24px; right: 24px; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(99,102,241,0.6), transparent);
+    /* ═══════════════════════════════════════════
+       LEFT PANEL — brand + animated dashboard
+    ═══════════════════════════════════════════ */
+    .left-panel {
+      flex: 1;
+      background: #0f1117;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 52px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .card-header { margin-bottom: 28px; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--indigo); margin-bottom: 12px;
+    /* Subtle grid texture */
+    .left-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
     }
-    .eyebrow-dot {
-      width: 5px; height: 5px; border-radius: 50%; background: var(--indigo);
-      box-shadow: 0 0 6px rgba(99,102,241,0.7);
-      animation: pulse 2s ease-in-out infinite;
+    /* Top indigo bloom */
+    .left-panel::after {
+      content: '';
+      position: absolute; top: -120px; left: -80px;
+      width: 500px; height: 420px;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 65%);
+      pointer-events: none;
     }
-    @keyframes pulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50% { opacity:0.5; transform:scale(0.75); }
-    }
-    h1 { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 6px; letter-spacing: -0.5px; }
-    .subtitle { font-size: 14px; color: var(--text2); }
 
-    .django-messages { margin-bottom: 18px; }
-    .msg {
-      font-size: 13px; color: var(--rose); background: var(--rose-fog);
-      border: 1px solid rgba(244,63,94,0.22); border-radius: var(--radius);
-      padding: 11px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    .lp-brand {
+      display: flex; align-items: center; gap: 11px;
+      position: relative; z-index: 1;
     }
-    .msg svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; flex-shrink:0; }
+    .lp-brand-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px rgba(99,102,241,0.45);
+    }
+    .lp-brand-icon i { color: #fff; font-size: 18px; }
+    .lp-brand-name { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -.3px; }
 
-    .form-group { margin-bottom: 18px; }
-    label {
-      display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
-      text-transform: uppercase; color: var(--text3); margin-bottom: 8px;
+    .lp-copy { position: relative; z-index: 1; }
+    .lp-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+      color: var(--primary); display: flex; align-items: center; gap: 7px; margin-bottom: 16px;
     }
+    .lp-eyebrow::before {
+      content: ''; width: 20px; height: 1.5px; background: var(--primary);
+      border-radius: 99px;
+    }
+    .lp-headline {
+      font-size: 36px; font-weight: 800; line-height: 1.18;
+      color: #fff; letter-spacing: -.8px; margin-bottom: 16px;
+    }
+    .lp-headline em { font-style: normal; color: var(--primary); }
+    .lp-desc { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.7; max-width: 340px; }
+
+    /* ── Mini dashboard widget ── */
+    .lp-widget {
+      position: relative; z-index: 1; margin-top: 44px;
+    }
+    .widget-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      backdrop-filter: blur(4px);
+    }
+    .widget-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+    }
+    .widget-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: .04em; }
+    .widget-live {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--emerald);
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--emerald);
+      animation: livepulse 2s ease-in-out infinite;
+    }
+    @keyframes livepulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-box { text-align: center; }
+    .stat-val {
+      font-family: var(--mono); font-size: 17px; font-weight: 500;
+      line-height: 1; margin-bottom: 5px;
+    }
+    .stat-val.income  { color: var(--emerald); }
+    .stat-val.expense { color: var(--rose); }
+    .stat-val.balance { color: var(--primary); }
+    .stat-lbl { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+
+    /* Bar chart */
+    .bar-chart {
+      display: flex; align-items: flex-end; gap: 5px; height: 56px;
+    }
+    .bar {
+      flex: 1; border-radius: 4px 4px 0 0;
+      animation: barrise .6s var(--ease) both;
+    }
+    .bar.in  { background: rgba(16,185,129,0.55); }
+    .bar.out { background: rgba(244,63,94,0.45); }
+    @keyframes barrise {
+      from { transform: scaleY(0); transform-origin: bottom; }
+      to   { transform: scaleY(1); transform-origin: bottom; }
+    }
+    .bar:nth-child(1)  { animation-delay: .05s; }
+    .bar:nth-child(2)  { animation-delay: .10s; }
+    .bar:nth-child(3)  { animation-delay: .15s; }
+    .bar:nth-child(4)  { animation-delay: .20s; }
+    .bar:nth-child(5)  { animation-delay: .25s; }
+    .bar:nth-child(6)  { animation-delay: .30s; }
+    .bar:nth-child(7)  { animation-delay: .35s; }
+    .bar:nth-child(8)  { animation-delay: .40s; }
+    .bar:nth-child(9)  { animation-delay: .45s; }
+    .bar:nth-child(10) { animation-delay: .50s; }
+    .bar:nth-child(11) { animation-delay: .55s; }
+    .bar:nth-child(12) { animation-delay: .60s; }
+
+    .lp-footer {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .lp-footer-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+    .lp-footer-text { font-size: 11.5px; color: rgba(255,255,255,0.25); }
+
+    /* ═══════════════════════════════════════════
+       RIGHT PANEL — login form
+    ═══════════════════════════════════════════ */
+    .right-panel {
+      width: 480px;
+      flex-shrink: 0;
+      background: var(--card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 52px 52px;
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    .form-inner { width: 100%; max-width: 360px; }
+
+    /* ── Form header ── */
+    .form-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--primary); margin-bottom: 10px;
+    }
+    .form-eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--primary);
+    }
+    .form-title {
+      font-size: 26px; font-weight: 800; letter-spacing: -.5px;
+      color: var(--text); margin-bottom: 5px;
+    }
+    .form-sub { font-size: 13.5px; color: var(--text3); margin-bottom: 30px; line-height: 1.5; }
+
+    /* ── Alert ── */
+    .alert-error {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--rose-soft); border: 1px solid rgba(244,63,94,0.2);
+      border-radius: var(--radius); padding: 12px 14px; margin-bottom: 20px;
+      font-size: 13px; color: var(--rose); line-height: 1.5;
+    }
+    .alert-error i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Field ── */
+    .field { margin-bottom: 16px; }
+    .field-label {
+      font-size: 12px; font-weight: 600; color: var(--text2);
+      display: block; margin-bottom: 6px; letter-spacing: .01em;
+    }
+    .field-label .req { color: var(--rose); margin-left: 2px; }
     .input-wrap { position: relative; }
-    .input-wrap .icon-left {
+    .input-icon {
       position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      width: 15px; height: 15px; stroke: var(--text3); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      pointer-events: none; transition: stroke var(--transition);
+      color: var(--text4); font-size: 16px; pointer-events: none;
+      transition: color .15s var(--ease);
     }
-    .input-wrap:focus-within .icon-left { stroke: var(--indigo); }
-    input[type="text"], input[type="password"] {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px 44px 12px 40px;
-      font-size: 14px; font-family: var(--font); color: var(--text); outline: none;
-      transition: border-color var(--transition), box-shadow var(--transition);
-    }
-    input[type="text"]:focus, input[type="password"]:focus {
-      border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-      background: #1a1a20;
-    }
-    input::placeholder { color: var(--text3); }
-    .toggle-pass {
+    .toggle-vis {
       position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; padding: 4px;
-      display: flex; align-items: center; border-radius: 6px; transition: background var(--transition);
+      background: none; border: none; cursor: pointer; padding: 4px 5px;
+      color: var(--text4); font-size: 16px; border-radius: 6px;
+      transition: color .15s, background .15s;
+      display: flex; align-items: center;
     }
-    .toggle-pass:hover { background: rgba(255,255,255,0.06); }
-    .toggle-pass svg {
-      width: 15px; height: 15px; stroke: var(--text3); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block;
-      transition: stroke var(--transition);
-    }
-    .toggle-pass:hover svg { stroke: var(--indigo); }
+    .toggle-vis:hover { color: var(--primary); background: var(--primary-soft); }
 
-    .btn-login {
-      width: 100%; padding: 13px; border: none; border-radius: var(--radius);
-      background: var(--indigo); color: #fff; font-family: var(--font);
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      box-shadow: 0 4px 20px var(--indigo-glow), inset 0 1px 0 rgba(255,255,255,0.1);
-      transition: all var(--transition); margin-top: 6px;
+    .ds-input {
+      width: 100%; height: 44px; padding: 0 44px 0 40px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); font-size: 14px; font-family: var(--font);
+      color: var(--text); outline: none;
+      transition: border-color .15s var(--ease), box-shadow .15s var(--ease), background .15s;
+    }
+    .ds-input:hover { border-color: var(--border2); }
+    .ds-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+      background: #fff;
+    }
+    .input-wrap:focus-within .input-icon { color: var(--primary); }
+    .ds-input::placeholder { color: var(--text4); }
+
+    /* ── Forgot link ── */
+    .field-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .forgot-link {
+      font-size: 12px; font-weight: 500; color: var(--primary);
+      text-decoration: none; transition: color .15s;
+    }
+    .forgot-link:hover { color: var(--primary-dark); text-decoration: underline; }
+
+    /* ── Submit ── */
+    .btn-submit {
+      width: 100%; height: 46px; margin-top: 6px;
+      background: var(--primary); color: #fff; border: none;
+      border-radius: var(--radius); font-family: var(--font);
+      font-size: 14px; font-weight: 700; letter-spacing: .01em;
       display: flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; transition: all .18s var(--ease);
+      box-shadow: 0 4px 18px var(--primary-glow);
     }
-    .btn-login:hover { background: var(--indigo-mid); box-shadow: 0 6px 28px var(--indigo-glow); transform: translateY(-1px); }
-    .btn-login:active { transform: scale(0.98); }
-    .btn-login svg { width:15px; height:15px; stroke:#fff; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .btn-submit i { font-size: 17px; }
+    .btn-submit:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px var(--primary-glow);
+    }
+    .btn-submit:active { transform: scale(0.98); box-shadow: none; }
 
-    .stats-strip {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      border: 1px solid var(--border); border-radius: var(--radius-lg);
-      overflow: hidden; margin-top: 24px;
+    /* ── Divider ── */
+    .or-divider {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 11px; font-weight: 600; color: var(--text4);
+      letter-spacing: .06em; text-transform: uppercase; margin: 22px 0;
     }
-    .stat-cell {
-      background: var(--surface2); padding: 12px 10px; text-align: center;
-      border-right: 1px solid var(--border);
+    .or-divider::before, .or-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
     }
-    .stat-cell:last-child { border-right: none; }
-    .stat-cell .val { font-family: var(--mono); font-size: 13px; font-weight: 500; }
-    .stat-cell .lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-top: 4px; }
-    .stat-cell.income .val  { color: var(--emerald); }
-    .stat-cell.expense .val { color: var(--rose); }
-    .stat-cell.balance .val { color: var(--indigo); }
 
-    .card-footer {
-      margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center; gap: 6px;
+    /* ── Feature pills ── */
+    .feature-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 99px; padding: 5px 12px 5px 8px;
+      font-size: 12px; font-weight: 500; color: var(--text3);
     }
-    .card-footer span { font-size: 13px; color: var(--text3); }
-    .card-footer a { font-size: 13px; font-weight: 600; color: var(--indigo); text-decoration: none; transition: color var(--transition); }
-    .card-footer a:hover { color: #818cf8; }
+    .pill i { font-size: 13px; }
+    .pill.green { background: var(--emerald-soft); border-color: rgba(16,185,129,0.2); color: #047857; }
+    .pill.blue  { background: var(--primary-soft);  border-color: var(--primary-border);  color: var(--primary-dark); }
+    .pill.amber { background: rgba(245,158,11,0.09); border-color: rgba(245,158,11,0.2); color: #b45309; }
 
+    /* ── Footer ── */
+    .form-footer {
+      margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    .form-footer span { font-size: 13px; color: var(--text3); }
+    .form-footer a {
+      font-size: 13px; font-weight: 600; color: var(--primary);
+      text-decoration: none; transition: color .15s;
+    }
+    .form-footer a:hover { color: var(--primary-dark); }
+
+    .form-footer-brand {
+      margin-top: 20px; font-size: 11.5px; color: var(--text4);
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .form-footer-brand i { font-size: 13px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .left-panel { display: none; }
+      .right-panel { width: 100%; border-left: none; padding: 40px 28px; }
+    }
     @media (max-width: 480px) {
-      .login-card { padding: 30px 24px; }
-      h1 { font-size: 24px; }
+      .right-panel { padding: 32px 20px; }
+      .form-title { font-size: 22px; }
     }
   </style>
 </head>
 <body>
-  <div class="login-card">
-    <div class="card-header">
-      <div class="eyebrow"><span class="eyebrow-dot"></span>Cash Manager</div>
-      <h1>Welcome back</h1>
-      <p class="subtitle">Sign in to manage your transactions</p>
+
+  <!-- ════════ LEFT PANEL ════════ -->
+  <div class="left-panel">
+
+    <div class="lp-brand">
+      <div class="lp-brand-icon"><i class="ti ti-currency-dollar"></i></div>
+      <span class="lp-brand-name">CashManager</span>
     </div>
 
-    {% if messages %}
-      <div class="django-messages">
-        {% for message in messages %}
-          <div class="msg">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {{ message }}
+    <div>
+      <div class="lp-copy">
+        <div class="lp-eyebrow">Financial Dashboard</div>
+        <h2 class="lp-headline">Take <em>control</em><br>of your money.</h2>
+        <p class="lp-desc">Track income, manage expenses, and grow your balance — all in one clean dashboard built for clarity.</p>
+      </div>
+
+      <div class="lp-widget">
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">Monthly Overview</span>
+            <span class="widget-live"><span class="live-dot"></span>Live</span>
           </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <form method="post">
-      {% csrf_token %}
-
-      <div class="form-group">
-        <label for="id_username">Username</label>
-        <div class="input-wrap">
-          <svg class="icon-left" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          <input type="text" name="username" id="id_username" placeholder="Enter your username" autocomplete="username" autofocus>
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="stat-val income">৳2.4M</div>
+              <div class="stat-lbl">Income</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val expense">৳1.1M</div>
+              <div class="stat-lbl">Expense</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val balance">৳1.3M</div>
+              <div class="stat-lbl">Balance</div>
+            </div>
+          </div>
+          <div class="bar-chart">
+            <div class="bar in"  style="height:42%"></div>
+            <div class="bar out" style="height:28%"></div>
+            <div class="bar in"  style="height:60%"></div>
+            <div class="bar out" style="height:35%"></div>
+            <div class="bar in"  style="height:75%"></div>
+            <div class="bar out" style="height:50%"></div>
+            <div class="bar in"  style="height:55%"></div>
+            <div class="bar out" style="height:30%"></div>
+            <div class="bar in"  style="height:88%"></div>
+            <div class="bar out" style="height:45%"></div>
+            <div class="bar in"  style="height:65%"></div>
+            <div class="bar out" style="height:38%"></div>
+          </div>
         </div>
       </div>
-
-      <div class="form-group">
-        <label for="id_password">Password</label>
-        <div class="input-wrap">
-          <svg class="icon-left" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="password" name="password" id="id_password" placeholder="Enter your password" autocomplete="current-password">
-          <button type="button" class="toggle-pass" onclick="togglePassword()" title="Show/hide password">
-            <svg id="eye-icon" viewBox="0 0 24 24">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-login">
-        Sign In
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </button>
-    </form>
-
-    <div class="stats-strip">
-      <div class="stat-cell income"><div class="val">Income</div><div class="lbl">Track</div></div>
-      <div class="stat-cell expense"><div class="val">Expense</div><div class="lbl">Control</div></div>
-      <div class="stat-cell balance"><div class="val">Balance</div><div class="lbl">Grow</div></div>
     </div>
 
-    <div class="card-footer">
-      <span>Don't have an account?</span>
-      <a href="{% url 'signup' %}">Create one</a>
+    <div class="lp-footer">
+      <span class="lp-footer-dot"></span>
+      <span class="lp-footer-text">Secured with 256-bit encryption</span>
+      <span class="lp-footer-dot"></span>
+      <span class="lp-footer-text">© 2026 CashManager</span>
+    </div>
+  </div>
+
+  <!-- ════════ RIGHT PANEL ════════ -->
+  <div class="right-panel">
+    <div class="form-inner">
+
+      <!-- Header -->
+      <div class="form-eyebrow">Account Access</div>
+      <h1 class="form-title">Welcome back</h1>
+      <p class="form-sub">Sign in to your dashboard to continue.</p>
+
+      <!-- Feature pills -->
+      <div class="feature-pills">
+        <span class="pill green"><i class="ti ti-trending-up"></i> Track income</span>
+        <span class="pill blue"><i class="ti ti-wallet"></i> Manage budget</span>
+        <span class="pill amber"><i class="ti ti-chart-pie"></i> View reports</span>
+      </div>
+
+      <!-- Error messages -->
+      <!-- {% if messages %}
+      {% for message in messages %}
+      <div class="alert-error">
+        <i class="ti ti-alert-circle"></i>
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %} -->
+
+      <!-- Demo alert (remove in production) -->
+      <div class="alert-error" id="demo-alert" style="display:none;">
+        <i class="ti ti-alert-circle"></i>
+        <span id="demo-alert-msg">Invalid username or password. Please try again.</span>
+      </div>
+
+      <!-- Form -->
+      <form method="post" id="login-form">
+        <!-- {% csrf_token %} -->
+
+        <div class="field">
+          <label class="field-label" for="id_username">Username <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-user input-icon"></i>
+            <input
+              type="text"
+              id="id_username"
+              name="username"
+              class="ds-input"
+              placeholder="Enter your username"
+              autocomplete="username"
+              autofocus
+              required
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-meta">
+            <label class="field-label" for="id_password" style="margin-bottom:0;">Password <span class="req">*</span></label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <div class="input-wrap">
+            <i class="ti ti-lock input-icon"></i>
+            <input
+              type="password"
+              id="id_password"
+              name="password"
+              class="ds-input"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" class="toggle-vis" id="toggle-pw" title="Show/hide password">
+              <i class="ti ti-eye" id="eye-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <i class="ti ti-login-2"></i>
+          Sign In
+        </button>
+      </form>
+
+      <div class="or-divider">or</div>
+
+      <div style="text-align:center; font-size:13px; color:var(--text4);">
+        <i class="ti ti-shield-check" style="font-size:15px; vertical-align:-2px; margin-right:4px; color:var(--emerald);"></i>
+        Your session is protected with end-to-end encryption.
+      </div>
+
+      <!-- Footer -->
+      <div class="form-footer">
+        <span>Don't have an account? </span>
+        <a href="#">Create one</a>
+      </div>
+
+      <div class="form-footer-brand">
+        <i class="ti ti-currency-dollar"></i>
+        CashManager — Smart Finance Tools
+      </div>
+
     </div>
   </div>
 
   <script>
-    function togglePassword() {
-      const input = document.getElementById('id_password');
-      const icon  = document.getElementById('eye-icon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
-      } else {
-        input.type = 'password';
-        icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    // Password toggle
+    const pwInput = document.getElementById('id_password');
+    const eyeIcon = document.getElementById('eye-icon');
+    document.getElementById('toggle-pw').addEventListener('click', function () {
+      const hidden = pwInput.type === 'password';
+      pwInput.type = hidden ? 'text' : 'password';
+      eyeIcon.className = hidden ? 'ti ti-eye-off' : 'ti ti-eye';
+    });
+
+    // Demo: show error on empty submit (remove if Django handles it)
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+      const u = document.getElementById('id_username').value.trim();
+      const p = document.getElementById('id_password').value;
+      const alert = document.getElementById('demo-alert');
+      if (!u || !p) {
+        e.preventDefault();
+        document.getElementById('demo-alert-msg').textContent = 'Please fill in both fields.';
+        alert.style.display = 'flex';
       }
-    }
+    });
   </script>
+
 </body>
 </html>
