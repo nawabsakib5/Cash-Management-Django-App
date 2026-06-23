@@ -1,27 +1,138 @@
 {% extends 'base.html' %}
-{% block title %}Delete Entry — {{ transaction.title }}{% endblock %}
+{% block title %}Delete Entry — {{ transaction.title }} — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── Centered Container ── */
+  .confirm-delete-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    min-height: calc(100vh - var(--topbar-h) - 120px);
+  }
+
+  .confirm-delete-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 40px;
+    background: var(--surface);
+    border: 1px solid rgba(244, 63, 94, 0.22);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  /* ── 10x Premium Submit Deletion Request Button ── */
+  .btn-submit-delete-premium {
+    flex: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, var(--rose) 0%, #be123c 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-submit-delete-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-submit-delete-premium:hover {
+    transform: translateY(-1.5px);
+    background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+    box-shadow: 0 6px 20px rgba(244, 63, 94, 0.45);
+  }
+  .btn-submit-delete-premium:active {
+    transform: translateY(0);
+  }
+
+  /* ── Highly Visible & Eye-catching Cancel Button ── */
+  .btn-cancel-delete-premium {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text) !important;
+    background: var(--surface2);
+    border: 1.5px solid var(--border3);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-cancel-delete-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-cancel-delete-premium:hover {
+    transform: translateY(-1.5px);
+    background: var(--surface3);
+    border-color: var(--text2);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  }
+  .btn-cancel-delete-premium:active {
+    transform: translateY(0);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="adm-layout" style="display: flex; justify-content: center; padding: 40px 20px;">
-  <div class="adm-card" style="width: 100%; max-width: 480px; padding: 40px; border-color: rgba(244,63,94,0.3); text-align: center;">
+<div class="confirm-delete-container">
+  <div class="confirm-delete-card">
     
-    <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.22); display: inline-flex; align-items: center; justify-content: center; color: var(--rose); margin-bottom: 20px;">
-      <svg viewBox="0 0 24 24" style="width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2;"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <!-- Warning Icon with Explicit Size Lock (কালো ত্রিভুজ রোধ করতে) -->
+    <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--rose-fog); border: 1px solid rgba(244, 63, 94, 0.22); display: inline-flex; align-items: center; justify-content: center; color: var(--rose); margin-bottom: 24px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
     </div>
 
-    <h2 style="font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px;">Request Entry Deletion?</h2>
-    <p style="font-size: 13.5px; color: var(--text3); line-height: 1.6; margin-bottom: 24px;">
-      You are about to request deletion for <strong style="color: var(--text);">"{{ transaction.title }}"</strong> (৳{{ transaction.amount|floatformat:0 }}). An administrator will review and confirm this request before it is permanently removed.
+    <!-- Title and Meta -->
+    <h2 style="font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px; letter-spacing: -0.02em;">Request Entry Deletion?</h2>
+    <p style="font-size: 14.5px; color: var(--text3); line-height: 1.6; margin-bottom: 32px;">
+      You are about to request a permanent deletion for <strong style="color: var(--text);">"{{ transaction.title }}"</strong> (৳{{ transaction.amount|floatformat:0 }}). An administrator will review and confirm this request before it is permanently removed from the ledger.
     </p>
 
+    <!-- Actions Form Controls -->
     <form method="post">
       {% csrf_token %}
-      <div style="display: flex; gap: 12px;">
-        <button type="submit" class="adm-btn-primary" style="flex: 1; background: var(--rose); border-color: rgba(244,63,94,0.6); justify-content: center; height: 44px; box-shadow: 0 4px 12px rgba(244,63,94,0.2);">
-          Submit Deletion Request
+      <div style="display: flex; gap: 16px;">
+        <!-- Premium Action Deletion Button -->
+        <button type="submit" class="btn-submit-delete-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+          </svg>
+          <span>Submit Request</span>
         </button>
-        <a href="{% url 'project_detail' transaction.project.pk %}" class="adm-btn-ghost" style="flex: 1; height: 44px; justify-content: center; align-items: center;">Cancel</a>
+
+        <!-- Highly Visible Cancel Button -->
+        <a href="{% url 'project_detail' transaction.project.pk %}" class="btn-cancel-delete-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          <span>Cancel &amp; Keep</span>
+        </a>
       </div>
     </form>
 

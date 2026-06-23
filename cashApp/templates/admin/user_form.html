@@ -1,534 +1,420 @@
 {% extends 'base.html' %}
 {% block title %}{{ action }} User — CashManager{% endblock %}
-
-{% block content %}
-
-<!-- ── Page Header ────────────────────────────────────────────────────────── -->
-<div class="page-header">
-  <div>
-    <span class="eyebrow">
-      <span class="eyebrow-dot" style="background:var(--rose)"></span>
-      Admin Panel
-    </span>
-    <h1 class="page-title">{{ action }} User</h1>
-    <p class="page-sub">
-      {% if action == 'Create' %}Add a new user account to the platform.
-      {% else %}Update account details for <strong style="color:var(--text); font-weight:600;">{{ target_user.username }}</strong>.
-      {% endif %}
-    </p>
-  </div>
-  <a href="{% url 'admin_user_list' %}" class="btn-back">
-    <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    Back to Users
-  </a>
-</div>
-
-<!-- ── Form Card ──────────────────────────────────────────────────────────── -->
-<div class="uf-card">
-
-  <!-- Top accent bar -->
-  <div class="uf-card-top"></div>
-
-  {% if action == 'Edit' and target_user %}
-  <!-- ── User info strip (Edit mode) ──────────────────────────────────── -->
-  <div class="uf-user-strip">
-    <div class="uf-strip-avatar {% if target_user.user_type == 'admin' %}uf-strip-avatar--admin{% endif %}">
-      {{ target_user.username|first|upper }}
-    </div>
-    <div class="uf-strip-info">
-      <div class="uf-strip-name">
-        {{ target_user.username }}
-        {% if target_user.user_type == 'admin' %}
-          <span class="uf-strip-tag" style="background:var(--rose-fog); color:var(--rose); border-color:rgba(244,63,94,0.25);">Admin</span>
-        {% else %}
-          <span class="uf-strip-tag" style="background:var(--indigo-fog); color:var(--indigo); border-color:var(--indigo-line);">User</span>
-        {% endif %}
-        {% if target_user.is_frozen %}
-          <span class="uf-strip-tag" style="background:var(--amber-fog); color:var(--amber); border-color:rgba(245,158,11,0.25);">Frozen</span>
-        {% endif %}
-      </div>
-      <div class="uf-strip-meta">
-        Joined {{ target_user.date_joined|date:"d M Y" }}
-        {% if target_user.email %}&nbsp;·&nbsp;{{ target_user.email }}{% endif %}
-      </div>
-    </div>
-  </div>
-  <div class="uf-divider"></div>
-  {% endif %}
-
-  <form method="post" class="uf-form" novalidate>
-    {% csrf_token %}
-
-    <!-- ── Non-field errors ──────────────────────────────────────────────── -->
-    {% if form.non_field_errors %}
-      <div class="uf-error-banner">
-        {% for error in form.non_field_errors %}
-          <span>{{ error }}</span>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <!-- ── Section: Account Info ──────────────────────────────────────── -->
-    <div class="uf-section-head">
-      <div class="uf-section-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      Account Info
-    </div>
-
-    <!-- Row 1: Username + Full Name -->
-    <div class="uf-row">
-      <div class="uf-field">
-        <label class="uf-label" for="{{ form.username.id_for_label }}">
-          Username <span class="uf-required">*</span>
-        </label>
-        <div class="uf-input-wrap">
-          <svg class="uf-input-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input
-            type="text"
-            name="{{ form.username.html_name }}"
-            id="{{ form.username.id_for_label }}"
-            value="{{ form.username.value|default_if_none:'' }}"
-            class="uf-input uf-input--icon {% if form.username.errors %}uf-input--error{% endif %}"
-            placeholder="e.g. john_doe"
-            autocomplete="off"
-          >
-        </div>
-        {% if form.username.errors %}
-          <span class="uf-field-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ form.username.errors|join:", " }}</span>
-        {% endif %}
-      </div>
-
-      <div class="uf-field">
-        <label class="uf-label" for="{{ form.full_name.id_for_label }}">Full Name</label>
-        <div class="uf-input-wrap">
-          <svg class="uf-input-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
-          <input
-            type="text"
-            name="{{ form.full_name.html_name }}"
-            id="{{ form.full_name.id_for_label }}"
-            value="{{ form.full_name.value|default_if_none:'' }}"
-            class="uf-input uf-input--icon {% if form.full_name.errors %}uf-input--error{% endif %}"
-            placeholder="e.g. John Doe"
-          >
-        </div>
-        {% if form.full_name.errors %}
-          <span class="uf-field-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ form.full_name.errors|join:", " }}</span>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Row 2: Email + Phone -->
-    <div class="uf-row">
-      <div class="uf-field">
-        <label class="uf-label" for="{{ form.email.id_for_label }}">
-          Email <span class="uf-required">*</span>
-        </label>
-        <div class="uf-input-wrap">
-          <svg class="uf-input-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <input
-            type="email"
-            name="{{ form.email.html_name }}"
-            id="{{ form.email.id_for_label }}"
-            value="{{ form.email.value|default_if_none:'' }}"
-            class="uf-input uf-input--icon {% if form.email.errors %}uf-input--error{% endif %}"
-            placeholder="e.g. john@example.com"
-            autocomplete="off"
-          >
-        </div>
-        {% if form.email.errors %}
-          <span class="uf-field-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ form.email.errors|join:", " }}</span>
-        {% endif %}
-      </div>
-
-      <div class="uf-field">
-        <label class="uf-label" for="{{ form.phone.id_for_label }}">Phone</label>
-        <div class="uf-input-wrap">
-          <svg class="uf-input-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <input
-            type="text"
-            name="{{ form.phone.html_name }}"
-            id="{{ form.phone.id_for_label }}"
-            value="{{ form.phone.value|default_if_none:'' }}"
-            class="uf-input uf-input--icon {% if form.phone.errors %}uf-input--error{% endif %}"
-            placeholder="e.g. 01XXXXXXXXX"
-          >
-        </div>
-        {% if form.phone.errors %}
-          <span class="uf-field-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ form.phone.errors|join:", " }}</span>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- ── Section: Role & Status ──────────────────────────────────────── -->
-    <div class="uf-section-head" style="margin-top:28px;">
-      <div class="uf-section-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      Role & Status
-    </div>
-
-    <div class="uf-row">
-      <div class="uf-field">
-        <label class="uf-label" for="{{ form.user_type.id_for_label }}">
-          User Type <span class="uf-required">*</span>
-        </label>
-        <div class="uf-select-wrap">
-          <svg class="uf-input-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <select
-            name="{{ form.user_type.html_name }}"
-            id="{{ form.user_type.id_for_label }}"
-            class="uf-select {% if form.user_type.errors %}uf-input--error{% endif %}"
-          >
-            {% for val, label in form.fields.user_type.choices %}
-              <option value="{{ val }}" {% if form.user_type.value == val %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-          <svg class="uf-select-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        {% if form.user_type.errors %}
-          <span class="uf-field-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ form.user_type.errors|join:", " }}</span>
-        {% endif %}
-      </div>
-
-      {% if action == 'Edit' and form.is_frozen %}
-      <div class="uf-field">
-        <label class="uf-label">Account Status</label>
-        <div class="uf-toggle-card">
-          <div class="uf-toggle-card-left">
-            <div class="uf-toggle-icon {% if form.is_frozen.value %}uf-toggle-icon--warn{% endif %}">
-              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
-            <div>
-              <div class="uf-toggle-title">Freeze Account</div>
-              <div class="uf-toggle-desc">User can log in but cannot perform actions</div>
-            </div>
-          </div>
-          <label class="uf-toggle-wrap">
-            <input
-              type="checkbox"
-              name="{{ form.is_frozen.html_name }}"
-              id="{{ form.is_frozen.id_for_label }}"
-              class="uf-toggle-input"
-              {% if form.is_frozen.value %}checked{% endif %}
-            >
-            <span class="uf-toggle-track">
-              <span class="uf-toggle-thumb"></span>
-            </span>
-          </label>
-        </div>
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- ── Section: Password (Create only) ────────────────────────────── -->
-    {% if action == 'Create' %}
-    <div class="uf-section-head" style="margin-top:28px;">
-      <div class="uf-section-icon">
-        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </div>
-      Set Password
-    </div>
-
-    <div class="uf-row">
-      <div class="uf-field">
-        <label class="uf-label" for="{{ form.password.id_for_label }}">
-          Password <span class="uf-required">*</span>
-        </label>
-        <div class="uf-pw-wrap">
-          <svg class="uf-input-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input
-            type="password"
-            name="{{ form.password.html_name }}"
-            id="{{ form.password.id_for_label }}"
-            class="uf-input uf-input--icon {% if form.password.errors %}uf-input--error{% endif %}"
-            placeholder="Min. 8 characters"
-            autocomplete="new-password"
-          >
-          <button type="button" class="uf-pw-toggle" data-target="{{ form.password.id_for_label }}">
-            <svg class="eye-show" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-hide" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
-        </div>
-        {% if form.password.errors %}
-          <span class="uf-field-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ form.password.errors|join:", " }}</span>
-        {% endif %}
-      </div>
-
-      <div class="uf-field">
-        <label class="uf-label" for="{{ form.confirm_password.id_for_label }}">
-          Confirm Password <span class="uf-required">*</span>
-        </label>
-        <div class="uf-pw-wrap">
-          <svg class="uf-input-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <input
-            type="password"
-            name="{{ form.confirm_password.html_name }}"
-            id="{{ form.confirm_password.id_for_label }}"
-            class="uf-input uf-input--icon {% if form.confirm_password.errors %}uf-input--error{% endif %}"
-            placeholder="Repeat password"
-            autocomplete="new-password"
-          >
-          <button type="button" class="uf-pw-toggle" data-target="{{ form.confirm_password.id_for_label }}">
-            <svg class="eye-show" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-hide" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
-        </div>
-        {% if form.confirm_password.errors %}
-          <span class="uf-field-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ form.confirm_password.errors|join:", " }}</span>
-        {% endif %}
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- ── Footer ────────────────────────────────────────────────────────── -->
-    <div class="uf-footer">
-      <a href="{% url 'admin_user_list' %}" class="btn-secondary">Cancel</a>
-      <button type="submit" class="btn-primary">
-        {% if action == 'Create' %}
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Create User
-        {% else %}
-          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save Changes
-        {% endif %}
-      </button>
-    </div>
-
-  </form>
-</div>
-
-{% endblock %}
-
+{% block nav_user_list %}active{% endblock %}
 
 {% block extra_css %}
 <style>
+  /* ── Reset main-wrapper for full-width layout (সাইডবার ডবল হওয়া রোধ করতে) ── */
+  .main-wrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
 
-/* ── Card ─────────────────────────────────────────────────────────────────── */
-.uf-card {
-  background: linear-gradient(165deg, var(--surface2), var(--surface));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  max-width: 800px;
-  box-shadow: var(--shadow-card, 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -12px rgba(0,0,0,0.5));
-}
-.uf-card-top {
-  height: 3px;
-  background: linear-gradient(90deg, var(--indigo), #a5b4fc, rgba(99,102,241,0.2));
-  box-shadow: 0 0 16px rgba(99,102,241,0.3);
-}
+  .adm-layout {
+    display: block !important;
+    width: 100%;
+    min-height: calc(100vh - var(--topbar-h));
+  }
 
-/* ── User Strip ───────────────────────────────────────────────────────────── */
-.uf-user-strip {
-  display: flex; align-items: center; gap: 16px;
-  padding: 22px 28px 20px;
-  background: linear-gradient(135deg, rgba(99,102,241,0.05), transparent 70%);
-}
-.uf-strip-avatar {
-  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(155deg, var(--indigo), var(--indigo-deep));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700; color: #fff; font-family: var(--mono);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 14px rgba(99,102,241,0.3);
-}
-.uf-strip-avatar--admin {
-  background: linear-gradient(155deg, var(--rose), #e11d48);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 14px rgba(244,63,94,0.3);
-}
-.uf-strip-info { display: flex; flex-direction: column; gap: 5px; }
-.uf-strip-name {
-  font-size: 16px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  letter-spacing: -0.2px;
-}
-.uf-strip-tag {
-  font-size: 9.5px; font-weight: 700; letter-spacing: 0.07em;
-  text-transform: uppercase; padding: 3px 10px; border-radius: 99px; border: 1px solid;
-}
-.uf-strip-meta { font-size: 12px; color: var(--text3); }
+  .adm-main {
+    width: 100% !important;
+    padding: 32px;
+    overflow-x: hidden;
+    min-width: 0;
+  }
 
-/* ── Divider ──────────────────────────────────────────────────────────────── */
-.uf-divider { height: 1px; background: var(--border); }
+  /* ── Page Header ── */
+  .adm-page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
 
-/* ── Form ─────────────────────────────────────────────────────────────────── */
-.uf-form { padding: 26px 28px; }
+  .adm-breadcrumb {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .adm-breadcrumb svg {
+    width: 12px !important;
+    height: 12px !important;
+    stroke: var(--text3);
+    fill: none;
+    stroke-width: 2.5;
+  }
 
-/* ── Section head ─────────────────────────────────────────────────────────── */
-.uf-section-head {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text3); margin-bottom: 18px;
-}
-.uf-section-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.uf-section-icon {
-  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
-  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center;
-}
-.uf-section-icon svg { width: 12px; height: 12px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  /* ── 10x Premium Back to Users Button ── */
+  .btn-back-users-v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--indigo) !important;
+    background: var(--indigo-fog);
+    border: 1px solid var(--indigo-line);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-back-users-v2 svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.5;
+    transition: transform 0.2s ease;
+  }
+  .btn-back-users-v2:hover {
+    transform: translateX(-2.5px);
+    background: var(--indigo);
+    color: #ffffff !important;
+    border-color: var(--indigo);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  }
+  .btn-back-users-v2:hover svg {
+    transform: translateX(-2px);
+  }
+  .btn-back-users-v2:active {
+    transform: scale(0.97);
+  }
 
-/* ── Row ──────────────────────────────────────────────────────────────────── */
-.uf-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
+  /* ── Premium Form Layout ── */
+  .user-form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: var(--shadow);
+    max-width: 720px;
+    margin: 0 auto;
+  }
 
-/* ── Field ────────────────────────────────────────────────────────────────── */
-.uf-field { display: flex; flex-direction: column; gap: 7px; }
+  .form-section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0 20px;
+    color: var(--text3);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .form-section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
 
-.uf-label {
-  font-size: 12px; font-weight: 600;
-  letter-spacing: 0.03em; color: var(--text2);
-  display: flex; align-items: center; gap: 5px;
-}
-.uf-required { color: var(--rose); font-size: 10px; }
+  .grid-fields-v2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 576px) {
+    .grid-fields-v2 { grid-template-columns: 1fr; }
+  }
 
-/* ── Input ────────────────────────────────────────────────────────────────── */
-.uf-input-wrap { position: relative; }
-.uf-input-icon {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  width: 14px; height: 14px; stroke: var(--text3); fill: none;
-  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-  pointer-events: none;
-}
-.uf-input {
-  width: 100%; padding: 11px 14px;
-  background: var(--surface3); border: 1px solid var(--border);
-  border-radius: var(--radius); color: var(--text);
-  font-size: 13.5px; font-family: var(--font); outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
-  box-sizing: border-box;
-}
-.uf-input--icon { padding-left: 36px; }
-.uf-input:focus {
-  border-color: var(--indigo);
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.14);
-  background: var(--surface4);
-}
-.uf-input:hover:not(:focus) { border-color: var(--border2); }
-.uf-input::placeholder { color: var(--text3); }
-.uf-input--error { border-color: rgba(244,63,94,0.6) !important; }
-.uf-input--error:focus { box-shadow: 0 0 0 4px rgba(244,63,94,0.12) !important; }
+  .field-premium {
+    margin-bottom: 20px;
+  }
+  .field-label-premium {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .field-label-premium .req {
+    color: var(--rose);
+    margin-left: 2px;
+  }
 
-.uf-field-error {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11.5px; color: var(--rose);
-}
-.uf-field-error svg { width: 12px; height: 12px; stroke: var(--rose); fill: none; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; }
+  .input-wrap-premium {
+    position: relative;
+  }
+  .input-icon-premium {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 18px;
+    pointer-events: none;
+    transition: color 0.2s;
+  }
 
-/* ── Select ───────────────────────────────────────────────────────────────── */
-.uf-select-wrap { position: relative; }
-.uf-select {
-  width: 100%; padding: 11px 36px 11px 36px;
-  background: var(--surface3); border: 1px solid var(--border);
-  border-radius: var(--radius); color: var(--text);
-  font-size: 13.5px; font-family: var(--font); outline: none; appearance: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  cursor: pointer;
-}
-.uf-select:focus { border-color: var(--indigo); box-shadow: 0 0 0 4px rgba(99,102,241,0.14); }
-.uf-select:hover:not(:focus) { border-color: var(--border2); }
-.uf-select-arrow {
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  width: 14px; height: 14px; stroke: var(--text3); fill: none;
-  stroke-width: 2; stroke-linecap: round; pointer-events: none;
-}
+  /* Form Control Interactivity */
+  .form-control-premium, .select-control-premium {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px 0 42px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .form-control-premium:focus, .select-control-premium:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    background: #fff;
+  }
+  .form-control-premium:focus ~ .input-icon-premium {
+    color: var(--indigo);
+  }
+  .form-control-premium::placeholder {
+    color: var(--text3);
+  }
 
-/* ── Toggle card (Freeze) ─────────────────────────────────────────────────── */
-.uf-toggle-card {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  background: var(--surface3); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 12px 14px;
-  transition: border-color var(--transition);
-}
-.uf-toggle-card:hover { border-color: var(--border2); }
-.uf-toggle-card-left { display: flex; align-items: center; gap: 12px; }
-.uf-toggle-icon {
-  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
-  background: var(--surface4); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-}
-.uf-toggle-icon svg { width: 14px; height: 14px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; }
-.uf-toggle-icon--warn { background: var(--amber-fog); border-color: rgba(245,158,11,0.25); }
-.uf-toggle-icon--warn svg { stroke: var(--amber); }
-.uf-toggle-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.uf-toggle-desc  { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  /* Dropdown indicator replacement */
+  .select-control-premium {
+    appearance: none;
+    cursor: pointer;
+  }
 
-.uf-toggle-wrap { display: flex; align-items: center; cursor: pointer; flex-shrink: 0; }
-.uf-toggle-input { display: none; }
-.uf-toggle-track {
-  width: 40px; height: 22px; border-radius: 99px;
-  background: var(--surface4); border: 1px solid var(--border);
-  position: relative; transition: all var(--transition); flex-shrink: 0;
-}
-.uf-toggle-input:checked + .uf-toggle-track {
-  background: rgba(245,158,11,0.25);
-  border-color: rgba(245,158,11,0.5);
-  box-shadow: inset 0 0 0 1px rgba(245,158,11,0.3);
-}
-.uf-toggle-thumb {
-  position: absolute; top: 2px; left: 2px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: var(--text3);
-  transition: transform var(--transition), background var(--transition);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-.uf-toggle-input:checked + .uf-toggle-track .uf-toggle-thumb {
-  transform: translateX(18px);
-  background: var(--amber);
-}
+  /* Toggle Switches style */
+  .toggle-switch-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
 
-/* ── Password toggle ──────────────────────────────────────────────────────── */
-.uf-pw-wrap { position: relative; }
-.uf-pw-wrap .uf-input { padding-right: 42px; }
-.uf-pw-toggle {
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: pointer; padding: 2px;
-  color: var(--text3); transition: color var(--transition);
-}
-.uf-pw-toggle:hover { color: var(--text); }
-.uf-pw-toggle svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; display: block; }
+  /* ── Highly Visible Glow Action Button ── */
+  .btn-submit-premium {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    padding: 0 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--indigo) 0%, #4f46e5 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    animation: btn-glow-pulse 2.5s infinite;
+    transition: all 0.2s;
+  }
+  .btn-submit-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-submit-premium:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  }
 
-/* ── Error Banner ─────────────────────────────────────────────────────────── */
-.uf-error-banner {
-  background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.25);
-  border-radius: var(--radius); padding: 12px 16px;
-  font-size: 13px; color: var(--rose);
-  margin-bottom: 20px;
-  display: flex; align-items: flex-start; gap: 10px;
-}
+  @keyframes btn-glow-pulse {
+    0% { box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35), 0 0 0 0 rgba(99, 102, 241, 0.4); }
+    50% { box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4), 0 0 0 6px rgba(99, 102, 241, 0); }
+    100% { box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35), 0 0 0 0 rgba(99, 102, 241, 0); }
+  }
 
-/* ── Footer ───────────────────────────────────────────────────────────────── */
-.uf-footer {
-  display: flex; align-items: center; justify-content: flex-end; gap: 10px;
-  margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border);
-}
-
-/* ── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .uf-form { padding: 20px 18px; }
-  .uf-user-strip { padding: 18px; }
-  .uf-row { grid-template-columns: 1fr; }
-  .uf-toggle-card { flex-direction: column; align-items: flex-start; }
-}
-
+  .btn-cancel-premium {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    padding: 0 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text3) !important;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    transition: all 0.2s;
+  }
+  .btn-cancel-premium:hover {
+    background: var(--surface2);
+    color: var(--text) !important;
+    border-color: var(--text-muted);
+  }
 </style>
 {% endblock %}
 
+{% block content %}
+<div class="adm-layout">
 
-{% block extra_js %}
-<script>
-  document.querySelectorAll('.uf-pw-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const input = document.getElementById(btn.dataset.target);
-      const isText = input.type === 'text';
-      input.type = isText ? 'password' : 'text';
-      btn.querySelector('.eye-show').style.display = isText ? 'block' : 'none';
-      btn.querySelector('.eye-hide').style.display = isText ? 'none'  : 'block';
-    });
-  });
-</script>
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="adm-main">
+
+    <!-- Page Header & Action Controls -->
+    <div class="adm-page-head">
+      <div>
+        <div class="adm-breadcrumb">
+          Admin Panel
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          Manage Users
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          {{ action }} User
+        </div>
+        <h1 class="adm-page-title">{{ action }} User Account</h1>
+        <p style="font-size: 14px; color: var(--text3); margin-top: 6px;">
+          {% if action == 'Create' %}Add a new user credential to the system platform.{% else %}Modify and update registered user credentials.{% endif %}
+        </p>
+      </div>
+
+      <!-- Glowing Back to Users Arrow Button -->
+      <a href="{% url 'admin_user_list' %}" class="btn-back-users-v2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        <span>Back to Users</span>
+      </a>
+    </div>
+
+    <!-- Scoped Custom Form Card Console -->
+    <div class="user-form-card">
+      <form method="post" id="user-form" novalidate>
+        {% csrf_token %}
+
+        <!-- Group: Account Info -->
+        <div class="form-section-divider">Account Credentials</div>
+
+        <div class="grid-fields-v2">
+          <!-- Username -->
+          <div class="field-premium">
+            <label class="field-label-premium">Username <span class="req">*</span></label>
+            <div class="input-wrap-premium">
+              <input type="text" name="username" class="form-control-premium" placeholder="e.g. johndoe" value="{{ form.username.value|default:'' }}" required>
+              <i class="ti ti-user input-icon-premium"></i>
+            </div>
+            {% if form.username.errors %}<p class="form-error" style="color:var(--rose); font-size:12px; margin-top:6px;">{{ form.username.errors.0 }}</p>{% endif %}
+          </div>
+
+          <!-- Full Name -->
+          <div class="field-premium">
+            <label class="field-label-premium">Full Name</label>
+            <div class="input-wrap-premium">
+              <input type="text" name="full_name" class="form-control-premium" placeholder="e.g. John Doe" value="{{ form.full_name.value|default:'' }}">
+              <i class="ti ti-id input-icon-premium"></i>
+            </div>
+            {% if form.full_name.errors %}<p class="form-error" style="color:var(--rose); font-size:12px; margin-top:6px;">{{ form.full_name.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="grid-fields-v2">
+          <!-- Email -->
+          <div class="field-premium">
+            <label class="field-label-premium">Email Address <span class="req">*</span></label>
+            <div class="input-wrap-premium">
+              <input type="email" name="email" class="form-control-premium" placeholder="name@example.com" value="{{ form.email.value|default:'' }}" required>
+              <i class="ti ti-mail input-icon-premium"></i>
+            </div>
+            {% if form.email.errors %}<p class="form-error" style="color:var(--rose); font-size:12px; margin-top:6px;">{{ form.email.errors.0 }}</p>{% endif %}
+          </div>
+
+          <!-- Phone -->
+          <div class="field-premium">
+            <label class="field-label-premium">Phone Number</label>
+            <div class="input-wrap-premium">
+              <input type="text" name="phone" class="form-control-premium" placeholder="+88017..." value="{{ form.phone.value|default:'' }}">
+              <i class="ti ti-phone input-icon-premium"></i>
+            </div>
+            {% if form.phone.errors %}<p class="form-error" style="color:var(--rose); font-size:12px; margin-top:6px;">{{ form.phone.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <!-- Group: System Permissions and Roles -->
+        <div class="form-section-divider">Roles &amp; Status Security</div>
+
+        <div class="grid-fields-v2">
+          <!-- User Type -->
+          <div class="field-premium">
+            <label class="field-label-premium">User Authority Role <span class="req">*</span></label>
+            <div style="position: relative;">
+              <select name="user_type" class="select-control-premium" style="padding-left: 42px;" required>
+                <option value="user" {% if form.user_type.value == 'user' %}selected{% endif %}>Regular User</option>
+                <option value="admin" {% if form.user_type.value == 'admin' %}selected{% endif %}>Administrator</option>
+              </select>
+              <i class="ti ti-shield input-icon-premium" style="z-index: 10;"></i>
+              <!-- Custom arrow icon indicator -->
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; z-index: 10;">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            {% if form.user_type.errors %}<p class="form-error" style="color:var(--rose); font-size:12px; margin-top:6px;">{{ form.user_type.errors.0 }}</p>{% endif %}
+          </div>
+
+          <!-- Account Frozen Switch Status -->
+          <div class="field-premium">
+            <label class="field-label-premium">Freeze Status</label>
+            <div class="toggle-switch-group">
+              <input type="checkbox" name="is_frozen" id="id_is_frozen" class="form-check-input" style="width:16px; height:16px; cursor:pointer;" {% if form.is_frozen.value %}checked{% endif %}>
+              <label for="id_is_frozen" style="font-size:13.5px; color:var(--text2); font-weight:600; cursor:pointer; user-select:none;">Freeze User Access</label>
+            </div>
+            {% if form.is_frozen.errors %}<p class="form-error" style="color:var(--rose); font-size:12px; margin-top:6px;">{{ form.is_frozen.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        {% if action == 'Create' %}
+        <!-- Password block required ONLY in Creation mode -->
+        <div class="form-section-divider">Security Authentication</div>
+        <div class="grid-fields-v2">
+          <!-- Password Input -->
+          <div class="field-premium" style="margin-bottom: 0;">
+            <label class="field-label-premium">Primary Password <span class="req">*</span></label>
+            <div class="input-wrap-premium">
+              <input type="password" name="password" class="form-control-premium" placeholder="At least 8 characters" required>
+              <i class="ti ti-lock input-icon-premium"></i>
+            </div>
+            {% if form.password.errors %}<p class="form-error" style="color:var(--rose); font-size:12px; margin-top:6px;">{{ form.password.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Form Submit & Cancel Actions -->
+        <div style="display: flex; gap: 16px; margin-top: 36px;">
+          <!-- Glowing Action Button -->
+          <button type="submit" class="btn-submit-premium">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            <span>Save Account</span>
+          </button>
+
+          <!-- Cancel link styled elegantly -->
+          <a href="{% url 'admin_user_list' %}" class="btn-cancel-premium">
+            <span>Cancel</span>
+          </a>
+        </div>
+
+      </form>
+    </div>
+
+  </main>
+</div>
 {% endblock %}

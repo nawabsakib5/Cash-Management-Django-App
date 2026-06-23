@@ -2,40 +2,184 @@
 {% block title %}{% if project %}Edit {{ project.name }}{% else %}New Project{% endif %} — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── Page Card Styling ── */
+  .project-form-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .project-form-card {
+    width: 100%;
+    max-width: 550px;
+    padding: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* Form Elements Custom Styling */
+  .form-label-premium {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+  .form-label-premium .req {
+    color: var(--rose);
+    margin-left: 2px;
+  }
+
+  .form-control-premium {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .form-control-premium:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    background: #fff;
+  }
+  .form-control-premium::placeholder {
+    color: var(--text3);
+  }
+
+  /* ── 10x Premium Save Button ── */
+  .btn-save-project-premium {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, var(--indigo) 0%, #4f46e5 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-save-project-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-save-project-premium:hover {
+    transform: translateY(-1.5px);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  }
+  .btn-save-project-premium:active {
+    transform: translateY(0);
+  }
+
+  /* ── Highly Visible & Eye-catching Cancel Button ── */
+  .btn-cancel-project-premium {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--rose) !important;
+    background: transparent;
+    border: 1.5px solid rgba(244, 63, 94, 0.4);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-cancel-project-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-cancel-project-premium:hover {
+    transform: translateY(-1.5px);
+    background: var(--rose-soft);
+    border-color: var(--rose);
+    box-shadow: 0 6px 15px rgba(244, 63, 94, 0.15);
+  }
+  .btn-cancel-project-premium:active {
+    transform: translateY(0);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="adm-layout" style="display: flex; justify-content: center; padding: 40px 20px;">
-  <div class="adm-card" style="width: 100%; max-width: 550px; padding: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);">
+<div class="project-form-container">
+  <div class="project-form-card">
     
+    <!-- Form Header -->
     <div style="text-align: center; margin-bottom: 32px;">
-      <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--indigo-fog); display: inline-flex; align-items: center; justify-content: center; color: var(--indigo); margin-bottom: 16px;">
-        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: inline-flex; align-items: center; justify-content: center; color: var(--indigo); margin-bottom: 16px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
       </div>
-      <h2 style="font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px;">
+      <h2 style="font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em;">
         {% if project %}Edit Project Details{% else %}Create New Project{% endif %}
       </h2>
-      <p style="font-size: 13px; color: var(--text3); margin: 0;">Specify project metadata and scope rules below.</p>
+      <p style="font-size: 13.5px; color: var(--text3); margin: 0;">Specify project metadata and scope rules below.</p>
     </div>
 
+    <!-- Form Content -->
     <form method="post">
       {% csrf_token %}
       
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Project Title <span style="color: var(--rose);">*</span></label>
-        <input type="text" name="name" class="form-control" placeholder="e.g. Home Renovation, Office Supply" style="width: 100%; height: 44px; padding: 0 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none;" value="{{ form.name.value|default:'' }}" required />
-        {% if form.name.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.name.errors.0 }}</p>{% endif %}
+      <!-- Project Title -->
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label class="form-label-premium">Project Title <span class="req">*</span></label>
+        <input type="text" name="name" class="form-control-premium" placeholder="e.g. Home Renovation, Office Supply" value="{{ form.name.value|default:'' }}" required />
+        {% if form.name.errors %}
+          <p style="color: var(--rose); font-size: 12.5px; margin-top: 6px; font-weight: 500;">{{ form.name.errors.0 }}</p>
+        {% endif %}
       </div>
 
-      <div style="margin-bottom: 26px;">
-        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Scope Description</label>
-        <textarea name="description" placeholder="Briefly describe the purpose of this project..." style="width: 100%; height: 120px; padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; resize: none;">{{ form.description.value|default:'' }}</textarea>
-        {% if form.description.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.description.errors.0 }}</p>{% endif %}
+      <!-- Scope Description -->
+      <div class="form-group" style="margin-bottom: 32px;">
+        <label class="form-label-premium">Scope Description</label>
+        <textarea name="description" class="form-control-premium" placeholder="Briefly describe the purpose of this project..." style="height: 120px; resize: none; line-height: 1.5;">{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}
+          <p style="color: var(--rose); font-size: 12.5px; margin-top: 6px; font-weight: 500;">{{ form.description.errors.0 }}</p>
+        {% endif %}
       </div>
 
-      <div style="display: flex; gap: 12px;">
-        <button type="submit" class="adm-btn-primary" style="flex: 1; justify-content: center; height: 44px;">
-          <svg viewBox="0 0 24 24" style="width: 14px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Project
+      <!-- Actions Footer Grid -->
+      <div style="display: flex; gap: 16px;">
+        <!-- Premium Save Button -->
+        <button type="submit" class="btn-save-project-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg> 
+          <span>Save Project</span>
         </button>
-        <a href="{% url 'project_list' %}" class="adm-btn-ghost" style="height: 44px; align-items: center; justify-content: center;">Cancel</a>
+
+        <!-- Highly Noticeable Cancel Button -->
+        <a href="{% url 'project_list' %}" class="btn-cancel-project-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          <span>Cancel &amp; Exit</span>
+        </a>
       </div>
     </form>
 
