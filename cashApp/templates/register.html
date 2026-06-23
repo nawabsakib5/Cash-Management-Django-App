@@ -1,263 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register – Cash Management</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Sign Up — CashManager</title>
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #060608; --surface: #0e0e12; --surface2: #141418;
-      --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11);
-      --indigo: #6366f1; --indigo-mid: #4f46e5;
-      --indigo-fog: rgba(99,102,241,0.08); --indigo-line: rgba(99,102,241,0.3);
-      --emerald: #10b981; --emerald-fog: rgba(16,185,129,0.08);
-      --emerald-line: rgba(16,185,129,0.3); --emerald-glow: rgba(16,185,129,0.3);
-      --rose: #f43f5e; --rose-fog: rgba(244,63,94,0.1);
-      --text: #f8f8fc; --text2: #a8a8c0; --text3: #52526a;
-      --font: 'Space Grotesk', system-ui, sans-serif;
-      --radius: 10px; --radius-lg: 14px; --radius-xl: 20px;
-      --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-soft: rgba(99,102,241,0.06);
+      --primary-border: rgba(99,102,241,0.15);
+      --primary-glow: rgba(99,102,241,0.25);
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --rose-soft: rgba(244,63,94,0.08);
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text2: #334155;
+      --text3: #475569;
+      --text4: #94a3b8;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --font: 'Inter', sans-serif;
     }
-    body {
-      font-family: var(--font); background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 24px; position: relative; overflow: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-    body::before {
-      content: ''; position: fixed; top: -160px; left: 50%; transform: translateX(-50%);
-      width: 700px; height: 500px; pointer-events: none;
-      background: radial-gradient(ellipse, rgba(16,185,129,0.08) 0%, transparent 70%);
-    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 20px; }
+    
+    .register-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 520px; padding: 48px; box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05); }
+    .form-header { text-align: center; margin-bottom: 36px; }
+    .brand-logo { width: 44px; height: 44px; border-radius: var(--radius); background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(99,102,241,0.35); }
+    .brand-logo i { color: #fff; font-size: 22px; }
+    .form-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .form-sub { font-size: 14px; color: var(--text3); }
 
-    .register-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 40px; width: 100%; max-width: 440px;
-      position: relative; animation: slideUp 0.4s cubic-bezier(0.22,1,0.36,1);
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .register-card::before {
-      content: ''; position: absolute; top: 0; left: 24px; right: 24px; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(16,185,129,0.6), transparent);
-    }
+    .grid-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    @media (max-width: 576px) { .grid-fields { grid-template-columns: 1fr; } }
 
-    .card-header { margin-bottom: 20px; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--emerald); margin-bottom: 12px;
-    }
-    .eyebrow-dot {
-      width: 5px; height: 5px; border-radius: 50%; background: var(--emerald);
-      box-shadow: 0 0 6px rgba(16,185,129,0.7);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50% { opacity:0.5; transform:scale(0.75); }
-    }
-    h1 { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 6px; letter-spacing: -0.5px; }
-    .subtitle { font-size: 14px; color: var(--text2); }
-
-    .benefits { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
-    .benefits li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text3); }
-    .benefits li svg { width:14px; height:14px; stroke:var(--emerald); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
-
-    .django-messages { margin-bottom: 16px; }
-    .msg {
-      font-size: 13px; color: var(--rose); background: var(--rose-fog);
-      border: 1px solid rgba(244,63,94,0.22); border-radius: var(--radius);
-      padding: 11px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
-    }
-    .msg svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; flex-shrink:0; }
-
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-    .form-row .form-group { margin-bottom: 0; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin-bottom: 7px; }
-    .optional { font-size: 10px; font-weight: 400; color: var(--text3); text-transform: none; letter-spacing: 0; margin-left: 4px; }
-
+    .field { margin-bottom: 20px; }
+    .field.no-margin { margin-bottom: 0; }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 8px; }
+    .field-label .req { color: var(--rose); margin-left: 2px; }
+    
     .input-wrap { position: relative; }
-    .input-wrap .icon-left {
-      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      width: 15px; height: 15px; stroke: var(--text3); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      pointer-events: none; transition: stroke var(--transition);
-    }
-    .input-wrap:focus-within .icon-left { stroke: var(--emerald); }
-    input[type="text"], input[type="password"], input[type="email"] {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 11px 14px 11px 40px;
-      font-size: 14px; font-family: var(--font); color: var(--text); outline: none;
-      transition: border-color var(--transition), box-shadow var(--transition);
-    }
-    input.has-toggle { padding-right: 44px; }
-    input:focus { border-color: var(--emerald); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); background: #1a1a20; }
-    input::placeholder { color: var(--text3); }
-    .toggle-pass {
-      position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; padding: 4px;
-      display: flex; align-items: center; border-radius: 6px; transition: background var(--transition);
-    }
-    .toggle-pass:hover { background: rgba(255,255,255,0.06); }
-    .toggle-pass svg { width:15px; height:15px; stroke:var(--text3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; display:block; transition:stroke var(--transition); }
-    .toggle-pass:hover svg { stroke: var(--emerald); }
+    .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text4); font-size: 18px; pointer-events: none; }
+    .ds-input, .ds-select { width: 100%; height: 46px; padding: 0 16px 0 44px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; appearance: none; }
+    .ds-input:focus, .ds-select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); background: #fff; }
 
-    .strength-bar { display: flex; gap: 4px; margin-top: 8px; }
-    .strength-bar span { flex:1; height:3px; border-radius:2px; background:var(--border); transition:background 0.3s; }
+    .btn-submit { width: 100%; height: 48px; background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); color: #fff; border: none; border-radius: var(--radius); font-size: 14.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 18px var(--primary-glow); margin-top: 8px; }
+    .btn-submit:hover { transform: translateY(-1.5px); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
 
-    .btn-register {
-      width: 100%; padding: 13px; border: none; border-radius: var(--radius);
-      background: var(--emerald); color: #060608; font-family: var(--font);
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      box-shadow: 0 4px 20px var(--emerald-glow), inset 0 1px 0 rgba(255,255,255,0.15);
-      transition: all var(--transition); margin-top: 8px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-register:hover { background: #0ea572; box-shadow: 0 6px 28px var(--emerald-glow); transform: translateY(-1px); }
-    .btn-register:active { transform: scale(0.98); }
-    .btn-register svg { width:15px; height:15px; stroke:#060608; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
-
-    .card-footer {
-      margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-    }
-    .card-footer span { font-size: 13px; color: var(--text3); }
-    .card-footer a { font-size: 13px; font-weight: 600; color: var(--indigo); text-decoration: none; transition: color var(--transition); }
-    .card-footer a:hover { color: #818cf8; }
-
-    @media (max-width: 480px) {
-      .register-card { padding: 28px 22px; }
-      h1 { font-size: 22px; }
-      .form-row { grid-template-columns: 1fr; }
-    }
+    .alert-error { display: flex; align-items: flex-start; gap: 12px; background: var(--rose-soft); border: 1px solid rgba(244,63,94,0.15); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 24px; font-size: 13.5px; color: var(--rose); font-weight: 500; }
+    .form-footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center; font-size: 13.5px; }
+    .form-footer a { font-weight: 700; color: var(--primary); text-decoration: none; }
   </style>
 </head>
 <body>
   <div class="register-card">
-    <div class="card-header">
-      <div class="eyebrow"><span class="eyebrow-dot"></span>New Account</div>
-      <h1>Create your account</h1>
-      <p class="subtitle">Start tracking your income &amp; expenses</p>
+    <div class="form-header">
+      <div class="brand-logo"><i class="ti ti-currency-dollar"></i></div>
+      <h1 class="form-title">Create Account</h1>
+      <p class="form-sub">Get started with CashManager system today</p>
     </div>
 
-    <ul class="benefits">
-      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Track income and expenses in one place</li>
-      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>See your real-time balance instantly</li>
-      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Organize transactions by project</li>
-    </ul>
-
     {% if messages %}
-      <div class="django-messages">
-        {% for message in messages %}
-          <div class="msg">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {{ message }}
-          </div>
-        {% endfor %}
+      {% for message in messages %}
+      <div class="alert-error">
+        <i class="ti ti-alert-circle"></i>
+        <span>{{ message }}</span>
       </div>
+      {% endfor %}
     {% endif %}
 
-    <form method="post">
+    <form method="post" action="{% url 'signup' %}">
       {% csrf_token %}
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="id_full_name">Full Name <span class="optional">(optional)</span></label>
+      <div class="grid-fields">
+        <div class="field no-margin">
+          <label class="field-label">Username <span class="req">*</span></label>
           <div class="input-wrap">
-            <svg class="icon-left" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            <input type="text" name="full_name" id="id_full_name" placeholder="Your full name">
+            <i class="ti ti-user input-icon"></i>
+            <input type="text" name="username" class="ds-input" placeholder="e.g. johndoe" required />
           </div>
         </div>
-        <div class="form-group">
-          <label for="id_phone">Phone <span class="optional">(optional)</span></label>
+        <div class="field no-margin">
+          <label class="field-label">Full Name</label>
           <div class="input-wrap">
-            <svg class="icon-left" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.86 19.86 0 0 1 3.08 4.18 2 2 0 0 1 5.07 2h3a2 2 0 0 1 2 1.72 12.05 12.05 0 0 0 .67 2.69 2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.05 12.05 0 0 0 2.69.67A2 2 0 0 1 22 16.92z"/></svg>
-            <input type="text" name="phone" id="id_phone" placeholder="01XXXXXXXXX">
+            <i class="ti ti-id input-icon"></i>
+            <input type="text" name="full_name" class="ds-input" placeholder="e.g. John Doe" />
           </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="id_username">Username</label>
-        <div class="input-wrap">
-          <svg class="icon-left" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          <input type="text" name="username" id="id_username" placeholder="Choose a username" autocomplete="username" autofocus>
+      <div class="grid-fields">
+        <div class="field no-margin">
+          <label class="field-label">Email Address <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-mail input-icon"></i>
+            <input type="email" name="email" class="ds-input" placeholder="name@example.com" required />
+          </div>
+        </div>
+        <div class="field no-margin">
+          <label class="field-label">Phone Number</label>
+          <div class="input-wrap">
+            <i class="ti ti-phone input-icon"></i>
+            <input type="text" name="phone" class="ds-input" placeholder="+88017..." />
+          </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="id_email">Email</label>
+      <div class="field">
+        <label class="field-label">User Type <span class="req">*</span></label>
         <div class="input-wrap">
-          <svg class="icon-left" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <input type="email" name="email" id="id_email" placeholder="your@email.com" autocomplete="email">
+          <i class="ti ti-users input-icon" style="z-index: 10;"></i>
+          <select name="user_type" class="ds-select" style="padding-left: 44px;" required>
+            <option value="user">Regular User</option>
+            <option value="admin">Administrator</option>
+          </select>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="id_password">Password</label>
-        <div class="input-wrap">
-          <svg class="icon-left" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="password" name="password" id="id_password" class="has-toggle"
-                 placeholder="Create a strong password" autocomplete="new-password" oninput="checkStrength(this.value)">
-          <button type="button" class="toggle-pass" onclick="togglePassword('id_password','eye1')">
-            <svg id="eye1" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
+      <div class="grid-fields">
+        <div class="field no-margin">
+          <label class="field-label">Password <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-lock input-icon"></i>
+            <input type="password" name="password" class="ds-input" placeholder="Min. 8 characters" required />
+          </div>
         </div>
-        <div class="strength-bar"><span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span></div>
-      </div>
-
-      <div class="form-group">
-        <label for="id_confirm_password">Confirm Password</label>
-        <div class="input-wrap">
-          <svg class="icon-left" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="password" name="confirm_password" id="id_confirm_password" class="has-toggle"
-                 placeholder="Repeat your password" autocomplete="new-password">
-          <button type="button" class="toggle-pass" onclick="togglePassword('id_confirm_password','eye2')">
-            <svg id="eye2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
+        <div class="field no-margin">
+          <label class="field-label">Confirm Password <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-shield-check input-icon"></i>
+            <input type="password" name="confirm_password" class="ds-input" placeholder="Confirm" required />
+          </div>
         </div>
       </div>
 
-      <button type="submit" class="btn-register">
-        Create Account
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <button type="submit" class="btn-submit">
+        <i class="ti ti-user-plus"></i> Register Workspace
       </button>
     </form>
 
-    <div class="card-footer">
+    <div class="form-footer">
       <span>Already have an account?</span>
-      <a href="{% url 'login' %}">Sign in</a>
+      <a href="{% url 'login' %}">Sign In</a>
     </div>
   </div>
-
-  <script>
-    function togglePassword(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon  = document.getElementById(iconId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
-      } else {
-        input.type = 'password';
-        icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
-      }
-    }
-    function checkStrength(val) {
-      const bars = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
-      const colors = ['#f43f5e','#f97316','#eab308','#10b981'];
-      let score = 0;
-      if (val.length >= 8) score++;
-      if (/[A-Z]/.test(val)) score++;
-      if (/[0-9]/.test(val)) score++;
-      if (/[^A-Za-z0-9]/.test(val)) score++;
-      bars.forEach((b, i) => { b.style.background = i < score ? colors[score-1] : 'var(--border)'; });
-    }
-  </script>
 </body>
 </html>

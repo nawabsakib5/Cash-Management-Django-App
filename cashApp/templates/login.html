@@ -4,372 +4,100 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <title>Sign In — CashManager</title>
-
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --primary: #6366f1;
       --primary-dark: #4f46e5;
-      --primary-soft: rgba(99,102,241,0.09);
-      --primary-border: rgba(99,102,241,0.22);
-      --primary-glow: rgba(99,102,241,0.28);
-
+      --primary-soft: rgba(99,102,241,0.06);
+      --primary-border: rgba(99,102,241,0.15);
+      --primary-glow: rgba(99,102,241,0.25);
       --emerald: #10b981;
-      --emerald-soft: rgba(16,185,129,0.1);
+      --emerald-soft: rgba(16,185,129,0.08);
       --rose: #f43f5e;
-      --rose-soft: rgba(244,63,94,0.09);
-      --amber: #f59e0b;
-
-      --bg: #f3f4f6;
+      --rose-soft: rgba(244,63,94,0.08);
+      --bg: #f8fafc;
       --card: #ffffff;
-      --surface: #f9fafb;
-      --surface2: #f3f4f6;
-
-      --text: #111827;
-      --text2: #374151;
-      --text3: #6b7280;
-      --text4: #9ca3af;
-
-      --border: #e5e7eb;
-      --border2: #d1d5db;
-
-      --radius: 10px;
-      --radius-lg: 14px;
-      --radius-xl: 20px;
-      --font: 'Inter', system-ui, sans-serif;
-      --mono: 'JetBrains Mono', monospace;
-      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --text: #0f172a;
+      --text2: #334155;
+      --text3: #475569;
+      --text4: #94a3b8;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --radius-xl: 24px;
+      --font: 'Inter', sans-serif;
     }
-
-    html, body { height: 100%; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* ═══════════════════════════════════════════
-       LEFT PANEL — brand + animated dashboard
-    ═══════════════════════════════════════════ */
-    .left-panel {
-      flex: 1;
-      background: #0f1117;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 48px 52px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Subtle grid texture */
-    .left-panel::before {
-      content: '';
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
-    /* Top indigo bloom */
-    .left-panel::after {
-      content: '';
-      position: absolute; top: -120px; left: -80px;
-      width: 500px; height: 420px;
-      background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 65%);
-      pointer-events: none;
-    }
-
-    .lp-brand {
-      display: flex; align-items: center; gap: 11px;
-      position: relative; z-index: 1;
-    }
-    .lp-brand-icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: var(--primary);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 20px rgba(99,102,241,0.45);
-    }
-    .lp-brand-icon i { color: #fff; font-size: 18px; }
-    .lp-brand-name { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -.3px; }
-
-    .lp-copy { position: relative; z-index: 1; }
-    .lp-eyebrow {
-      font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
-      color: var(--primary); display: flex; align-items: center; gap: 7px; margin-bottom: 16px;
-    }
-    .lp-eyebrow::before {
-      content: ''; width: 20px; height: 1.5px; background: var(--primary);
-      border-radius: 99px;
-    }
-    .lp-headline {
-      font-size: 36px; font-weight: 800; line-height: 1.18;
-      color: #fff; letter-spacing: -.8px; margin-bottom: 16px;
-    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; display: flex; min-height: 100vh; }
+    
+    .left-panel { flex: 1.2; background: #090d16; display: flex; flex-direction: column; justify-content: space-between; padding: 60px; position: relative; overflow: hidden; }
+    .left-panel::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(99,102,241,0.03) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(99,102,241,0.03) 1.5px, transparent 1.5px); background-size: 50px 50px; pointer-events: none; }
+    .left-panel::after { content: ''; position: absolute; top: -150px; left: -100px; width: 650px; height: 500px; background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%); pointer-events: none; }
+    
+    .lp-brand { display: flex; align-items: center; gap: 12px; position: relative; z-index: 2; }
+    .lp-brand-icon { width: 40px; height: 40px; border-radius: var(--radius); background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+    .lp-brand-icon i { color: #fff; font-size: 20px; }
+    .lp-brand-name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+    
+    .lp-copy { position: relative; z-index: 2; margin-top: 40px; }
+    .lp-headline { font-size: 42px; font-weight: 800; line-height: 1.2; color: #fff; letter-spacing: -0.03em; margin-bottom: 18px; }
     .lp-headline em { font-style: normal; color: var(--primary); }
-    .lp-desc { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.7; max-width: 340px; }
-
-    /* ── Mini dashboard widget ── */
-    .lp-widget {
-      position: relative; z-index: 1; margin-top: 44px;
-    }
-    .widget-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--radius-lg);
-      padding: 20px 22px;
-      backdrop-filter: blur(4px);
-    }
-    .widget-header {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
-    }
-    .widget-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: .04em; }
-    .widget-live {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-      color: var(--emerald);
-    }
-    .live-dot {
-      width: 6px; height: 6px; border-radius: 50%; background: var(--emerald);
-      animation: livepulse 2s ease-in-out infinite;
-    }
-    @keyframes livepulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
-
-    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
-    .stat-box { text-align: center; }
-    .stat-val {
-      font-family: var(--mono); font-size: 17px; font-weight: 500;
-      line-height: 1; margin-bottom: 5px;
-    }
-    .stat-val.income  { color: var(--emerald); }
+    .lp-desc { font-size: 15px; color: #94a3b8; line-height: 1.7; max-width: 420px; }
+    
+    .lp-widget { position: relative; z-index: 2; margin-top: 48px; }
+    .widget-card { background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-xl); padding: 24px 28px; backdrop-filter: blur(12px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+    .widget-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .widget-title { font-size: 12.5px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: .06em; text-transform: uppercase; }
+    
+    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .stat-box { text-align: left; }
+    .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 19px; font-weight: 600; margin-bottom: 6px; }
+    .stat-val.income { color: var(--emerald); }
     .stat-val.expense { color: var(--rose); }
     .stat-val.balance { color: var(--primary); }
-    .stat-lbl { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+    .stat-lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
 
-    /* Bar chart */
-    .bar-chart {
-      display: flex; align-items: flex-end; gap: 5px; height: 56px;
-    }
-    .bar {
-      flex: 1; border-radius: 4px 4px 0 0;
-      animation: barrise .6s var(--ease) both;
-    }
-    .bar.in  { background: rgba(16,185,129,0.55); }
-    .bar.out { background: rgba(244,63,94,0.45); }
-    @keyframes barrise {
-      from { transform: scaleY(0); transform-origin: bottom; }
-      to   { transform: scaleY(1); transform-origin: bottom; }
-    }
-    .bar:nth-child(1)  { animation-delay: .05s; }
-    .bar:nth-child(2)  { animation-delay: .10s; }
-    .bar:nth-child(3)  { animation-delay: .15s; }
-    .bar:nth-child(4)  { animation-delay: .20s; }
-    .bar:nth-child(5)  { animation-delay: .25s; }
-    .bar:nth-child(6)  { animation-delay: .30s; }
-    .bar:nth-child(7)  { animation-delay: .35s; }
-    .bar:nth-child(8)  { animation-delay: .40s; }
-    .bar:nth-child(9)  { animation-delay: .45s; }
-    .bar:nth-child(10) { animation-delay: .50s; }
-    .bar:nth-child(11) { animation-delay: .55s; }
-    .bar:nth-child(12) { animation-delay: .60s; }
-
-    .lp-footer {
-      position: relative; z-index: 1;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .lp-footer-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.2); }
-    .lp-footer-text { font-size: 11.5px; color: rgba(255,255,255,0.25); }
-
-    /* ═══════════════════════════════════════════
-       RIGHT PANEL — login form
-    ═══════════════════════════════════════════ */
-    .right-panel {
-      width: 480px;
-      flex-shrink: 0;
-      background: var(--card);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 52px 52px;
-      border-left: 1px solid var(--border);
-      overflow-y: auto;
-    }
-    .form-inner { width: 100%; max-width: 360px; }
-
-    /* ── Form header ── */
-    .form-eyebrow {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--primary); margin-bottom: 10px;
-    }
-    .form-eyebrow::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--primary);
-    }
-    .form-title {
-      font-size: 26px; font-weight: 800; letter-spacing: -.5px;
-      color: var(--text); margin-bottom: 5px;
-    }
-    .form-sub { font-size: 13.5px; color: var(--text3); margin-bottom: 30px; line-height: 1.5; }
-
-    /* ── Alert ── */
-    .alert-error {
-      display: flex; align-items: flex-start; gap: 10px;
-      background: var(--rose-soft); border: 1px solid rgba(244,63,94,0.2);
-      border-radius: var(--radius); padding: 12px 14px; margin-bottom: 20px;
-      font-size: 13px; color: var(--rose); line-height: 1.5;
-    }
-    .alert-error i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-    /* ── Field ── */
-    .field { margin-bottom: 16px; }
-    .field-label {
-      font-size: 12px; font-weight: 600; color: var(--text2);
-      display: block; margin-bottom: 6px; letter-spacing: .01em;
-    }
-    .field-label .req { color: var(--rose); margin-left: 2px; }
+    .right-panel { width: 520px; flex-shrink: 0; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; border-left: 1px solid var(--border); overflow-y: auto; }
+    .form-inner { width: 100%; max-width: 380px; }
+    
+    .form-title { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); margin-bottom: 6px; }
+    .form-sub { font-size: 14.5px; color: var(--text3); margin-bottom: 28px; line-height: 1.5; }
+    
+    .field { margin-bottom: 20px; }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 8px; }
     .input-wrap { position: relative; }
-    .input-icon {
-      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      color: var(--text4); font-size: 16px; pointer-events: none;
-      transition: color .15s var(--ease);
-    }
-    .toggle-vis {
-      position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; padding: 4px 5px;
-      color: var(--text4); font-size: 16px; border-radius: 6px;
-      transition: color .15s, background .15s;
-      display: flex; align-items: center;
-    }
-    .toggle-vis:hover { color: var(--primary); background: var(--primary-soft); }
-
-    .ds-input {
-      width: 100%; height: 44px; padding: 0 44px 0 40px;
-      background: var(--surface); border: 1.5px solid var(--border);
-      border-radius: var(--radius); font-size: 14px; font-family: var(--font);
-      color: var(--text); outline: none;
-      transition: border-color .15s var(--ease), box-shadow .15s var(--ease), background .15s;
-    }
-    .ds-input:hover { border-color: var(--border2); }
-    .ds-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-soft);
-      background: #fff;
-    }
-    .input-wrap:focus-within .input-icon { color: var(--primary); }
-    .ds-input::placeholder { color: var(--text4); }
-
-    /* ── Forgot link ── */
-    .field-meta {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .forgot-link {
-      font-size: 12px; font-weight: 500; color: var(--primary);
-      text-decoration: none; transition: color .15s;
-    }
-    .forgot-link:hover { color: var(--primary-dark); text-decoration: underline; }
-
-    /* ── Submit ── */
-    .btn-submit {
-      width: 100%; height: 46px; margin-top: 6px;
-      background: var(--primary); color: #fff; border: none;
-      border-radius: var(--radius); font-family: var(--font);
-      font-size: 14px; font-weight: 700; letter-spacing: .01em;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      cursor: pointer; transition: all .18s var(--ease);
-      box-shadow: 0 4px 18px var(--primary-glow);
-    }
-    .btn-submit i { font-size: 17px; }
-    .btn-submit:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 28px var(--primary-glow);
-    }
-    .btn-submit:active { transform: scale(0.98); box-shadow: none; }
-
-    /* ── Divider ── */
-    .or-divider {
-      display: flex; align-items: center; gap: 12px;
-      font-size: 11px; font-weight: 600; color: var(--text4);
-      letter-spacing: .06em; text-transform: uppercase; margin: 22px 0;
-    }
-    .or-divider::before, .or-divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
-
-    /* ── Feature pills ── */
-    .feature-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
-    .pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 99px; padding: 5px 12px 5px 8px;
-      font-size: 12px; font-weight: 500; color: var(--text3);
-    }
-    .pill i { font-size: 13px; }
-    .pill.green { background: var(--emerald-soft); border-color: rgba(16,185,129,0.2); color: #047857; }
-    .pill.blue  { background: var(--primary-soft);  border-color: var(--primary-border);  color: var(--primary-dark); }
-    .pill.amber { background: rgba(245,158,11,0.09); border-color: rgba(245,158,11,0.2); color: #b45309; }
-
-    /* ── Footer ── */
-    .form-footer {
-      margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--border);
-      text-align: center;
-    }
-    .form-footer span { font-size: 13px; color: var(--text3); }
-    .form-footer a {
-      font-size: 13px; font-weight: 600; color: var(--primary);
-      text-decoration: none; transition: color .15s;
-    }
-    .form-footer a:hover { color: var(--primary-dark); }
-
-    .form-footer-brand {
-      margin-top: 20px; font-size: 11.5px; color: var(--text4);
-      display: flex; align-items: center; justify-content: center; gap: 5px;
-    }
-    .form-footer-brand i { font-size: 13px; }
-
-    /* ── Responsive ── */
-    @media (max-width: 900px) {
-      .left-panel { display: none; }
-      .right-panel { width: 100%; border-left: none; padding: 40px 28px; }
-    }
-    @media (max-width: 480px) {
-      .right-panel { padding: 32px 20px; }
-      .form-title { font-size: 22px; }
-    }
+    .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text4); font-size: 18px; pointer-events: none; }
+    .ds-input { width: 100%; height: 46px; padding: 0 46px 0 44px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; }
+    .ds-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); background: #fff; }
+    
+    .btn-submit { width: 100%; height: 48px; margin-top: 10px; background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); color: #fff; border: none; border-radius: var(--radius); font-size: 14.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 18px var(--primary-glow); }
+    .btn-submit:hover { transform: translateY(-1.5px); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
+    
+    .alert-error { display: flex; align-items: flex-start; gap: 12px; background: var(--rose-soft); border: 1px solid rgba(244,63,94,0.15); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 24px; font-size: 13.5px; color: var(--rose); font-weight: 500; }
+    .form-footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center; font-size: 13.5px; }
+    .form-footer a { font-weight: 700; color: var(--primary); text-decoration: none; }
+    
+    @media (max-width: 992px) { .left-panel { display: none; } .right-panel { width: 100%; border-left: none; padding: 48px 24px; } }
   </style>
 </head>
 <body>
-
-  <!-- ════════ LEFT PANEL ════════ -->
+  <!-- LEFT PANEL -->
   <div class="left-panel">
-
     <div class="lp-brand">
       <div class="lp-brand-icon"><i class="ti ti-currency-dollar"></i></div>
       <span class="lp-brand-name">CashManager</span>
     </div>
-
     <div>
       <div class="lp-copy">
-        <div class="lp-eyebrow">Financial Dashboard</div>
-        <h2 class="lp-headline">Take <em>control</em><br>of your money.</h2>
-        <p class="lp-desc">Track income, manage expenses, and grow your balance — all in one clean dashboard built for clarity.</p>
+        <div class="lp-eyebrow">Smart Finance Tracker</div>
+        <h2 class="lp-headline">Track, Optimize &amp;<br><em>Control</em> Your Funds.</h2>
+        <p class="lp-desc">An elegant and high-performance financial workspace for individuals, teams, and administrators alike.</p>
       </div>
-
       <div class="lp-widget">
         <div class="widget-card">
           <div class="widget-header">
             <span class="widget-title">Monthly Overview</span>
-            <span class="widget-live"><span class="live-dot"></span>Live</span>
           </div>
           <div class="stats-row">
             <div class="stat-box">
@@ -385,156 +113,59 @@
               <div class="stat-lbl">Balance</div>
             </div>
           </div>
-          <div class="bar-chart">
-            <div class="bar in"  style="height:42%"></div>
-            <div class="bar out" style="height:28%"></div>
-            <div class="bar in"  style="height:60%"></div>
-            <div class="bar out" style="height:35%"></div>
-            <div class="bar in"  style="height:75%"></div>
-            <div class="bar out" style="height:50%"></div>
-            <div class="bar in"  style="height:55%"></div>
-            <div class="bar out" style="height:30%"></div>
-            <div class="bar in"  style="height:88%"></div>
-            <div class="bar out" style="height:45%"></div>
-            <div class="bar in"  style="height:65%"></div>
-            <div class="bar out" style="height:38%"></div>
-          </div>
         </div>
       </div>
     </div>
-
     <div class="lp-footer">
       <span class="lp-footer-dot"></span>
-      <span class="lp-footer-text">Secured with 256-bit encryption</span>
-      <span class="lp-footer-dot"></span>
-      <span class="lp-footer-text">© 2026 CashManager</span>
+      <span class="lp-footer-text">© 2026 CashManager Dashboard</span>
     </div>
   </div>
 
-  <!-- ════════ RIGHT PANEL ════════ -->
+  <!-- RIGHT PANEL -->
   <div class="right-panel">
     <div class="form-inner">
-
-      <!-- Header -->
       <div class="form-eyebrow">Account Access</div>
-      <h1 class="form-title">Welcome back</h1>
-      <p class="form-sub">Sign in to your dashboard to continue.</p>
+      <h1 class="form-title">Welcome Back</h1>
+      <p class="form-sub">Sign in to your administration panel or workspace.</p>
 
-      <!-- Feature pills -->
-      <div class="feature-pills">
-        <span class="pill green"><i class="ti ti-trending-up"></i> Track income</span>
-        <span class="pill blue"><i class="ti ti-wallet"></i> Manage budget</span>
-        <span class="pill amber"><i class="ti ti-chart-pie"></i> View reports</span>
-      </div>
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert-error">
+          <i class="ti ti-alert-circle"></i>
+          <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+      {% endif %}
 
-      <!-- Error messages -->
-      <!-- {% if messages %}
-      {% for message in messages %}
-      <div class="alert-error">
-        <i class="ti ti-alert-circle"></i>
-        {{ message }}
-      </div>
-      {% endfor %}
-      {% endif %} -->
-
-      <!-- Demo alert (remove in production) -->
-      <div class="alert-error" id="demo-alert" style="display:none;">
-        <i class="ti ti-alert-circle"></i>
-        <span id="demo-alert-msg">Invalid username or password. Please try again.</span>
-      </div>
-
-      <!-- Form -->
-      <form method="post" id="login-form">
-        <!-- {% csrf_token %} -->
-
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
         <div class="field">
-          <label class="field-label" for="id_username">Username <span class="req">*</span></label>
+          <label class="field-label" for="username">Username</label>
           <div class="input-wrap">
             <i class="ti ti-user input-icon"></i>
-            <input
-              type="text"
-              id="id_username"
-              name="username"
-              class="ds-input"
-              placeholder="Enter your username"
-              autocomplete="username"
-              autofocus
-              required
-            />
+            <input type="text" id="username" name="username" class="ds-input" placeholder="Enter your username" required autofocus />
           </div>
         </div>
 
         <div class="field">
-          <div class="field-meta">
-            <label class="field-label" for="id_password" style="margin-bottom:0;">Password <span class="req">*</span></label>
-            <a href="#" class="forgot-link">Forgot password?</a>
-          </div>
+          <label class="field-label" for="password">Password</label>
           <div class="input-wrap">
             <i class="ti ti-lock input-icon"></i>
-            <input
-              type="password"
-              id="id_password"
-              name="password"
-              class="ds-input"
-              placeholder="Enter your password"
-              autocomplete="current-password"
-              required
-            />
-            <button type="button" class="toggle-vis" id="toggle-pw" title="Show/hide password">
-              <i class="ti ti-eye" id="eye-icon"></i>
-            </button>
+            <input type="password" id="password" name="password" class="ds-input" placeholder="Enter your password" required />
           </div>
         </div>
 
         <button type="submit" class="btn-submit">
-          <i class="ti ti-login-2"></i>
-          Sign In
+          <i class="ti ti-login-2"></i> Sign In
         </button>
       </form>
 
-      <div class="or-divider">or</div>
-
-      <div style="text-align:center; font-size:13px; color:var(--text4);">
-        <i class="ti ti-shield-check" style="font-size:15px; vertical-align:-2px; margin-right:4px; color:var(--emerald);"></i>
-        Your session is protected with end-to-end encryption.
-      </div>
-
-      <!-- Footer -->
       <div class="form-footer">
-        <span>Don't have an account? </span>
-        <a href="#">Create one</a>
+        <span>Don't have an account?</span>
+        <a href="{% url 'signup' %}">Create one</a>
       </div>
-
-      <div class="form-footer-brand">
-        <i class="ti ti-currency-dollar"></i>
-        CashManager — Smart Finance Tools
-      </div>
-
     </div>
   </div>
-
-  <script>
-    // Password toggle
-    const pwInput = document.getElementById('id_password');
-    const eyeIcon = document.getElementById('eye-icon');
-    document.getElementById('toggle-pw').addEventListener('click', function () {
-      const hidden = pwInput.type === 'password';
-      pwInput.type = hidden ? 'text' : 'password';
-      eyeIcon.className = hidden ? 'ti ti-eye-off' : 'ti ti-eye';
-    });
-
-    // Demo: show error on empty submit (remove if Django handles it)
-    document.getElementById('login-form').addEventListener('submit', function (e) {
-      const u = document.getElementById('id_username').value.trim();
-      const p = document.getElementById('id_password').value;
-      const alert = document.getElementById('demo-alert');
-      if (!u || !p) {
-        e.preventDefault();
-        document.getElementById('demo-alert-msg').textContent = 'Please fill in both fields.';
-        alert.style.display = 'flex';
-      }
-    });
-  </script>
-
 </body>
 </html>
