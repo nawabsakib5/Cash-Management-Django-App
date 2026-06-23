@@ -1,514 +1,435 @@
 {% extends 'base.html' %}
 {% block title %}Audit Log — CashManager{% endblock %}
-
-{% block content %}
-
-<!-- ── Page Header ────────────────────────────────────────────────────────── -->
-<div class="page-header">
-  <div>
-    <span class="eyebrow">
-      <span class="eyebrow-dot" style="background:var(--rose)"></span>
-      Admin Panel
-    </span>
-    <h1 class="page-title">Audit Log</h1>
-    <p class="page-sub">All system activity — filtered by action, user, or date.</p>
-  </div>
-  <a href="{% url 'admin_dashboard' %}" class="btn-back">
-    <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    Dashboard
-  </a>
-</div>
-
-<!-- ── Filter Bar ─────────────────────────────────────────────────────────── -->
-<form method="get" class="al-filter-bar">
-  <!-- Action -->
-  <div class="al-filter-group">
-    <label class="al-filter-label">Action</label>
-    <select name="action" class="al-select">
-      <option value="">All Actions</option>
-      {% for val, label in action_choices %}
-        <option value="{{ val }}" {% if action_filter == val %}selected{% endif %}>
-          {{ label }}
-        </option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <!-- User -->
-  <div class="al-filter-group">
-    <label class="al-filter-label">User</label>
-    <div class="al-input-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input
-        type="text"
-        name="user"
-        class="al-input"
-        placeholder="Username..."
-        value="{{ user_filter }}"
-      >
-    </div>
-  </div>
-
-  <!-- Date -->
-  <div class="al-filter-group">
-    <label class="al-filter-label">Date</label>
-    <input type="date" name="date" class="al-input al-input--date" value="{{ date_filter }}">
-  </div>
-
-  <!-- Buttons -->
-  <div class="al-filter-actions">
-    <button type="submit" class="al-btn-apply">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-      </svg>
-      Filter
-    </button>
-    {% if action_filter or user_filter or date_filter %}
-    <a href="{% url 'admin_audit_log' %}" class="al-btn-clear">✕ Clear</a>
-    {% endif %}
-  </div>
-</form>
-
-<!-- ── Active Filter Pills ────────────────────────────────────────────────── -->
-{% if action_filter or user_filter or date_filter %}
-<div class="al-active-filters">
-  {% if action_filter %}
-    <span class="al-pill">
-      Action: <strong>{{ action_filter }}</strong>
-    </span>
-  {% endif %}
-  {% if user_filter %}
-    <span class="al-pill">
-      User: <strong>{{ user_filter }}</strong>
-    </span>
-  {% endif %}
-  {% if date_filter %}
-    <span class="al-pill">
-      Date: <strong>{{ date_filter }}</strong>
-    </span>
-  {% endif %}
-  <span class="al-pill-count">{{ logs|length }} result{% if logs|length != 1 %}s{% endif %}</span>
-</div>
-{% endif %}
-
-<!-- ── Empty State ────────────────────────────────────────────────────────── -->
-{% if not logs %}
-<div class="al-empty">
-  <div class="al-empty-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
-      <polyline points="10 9 9 9 8 9"/>
-    </svg>
-  </div>
-  <h2 class="al-empty-title">No logs found</h2>
-  <p class="al-empty-sub">Try adjusting your filters.</p>
-</div>
-
-<!-- ── Log Table ──────────────────────────────────────────────────────────── -->
-{% else %}
-<div class="al-table-wrap">
-  <table class="al-table">
-    <thead>
-      <tr>
-        <th>Time</th>
-        <th>Actor</th>
-        <th>Action</th>
-        <th>Target</th>
-        <th>Detail</th>
-        <th>IP</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for log in logs %}
-      <tr class="al-row al-row--{{ log.action }}">
-
-        <!-- Time -->
-        <td class="al-cell al-cell--time">
-          <span class="al-time-date">{{ log.timestamp|date:"d M Y" }}</span>
-          <span class="al-time-hour">{{ log.timestamp|date:"H:i" }}</span>
-        </td>
-
-        <!-- Actor -->
-        <td class="al-cell">
-          {% if log.actor %}
-          <div class="al-actor">
-            <div class="al-actor-avatar">{{ log.actor.username|first|upper }}</div>
-            <span class="al-actor-name">{{ log.actor.username }}</span>
-          </div>
-          {% else %}
-          <span class="al-null">—</span>
-          {% endif %}
-        </td>
-
-        <!-- Action -->
-        <td class="al-cell">
-          <span class="al-action-badge al-action-badge--{{ log.action }}">
-            {% if log.action == 'create' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            {% elif log.action == 'edit' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            {% elif log.action == 'delete_request' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            {% elif log.action == 'delete_confirm' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-            {% elif log.action == 'login' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-            {% elif log.action == 'logout' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            {% elif log.action == 'freeze' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            {% elif log.action == 'unfreeze' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
-            {% elif log.action == 'user_create' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            {% elif log.action == 'user_delete' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="18" y1="11" x2="23" y2="16"/><line x1="23" y1="11" x2="18" y2="16"/></svg>
-            {% endif %}
-            {{ log.get_action_display }}
-          </span>
-        </td>
-
-        <!-- Target -->
-        <td class="al-cell">
-          {% if log.target_type %}
-          <div class="al-target">
-            <span class="al-target-type">{{ log.target_type }}</span>
-            {% if log.target_repr %}
-            <span class="al-target-repr" title="{{ log.target_repr }}">{{ log.target_repr|truncatechars:40 }}</span>
-            {% endif %}
-          </div>
-          {% else %}
-          <span class="al-null">—</span>
-          {% endif %}
-        </td>
-
-        <!-- Detail -->
-        <td class="al-cell al-cell--detail">
-          {% if log.detail %}
-            <span title="{{ log.detail }}">{{ log.detail|truncatechars:60 }}</span>
-          {% else %}
-            <span class="al-null">—</span>
-          {% endif %}
-        </td>
-
-        <!-- IP -->
-        <td class="al-cell al-cell--ip">
-          {% if log.ip_address %}
-            <code class="al-ip">{{ log.ip_address }}</code>
-          {% else %}
-            <span class="al-null">—</span>
-          {% endif %}
-        </td>
-
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<!-- Row count -->
-<div class="al-row-count">Showing {{ logs|length }} entr{% if logs|length == 1 %}y{% else %}ies{% endif %} (max 200)</div>
-
-{% endif %}
-
-{% endblock %}
-
+{% block nav_audit_log %}active{% endblock %}
 
 {% block extra_css %}
 <style>
+  /* ── Reset main-wrapper for full-width layout (ডবল সাইডবার রোধ করতে) ── */
+  .main-wrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
 
-/* ── Filter Bar ───────────────────────────────────────────────────────────── */
-.al-filter-bar {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  flex-wrap: wrap;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 18px 20px;
-  margin-bottom: 16px;
-}
-.al-filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.al-filter-label {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-.al-select,
-.al-input {
-  background: var(--bg, #0f1117);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  color: var(--text);
-  font-size: 13px;
-  padding: 8px 12px;
-  outline: none;
-  transition: border-color var(--transition);
-  min-width: 150px;
-}
-.al-select:focus,
-.al-input:focus { border-color: var(--indigo); }
+  .adm-layout {
+    display: block !important;
+    width: 100%;
+    min-height: calc(100vh - var(--topbar-h));
+  }
 
-.al-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.al-input-wrap svg {
-  position: absolute;
-  left: 10px;
-  width: 13px;
-  height: 13px;
-  stroke: var(--text3);
-  fill: none;
-  pointer-events: none;
-}
-.al-input-wrap .al-input { padding-left: 30px; }
+  .adm-main {
+    width: 100% !important;
+    padding: 32px;
+    overflow-x: hidden;
+    min-width: 0;
+  }
 
-.al-input--date { min-width: 140px; }
+  /* ── Page Header ── */
+  .adm-page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
 
-.al-filter-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.al-btn-apply {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  background: var(--indigo);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-xl);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity var(--transition);
-}
-.al-btn-apply svg { width: 12px; height: 12px; stroke: #fff; fill: none; }
-.al-btn-apply:hover { opacity: 0.85; }
+  .adm-breadcrumb {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .adm-breadcrumb svg {
+    width: 12px !important;
+    height: 12px !important;
+    stroke: var(--text3);
+    fill: none;
+    stroke-width: 2.5;
+  }
 
-.al-btn-clear {
-  font-size: 12px;
-  color: var(--text3);
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: var(--radius-xl);
-  transition: color var(--transition);
-}
-.al-btn-clear:hover { color: var(--rose); }
+  /* ── 10x Premium Dashboard Back Button ── */
+  .btn-back-dashboard-v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--indigo) !important;
+    background: var(--indigo-fog);
+    border: 1px solid var(--indigo-line);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-back-dashboard-v2 svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.5;
+  }
+  .btn-back-dashboard-v2:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  }
 
-/* ── Active Filter Pills ──────────────────────────────────────────────────── */
-.al-active-filters {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.al-pill {
-  font-size: 12px;
-  color: var(--text3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  padding: 3px 12px;
-}
-.al-pill strong { color: var(--text); font-weight: 600; }
-.al-pill-count {
-  font-size: 12px;
-  color: var(--indigo);
-  font-weight: 600;
-  margin-left: auto;
-}
+  /* ── Technical Form Filter Bar ── */
+  .filter-panel-premium {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .filter-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) auto;
+    gap: 16px;
+    align-items: flex-end;
+  }
+  @media (max-width: 900px) {
+    .filter-grid-premium { grid-template-columns: 1fr; }
+  }
 
-/* ── Empty State ──────────────────────────────────────────────────────────── */
-.al-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px 24px;
-  text-align: center;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-}
-.al-empty-icon {
-  width: 58px; height: 58px; border-radius: 50%;
-  background: var(--indigo-fog);
-  border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 16px;
-}
-.al-empty-icon svg { width: 24px; height: 24px; stroke: var(--indigo); fill: none; }
-.al-empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
-.al-empty-sub   { font-size: 13px; color: var(--text3); margin: 0; }
+  .floating-label-group {
+    position: relative;
+  }
+  .filter-label-text {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  .filter-select, .filter-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  .filter-select:focus, .filter-input:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
 
-/* ── Table ────────────────────────────────────────────────────────────────── */
-.al-table-wrap {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  overflow-x: auto;
-}
-.al-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.al-table thead tr {
-  background: var(--bg, #0f1117);
-  border-bottom: 1px solid var(--border);
-}
-.al-table th {
-  padding: 11px 16px;
-  text-align: left;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text3);
-  white-space: nowrap;
-}
-.al-row {
-  border-bottom: 1px solid var(--border);
-  transition: background var(--transition);
-}
-.al-row:last-child { border-bottom: none; }
-.al-row:hover { background: rgba(255,255,255,0.02); }
+  /* Glowing Filter Button */
+  .btn-filter-glow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 24px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    transition: all 0.2s;
+  }
+  .btn-filter-glow:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  }
 
-.al-cell {
-  padding: 12px 16px;
-  vertical-align: middle;
-  color: var(--text);
-}
-.al-cell--time {
-  white-space: nowrap;
-  min-width: 110px;
-}
-.al-time-date {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text);
-}
-.al-time-hour {
-  display: block;
-  font-size: 11px;
-  color: var(--text3);
-  font-family: var(--mono);
-}
-.al-cell--detail { max-width: 220px; color: var(--text3); font-size: 12px; }
-.al-cell--ip { white-space: nowrap; }
+  /* ── 10x Impressive Timeline Audit Table ── */
+  .audit-table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+  }
 
-.al-null { color: var(--text3); opacity: 0.4; }
+  .adm-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .adm-table thead th {
+    background: var(--surface2);
+    padding: 16px 24px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    border-bottom: 1.5px solid var(--border);
+  }
 
-/* ── Actor ────────────────────────────────────────────────────────────────── */
-.al-actor {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-.al-actor-avatar {
-  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-  background: var(--indigo-fog);
-  border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: var(--indigo);
-}
-.al-actor-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  /* Smooth interactive rows */
+  .adm-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .adm-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.015) !important;
+  }
+  .adm-table tbody td {
+    padding: 16px 24px;
+    vertical-align: middle;
+  }
 
-/* ── Action Badge ─────────────────────────────────────────────────────────── */
-.al-action-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 99px;
-  white-space: nowrap;
-}
-.al-action-badge svg { width: 11px; height: 11px; stroke: currentColor; fill: none; }
+  /* Timeline line effect inside table */
+  .timeline-cell {
+    position: relative;
+    padding-left: 32px !important;
+  }
+  .timeline-cell::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--border);
+    transition: background 0.25s ease;
+  }
+  .adm-table tbody tr:hover .timeline-cell::before {
+    background: var(--indigo);
+  }
 
-/* Action colors */
-.al-action-badge--create        { background: rgba(16,185,129,0.1); color: var(--emerald); }
-.al-action-badge--edit          { background: var(--indigo-fog);    color: var(--indigo);  }
-.al-action-badge--delete_request{ background: rgba(251,146,60,0.12);color: #f97316;        }
-.al-action-badge--delete_confirm{ background: var(--rose-fog);      color: var(--rose);    }
-.al-action-badge--login         { background: rgba(16,185,129,0.08);color: var(--emerald); }
-.al-action-badge--logout        { background: rgba(255,255,255,0.05);color: var(--text3);  }
-.al-action-badge--freeze        { background: rgba(245,158,11,0.12); color: #d97706;       }
-.al-action-badge--unfreeze      { background: rgba(16,185,129,0.1); color: var(--emerald); }
-.al-action-badge--user_create   { background: var(--indigo-fog);    color: var(--indigo);  }
-.al-action-badge--user_delete   { background: var(--rose-fog);      color: var(--rose);    }
+  /* Monospace Terminal-style IP indicators */
+  .terminal-ip {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: var(--text2);
+    letter-spacing: 0.02em;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
 
-/* ── Target ───────────────────────────────────────────────────────────────── */
-.al-target { display: flex; flex-direction: column; gap: 2px; }
-.al-target-type {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-.al-target-repr {
-  font-size: 12.5px;
-  color: var(--text);
-  font-family: var(--mono);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-  display: block;
-}
+  /* Code-block style details chip */
+  .code-details-box {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(15, 23, 42, 0.2);
+    border: 1px dashed var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: var(--text2);
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
 
-/* ── IP ───────────────────────────────────────────────────────────────────── */
-.al-ip {
-  font-size: 11.5px;
-  font-family: var(--mono);
-  color: var(--text3);
-  background: var(--bg, #0f1117);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 2px 7px;
-}
-
-/* ── Row count ────────────────────────────────────────────────────────────── */
-.al-row-count {
-  font-size: 11.5px;
-  color: var(--text3);
-  margin-top: 10px;
-  text-align: right;
-}
-
-/* ── Row accent by action ─────────────────────────────────────────────────── */
-.al-row--delete_confirm td:first-child { border-left: 2px solid var(--rose); }
-.al-row--delete_request td:first-child { border-left: 2px solid #f97316; }
-.al-row--freeze         td:first-child { border-left: 2px solid #d97706; }
-.al-row--user_delete    td:first-child { border-left: 2px solid var(--rose); }
-
-/* ── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .al-filter-bar { flex-direction: column; align-items: stretch; }
-  .al-select, .al-input { min-width: unset; width: 100%; }
-  .al-filter-actions { justify-content: flex-end; }
-}
-
+  /* Dynamic Custom Actions Badges */
+  .badge-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1px solid;
+    text-transform: capitalize;
+  }
+  .badge-action.create, .badge-action.unfreeze, .badge-action.user_create {
+    background: var(--emerald-fog);
+    color: var(--emerald);
+    border-color: rgba(16, 185, 129, 0.2);
+  }
+  .badge-action.edit, .badge-action.login {
+    background: var(--indigo-soft);
+    color: var(--indigo);
+    border-color: var(--indigo-line);
+  }
+  .badge-action.freeze, .badge-action.delete_request {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--amber);
+    border-color: rgba(245, 158, 11, 0.2);
+  }
+  .badge-action.delete_confirm, .badge-action.user_delete {
+    background: var(--rose-soft);
+    color: var(--rose);
+    border-color: rgba(244, 63, 94, 0.2);
+  }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="adm-layout">
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="adm-main">
+
+    <!-- Page Header & Action Controls -->
+    <div class="adm-page-head">
+      <div>
+        <div class="adm-breadcrumb">
+          Admin Panel
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          Audit Log
+        </div>
+        <h1 class="adm-page-title" style="font-size: 26px; font-weight: 800; color: var(--text); margin: 0; letter-spacing: -0.02em;">Audit Log</h1>
+        <p style="font-size: 14px; color: var(--text3); margin-top: 6px;">All system activity — monitored and recorded securely chronologically.</p>
+      </div>
+
+      <!-- Glowing back button to Dashboard [3] -->
+      <a href="{% url 'admin_dashboard' %}" class="btn-back-dashboard-v2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+
+    <!-- Scoped Filter Panel (SaaS-Console Style) -->
+    <div class="filter-panel-premium">
+      <form method="get" action="">
+        <div class="filter-grid-premium">
+          <!-- Action Filter -->
+          <div class="floating-label-group">
+            <span class="filter-label-text">Select Action</span>
+            <select name="action" class="filter-select">
+              <option value="">All Actions</option>
+              {% for val, label in action_choices %}
+                <option value="{{ val }}" {% if action_filter == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- User Search -->
+          <div class="floating-label-group">
+            <span class="filter-label-text">Search Actor</span>
+            <input type="text" name="user" class="filter-input" placeholder="e.g. admin, shiplu..." value="{{ user_filter }}">
+          </div>
+
+          <!-- Date Filter -->
+          <div class="floating-label-group">
+            <span class="filter-label-text">Log Date</span>
+            <input type="date" name="date" class="filter-input" value="{{ date_filter }}">
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-filter-glow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <span>Apply Filters</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Timeline Audit Console Table Card -->
+    <div class="audit-table-card">
+      <div class="adm-table-head" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+        <div class="adm-table-title" style="font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+          <span class="adm-table-title-dot" style="width: 7px; height: 7px; border-radius: 50%; background: var(--indigo);"></span>
+          Activity Log Timeline
+          <span style="font-size: 12px; color: var(--text3); font-weight: 500;">(Showing last 200 logs)</span>
+        </div>
+      </div>
+
+      {% if logs %}
+      <div style="overflow-x: auto;">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th style="padding-left: 32px !important;">Logged Time</th>
+              <th>Actor</th>
+              <th>Action Type</th>
+              <th>Target Model</th>
+              <th>Detail parameters</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <!-- Time cell with beautiful vertical timeline bar -->
+              <td class="timeline-cell">
+                <div style="font-weight: 700; color: var(--text); font-size: 13.5px;">{{ log.timestamp|date:"d M Y" }}</div>
+                <div style="font-size: 11px; font-family: var(--mono); color: var(--text3); margin-top: 3px;">{{ log.timestamp|date:"H:i:s" }}</div>
+              </td>
+
+              <!-- Actor user -->
+              <td>
+                <div class="adm-cell-user" style="display: flex; align-items: center; gap: 10px;">
+                  <div class="adm-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--indigo); text-transform: uppercase;">
+                    {% if log.actor %}{{ log.actor.username|first|upper }}{% else %}?{% endif %}
+                  </div>
+                  <span style="font-weight: 600; color: var(--text2);">{% if log.actor %}{{ log.actor.username }}{% else %}—{% endif %}</span>
+                </div>
+              </td>
+
+              <!-- Action Status Capsules -->
+              <td>
+                <span class="badge-action {{ log.action }}">
+                  <span style="width: 5px; height: 5px; border-radius: 50%; background: currentColor;"></span>
+                  {{ log.action|replace:"_,"|title }}
+                </span>
+              </td>
+
+              <!-- Target Representation styled technical -->
+              <td>
+                {% if log.target_repr %}
+                <div>
+                  <div style="font-size: 9px; color: var(--text3); font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">{{ log.target_type }}</div>
+                  <div style="font-size: 13px; color: var(--text2); font-weight: 500;">{{ log.target_repr|truncatechars:32 }}</div>
+                </div>
+                {% else %}—{% endif %}
+              </td>
+
+              <!-- Details Parameter Block -->
+              <td>
+                {% if log.detail %}
+                <span class="code-details-box" title="{{ log.detail }}">{{ log.detail }}</span>
+                {% else %}—{% endif %}
+              </td>
+
+              <!-- Monospace Technical Terminal IP -->
+              <td>
+                <span class="terminal-ip">{{ log.ip_address|default:"127.0.0.1" }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="adm-empty">
+        <div class="adm-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <p class="adm-empty-title">No matching activity logs</p>
+        <p class="adm-empty-sub">No system actions matched the active filter queries.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
 {% endblock %}
