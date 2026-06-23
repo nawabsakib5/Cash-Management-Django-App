@@ -10,7 +10,6 @@
     <div>
       <div class="adm-breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
         Workspace
-        <!-- Fixed breadcrumb SVG -->
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"/>
         </svg>
@@ -19,14 +18,15 @@
       <h1 class="adm-page-title" style="font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">Managed Projects</h1>
     </div>
     
-    <!-- This is the ADD PROJECT Button (Top Right) -->
+    <!-- Ultra Visible & Eye-catching Add Project Button -->
     {% if not request.user.is_frozen %}
-    <a href="{% url 'project_create' %}" class="adm-btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); color: #fff; font-weight: 600; text-decoration: none; box-shadow: 0 4px 15px rgba(99,102,241,0.3); transition: transform 0.2s;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <a href="{% url 'project_create' %}" class="btn-create-project-v2">
+      <div class="btn-shine"></div>
+      <svg class="plus-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"/>
         <line x1="5" y1="12" x2="19" y2="12"/>
       </svg> 
-      Add Project
+      <span>Create New Project</span>
     </a>
     {% endif %}
   </div>
@@ -102,4 +102,77 @@
   {% endif %}
 
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Ultra Premium Animated Create Button ── */
+  .btn-create-project-v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    overflow: hidden;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.1);
+    animation: glow-pulse 2.5s infinite;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Rotating plus icon on hover */
+  .btn-create-project-v2 .plus-icon {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  /* Shine sweep overlay effect */
+  .btn-shine {
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transform: skewX(-20deg);
+    transition: none;
+  }
+
+  /* Trigger hover events */
+  .btn-create-project-v2:hover {
+    transform: translateY(-2.5px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.55), 0 0 0 2px rgba(99, 102, 241, 0.2);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  }
+
+  .btn-create-project-v2:hover .plus-icon {
+    transform: rotate(90deg) scale(1.1);
+  }
+
+  .btn-create-project-v2:hover .btn-shine {
+    left: 150%;
+    transition: left 0.85s ease-in-out;
+  }
+
+  .btn-create-project-v2:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+  }
+
+  /* Glow Pulse Ring Animation */
+  @keyframes glow-pulse {
+    0% {
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0.5);
+    }
+    50% {
+      box-shadow: 0 4px 25px rgba(99, 102, 241, 0.45), 0 0 0 8px rgba(99, 102, 241, 0);
+    }
+    100% {
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+  }
+</style>
 {% endblock %}
