@@ -2,280 +2,166 @@
 {% block title %}{{ project.name }} — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
-{% block extra_css %}
-<style>
-.admin-view-badge {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--rose); background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.25);
-  padding: 5px 12px; border-radius: 99px; margin-bottom: 10px;
-}
-.admin-view-badge-dot {
-  width: 5px; height: 5px; border-radius: 50%; background: var(--rose);
-  box-shadow: 0 0 8px rgba(244,63,94,0.7);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.6; transform: scale(0.8); }
-}
-</style>
-{% endblock %}
-
 {% block content %}
-
-<a href="{% url 'project_list' %}" class="back-link">
-  <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-  Back to Projects
-</a>
-
-<div class="page-header">
-  <div>
-    {% if is_admin_view %}
-      <div class="admin-view-badge"><span class="admin-view-badge-dot"></span>Viewing as Admin</div>
-    {% endif %}
-    <span class="eyebrow"><span class="eyebrow-dot"></span>Project</span>
-    <h1 class="page-title">{{ project.name }}</h1>
-    {% if project.description %}
-      <p class="page-sub">{{ project.description }}</p>
-    {% endif %}
-    {% if is_admin_view and not is_owner %}
-      <p class="page-sub" style="margin-top:2px;">Owned by <strong style="color:var(--text);">{{ project.user.username }}</strong></p>
-    {% endif %}
-  </div>
-  <div style="display:flex; gap:8px; flex-wrap:wrap;">
-    <a href="{% url 'transaction_create' project.pk %}" class="btn-primary">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Transaction
-    </a>
-    {% if is_owner or is_admin_view %}
-    <a href="{% url 'project_members' project.pk %}" class="btn-secondary">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Members
-    </a>
-    <a href="{% url 'project_edit' project.pk %}" class="btn-secondary">
-      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      Edit
-    </a>
-    {% endif %}
-  </div>
-</div>
-
-<!-- Balance Warning -->
-{% if balance_warning %}
-<div class="alert-box alert-warning" style="margin-bottom: 24px;">
-  <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-  <span>This project's balance is negative. Please review the expenses below.</span>
-</div>
-{% endif %}
-
-<!-- Summary Cards -->
-<div class="summary-grid">
-  <div class="stat-card income">
-    <div class="stat-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
-    <div class="stat-label">Total Income</div>
-    <div class="stat-value">৳{{ total_income }}</div>
-  </div>
-  <div class="stat-card expense">
-    <div class="stat-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
-    <div class="stat-label">Total Expense</div>
-    <div class="stat-value">৳{{ total_expense }}</div>
-  </div>
-  <div class="stat-card balance">
-    <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-    <div class="stat-label">Balance</div>
-    <div class="stat-value">৳{{ balance }}</div>
-  </div>
-</div>
-
-<!-- Contribution Breakdown -->
-{% if contributions|length > 1 or is_admin_view %}
-<div class="card" style="margin-bottom: 28px;">
-  <div class="card-header">
-    <div class="card-title">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Contributions
+<div class="adm-layout" style="display: flex; flex-direction: column; padding: 40px;">
+  
+  <div class="adm-page-head" style="margin-bottom: 32px;">
+    <div>
+      <div class="adm-breadcrumb">
+        Projects
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        Workspace
+      </div>
+      <h1 class="adm-page-title" style="display: flex; align-items: center; gap: 12px;">
+        {{ project.name }}
+        {% if balance_warning %}
+        <span class="adm-badge adm-badge--rose"><span class="adm-badge-dot"></span>Overdrawn</span>
+        {% endif %}
+      </h1>
     </div>
-    {% if is_owner or is_admin_view %}
-    <a href="{% url 'project_members' project.pk %}" class="btn-secondary" style="padding:6px 12px; font-size:12px;">Manage</a>
-    {% endif %}
+    <div class="adm-page-actions">
+      {% if is_owner or is_admin_view %}
+      <a href="{% url 'project_members' project.pk %}" class="adm-btn-ghost">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Manage Members
+      </a>
+      <a href="{% url 'project_edit' project.pk %}" class="adm-btn-ghost">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"/></svg> Edit
+      </a>
+      <a href="{% url 'project_delete' project.pk %}" class="adm-btn-ghost" style="color: var(--rose); border-color: rgba(244,63,94,0.3);">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Delete
+      </a>
+      {% endif %}
+      {% if not request.user.is_frozen %}
+      <a href="{% url 'transaction_create' project.pk %}" class="adm-btn-primary">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Entry
+      </a>
+      {% endif %}
+    </div>
   </div>
 
-  <div class="table-wrap">
-    <table class="table">
+  <!-- Stats Grid -->
+  <div class="adm-stats" style="margin-bottom: 32px;">
+    <div class="adm-card adm-stat-card adm-stat-card--emerald">
+      <div>
+        <div class="adm-stat-label">Total Income</div>
+        <div class="adm-stat-num">৳{{ total_income|floatformat:0 }}</div>
+      </div>
+      <div class="adm-stat-icon-box">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+      </div>
+    </div>
+    <div class="adm-card adm-stat-card adm-stat-card--rose">
+      <div>
+        <div class="adm-stat-label">Total Expense</div>
+        <div class="adm-stat-num">৳{{ total_expense|floatformat:0 }}</div>
+      </div>
+      <div class="adm-stat-icon-box">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      </div>
+    </div>
+    <div class="adm-card adm-stat-card {% if balance < 0 %}adm-stat-card--rose{% else %}adm-stat-card--indigo{% endif %}">
+      <div>
+        <div class="adm-stat-label">Scope Balance</div>
+        <div class="adm-stat-num">৳{{ balance|floatformat:0 }}</div>
+      </div>
+      <div class="adm-stat-icon-box">
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="adm-section-head">Workspace Logs</div>
+  <div class="adm-table-card" style="margin-bottom: 32px; padding: 20px;">
+    <form method="get" action="" style="display: flex; gap: 14px; flex-wrap: wrap;">
+      <div class="adm-search" style="flex: 1; min-width: 200px;">
+        <select name="type" class="form-control" style="width:100%; height: 38px; border-radius: 99px; background: var(--surface2); border: 1px solid var(--border); padding: 0 16px;">
+          <option value="">All Types</option>
+          <option value="income" {% if active_type == 'income' %}selected{% endif %}>Income</option>
+          <option value="expense" {% if active_type == 'expense' %}selected{% endif %}>Expense</option>
+        </select>
+      </div>
+      <div class="adm-search" style="flex: 1; min-width: 200px;">
+        <select name="month" class="form-control" style="width:100%; height: 38px; border-radius: 99px; background: var(--surface2); border: 1px solid var(--border); padding: 0 16px;">
+          <option value="">All Months</option>
+          <option value="this" {% if active_month == 'this' %}selected{% endif %}>This Month</option>
+          <option value="last" {% if active_month == 'last' %}selected{% endif %}>Last Month</option>
+        </select>
+      </div>
+      <button type="submit" class="adm-btn-primary" style="height: 38px;">
+        <svg viewBox="0 0 24 24" style="width:14px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Apply
+      </button>
+    </form>
+  </div>
+
+  <!-- Transactions Table -->
+  <div class="adm-table-card">
+    <div class="adm-table-head">
+      <div class="adm-table-title">
+        <span class="adm-table-title-dot"></span>
+        Ledger Entries
+      </div>
+    </div>
+    {% if transactions %}
+    <table class="adm-table">
       <thead>
         <tr>
-          <th>Member</th>
-          <th>Income</th>
-          <th>Expense</th>
-          <th>Net</th>
+          <th>Details</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Contributor</th>
+          <th>Date</th>
+          <th style="text-align: right;">Action</th>
         </tr>
       </thead>
       <tbody>
-        {% for c in contributions %}
-          <tr>
-            <td>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div class="user-avatar" style="width:28px; height:28px; font-size:11px;">{{ c.user.username|slice:":2" }}</div>
-                <span style="color: var(--text); font-weight:600;">{{ c.user.username }}</span>
-                {% if c.is_owner %}
-                  <span class="badge income" style="margin-left:4px;"><span class="badge-dot"></span>Owner</span>
-                {% endif %}
-              </div>
-            </td>
-            <td class="amount-income">৳{{ c.income }}</td>
-            <td class="amount-expense">৳{{ c.expense }}</td>
-            <td class="{% if c.net < 0 %}amount-expense{% else %}amount-income{% endif %}">৳{{ c.net }}</td>
-          </tr>
+        {% for tx in transactions %}
+        <tr>
+          <td>
+            <div style="font-weight: 600; color: var(--text);">{{ tx.title }}</div>
+            {% if tx.description %}<div style="font-size: 11px; color: var(--text3);">{{ tx.description }}</div>{% endif %}
+          </td>
+          <td>
+            {% if tx.type == 'income' %}
+            <span class="adm-badge adm-badge--green"><span class="adm-badge-dot"></span>Income</span>
+            {% else %}
+            <span class="adm-badge adm-badge--rose"><span class="adm-badge-dot"></span>Expense</span>
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-size: 12px; color: var(--text2); font-weight: 500;">
+              {{ tx.subcategory.category.name }} / {{ tx.subcategory.name }}
+            </span>
+          </td>
+          <td style="font-family: var(--mono); font-weight: 700; color: {% if tx.type == 'income' %}var(--emerald){% else %}var(--rose){% endif %}">
+            ৳{{ tx.amount|floatformat:0 }}
+          </td>
+          <td>
+            <div class="adm-cell-user">
+              <div class="adm-avatar">{{ tx.user.username|first|upper }}</div>
+              <span>{{ tx.user.username }}</span>
+            </div>
+          </td>
+          <td>{{ tx.date|date:"d M Y" }}</td>
+          <td style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+            {% if tx.user == request.user or is_admin_view %}
+            <a href="{% url 'transaction_edit' tx.pk %}" class="adm-btn-sm">Edit</a>
+            <a href="{% url 'transaction_delete' tx.pk %}" class="adm-btn-sm" style="color: var(--rose);">Request Delete</a>
+            {% endif %}
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
-  </div>
-</div>
-{% endif %}
-
-<!-- Filters -->
-<div class="card" style="margin-bottom: 24px;">
-  <form method="get" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
-
-    <div class="form-group" style="margin-bottom:0; min-width:130px;">
-      <label class="form-label">Type</label>
-      <select name="type" class="form-control" onchange="this.form.submit()">
-        <option value=""        {% if not active_type %}selected{% endif %}>All</option>
-        <option value="income"  {% if active_type == 'income' %}selected{% endif %}>Income</option>
-        <option value="expense" {% if active_type == 'expense' %}selected{% endif %}>Expense</option>
-      </select>
+    {% else %}
+    <div class="adm-empty">
+      <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
+      <p class="adm-empty-title">No transactions recorded</p>
+      <p class="adm-empty-sub">Entries will show up here once added.</p>
     </div>
-
-    <div class="form-group" style="margin-bottom:0; min-width:130px;">
-      <label class="form-label">Period</label>
-      <select name="month" class="form-control" onchange="this.form.submit()">
-        <option value=""     {% if not active_month %}selected{% endif %}>All Time</option>
-        <option value="this" {% if active_month == 'this' %}selected{% endif %}>This Month</option>
-        <option value="last" {% if active_month == 'last' %}selected{% endif %}>Last Month</option>
-      </select>
-    </div>
-
-    <div class="form-group" style="margin-bottom:0; min-width:130px;">
-      <label class="form-label">Amount</label>
-      <select name="amount_range" class="form-control" onchange="this.form.submit()">
-        <option value=""        {% if not active_amount %}selected{% endif %}>Any Amount</option>
-        <option value="0-1000"  {% if active_amount == '0-1000' %}selected{% endif %}>৳0 – ৳1000</option>
-        <option value="1000+"   {% if active_amount == '1000+' %}selected{% endif %}>৳1000+</option>
-      </select>
-    </div>
-
-    <!-- Date Range -->
-    <div class="form-group" style="margin-bottom:0; min-width:140px;">
-      <label class="form-label">From Date</label>
-      <input type="date" name="date_from" class="form-control"
-             value="{{ active_date_from }}"
-             style="color-scheme: dark;">
-    </div>
-
-    <div class="form-group" style="margin-bottom:0; min-width:140px;">
-      <label class="form-label">To Date</label>
-      <input type="date" name="date_to" class="form-control"
-             value="{{ active_date_to }}"
-             style="color-scheme: dark;">
-    </div>
-
-    <button type="submit" class="btn-secondary" style="margin-bottom:1px;">
-      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      Search
-    </button>
-
-    {% if active_type or active_month or active_amount or active_date_from or active_date_to %}
-      <a href="{% url 'project_detail' project.pk %}" class="btn-secondary" style="margin-bottom:1px;">
-        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-        Clear
-      </a>
-    {% endif %}
-
-  </form>
-</div>
-
-<!-- Transaction List -->
-<div class="card">
-  <div class="card-header">
-    <div class="card-title">
-      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      Transactions
-    </div>
-    {% if transactions %}
-      <span style="font-size:12px; color:var(--muted);">{{ transactions|length }} result{% if transactions|length != 1 %}s{% endif %}</span>
     {% endif %}
   </div>
 
-  {% if transactions %}
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Added By</th>
-            <th>Amount</th>
-            <th style="text-align:right;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in transactions %}
-            <tr>
-              <td>
-                {{ t.title }}
-                {% if t.date == today %}
-                  <span class="badge income" style="margin-left:6px; background: var(--indigo-fog); color:#818cf8; border-color: var(--indigo-line);">
-                    <span class="badge-dot" style="background:#818cf8;"></span>Today
-                  </span>
-                {% endif %}
-                {% if t.delete_requested %}
-                  <span class="badge expense" style="margin-left:6px;">
-                    <span class="badge-dot"></span>Delete Pending
-                  </span>
-                {% endif %}
-              </td>
-              <td>
-                <span class="badge {{ t.type }}">
-                  <span class="badge-dot"></span>{{ t.type }}
-                </span>
-              </td>
-              <td style="font-family: var(--mono); font-size:12.5px;">{{ t.date }}</td>
-              <td>{{ t.user.username }}</td>
-              <td class="amount-{{ t.type }}">
-                {% if t.type == 'income' %}+{% else %}-{% endif %}৳{{ t.amount }}
-              </td>
-              <td style="text-align:right;">
-                {% if t.user == request.user or is_admin_view %}
-                <a href="{% url 'transaction_edit' t.pk %}" class="btn-secondary" style="padding:5px 10px; font-size:12px; margin-right:4px;">
-                  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </a>
-                <a href="{% url 'transaction_delete' t.pk %}" class="btn-secondary" style="padding:5px 10px; font-size:12px; color: var(--rose); border-color: rgba(244,63,94,0.18);">
-                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                </a>
-                {% else %}
-                  <span style="font-size:11px; color:var(--text3);">—</span>
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <div class="empty-state" style="padding:48px 24px;">
-      <div class="empty-icon">
-        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      </div>
-      <div class="empty-title">No transactions found</div>
-      <div class="empty-sub">Try a different filter, or add your first transaction.</div>
-    </div>
-  {% endif %}
 </div>
-
 {% endblock %}

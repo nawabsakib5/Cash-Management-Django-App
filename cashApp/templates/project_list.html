@@ -3,389 +3,78 @@
 {% block nav_projects %}active{% endblock %}
 
 {% block content %}
-
-{% if is_admin_view %}
-<!-- ══════════════════════════════════════════════════════
-     ADMIN VIEW — Table style with owner + members
-═══════════════════════════════════════════════════════ -->
-
-<div class="page-header">
-  <div>
-    <span class="eyebrow">
-      <span class="eyebrow-dot" style="background:var(--rose)"></span>
-      Admin Panel
-    </span>
-    <h1 class="page-title">All Projects</h1>
-    <p class="page-sub">Every project across all users — click to view, monitor or contribute</p>
-  </div>
-  <div style="display:flex; gap:8px;">
-    <a href="{% url 'project_create' %}" class="btn-primary">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Project
+<div class="adm-layout" style="display: flex; flex-direction: column; padding: 40px;">
+  
+  <div class="adm-page-head" style="margin-bottom: 32px;">
+    <div>
+      <div class="adm-breadcrumb">
+        Workspace
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        Projects
+      </div>
+      <h1 class="adm-page-title">Managed Projects</h1>
+    </div>
+    {% if not request.user.is_frozen %}
+    <a href="{% url 'project_create' %}" class="adm-btn-primary">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Project
     </a>
-    <a href="{% url 'admin_dashboard' %}" class="btn-ghost">← Dashboard</a>
-  </div>
-</div>
-
-{% if projects %}
-
-<!-- Search / count -->
-<div style="font-size:12.5px; color:var(--text3); margin-bottom:16px; padding-left:2px;">
-  <strong style="color:var(--text);">{{ projects|length }}</strong> project{{ projects|length|pluralize }} total
-</div>
-
-<div class="adm-activity">
-
-  <!-- thead -->
-  <div class="apl-thead">
-    <span>Project</span>
-    <span>Owner</span>
-    <span>Members</span>
-    <span>Income</span>
-    <span>Expense</span>
-    <span>Balance</span>
-    <span style="text-align:right;">Action</span>
+    {% endif %}
   </div>
 
-  {% for project in projects %}
-  <div class="apl-row">
-
-    <!-- Project name + desc -->
-    <div class="apl-project-cell">
-      <div class="apl-project-icon">
+  <div class="adm-stats" style="margin-bottom: 36px;">
+    <div class="adm-card adm-stat-card adm-stat-card--indigo">
+      <div>
+        <div class="adm-stat-label">Your Projects</div>
+        <div class="adm-stat-num">{{ projects|length }}</div>
+        <div class="adm-stat-sub">Active scopes</div>
+      </div>
+      <div class="adm-stat-icon-box">
         <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <div style="min-width:0;">
-        <div class="apl-project-name">{{ project.name }}</div>
-        {% if project.description %}
-          <div class="apl-project-desc">{{ project.description|truncatechars:45 }}</div>
-        {% endif %}
-      </div>
     </div>
-
-    <!-- Owner -->
-    <div class="apl-owner-cell">
-      <div class="apl-avatar apl-avatar--owner" title="{{ project.user.username }}">
-        {{ project.user.username|first|upper }}
-      </div>
-      <span class="apl-owner-name">{{ project.user.username }}</span>
-    </div>
-
-    <!-- Members -->
-    <div class="apl-members-cell">
-      {% if project.members.all %}
-        <div class="apl-member-stack">
-          {% for m in project.members.all|slice:":5" %}
-            <div class="apl-member-chip" title="{{ m.username }}">{{ m.username|first|upper }}</div>
-          {% endfor %}
-          {% if project.members.count > 5 %}
-            <div class="apl-member-chip apl-member-more">+{{ project.members.count|add:"-5" }}</div>
-          {% endif %}
-        </div>
-        <span class="apl-member-count">{{ project.members.count }} member{{ project.members.count|pluralize }}</span>
-      {% else %}
-        <span style="font-size:12px; color:var(--text3);">Only owner</span>
-      {% endif %}
-    </div>
-
-    <!-- Income -->
-    <div class="apl-income">৳{{ project.total_income|floatformat:0 }}</div>
-
-    <!-- Expense -->
-    <div class="apl-expense">৳{{ project.total_expense|floatformat:0 }}</div>
-
-    <!-- Balance -->
-    <div>
-      {% with bal=project.balance %}
-      <span class="apl-balance {% if bal < 0 %}negative{% else %}positive{% endif %}">
-        ৳{{ bal|floatformat:0 }}
-      </span>
-      {% endwith %}
-    </div>
-
-    <!-- Actions -->
-    <div style="display:flex; gap:6px; justify-content:flex-end;">
-      <a href="{% url 'project_detail' project.pk %}" class="apl-action-btn apl-action-view" title="View">
-        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      </a>
-      <a href="{% url 'project_edit' project.pk %}" class="apl-action-btn apl-action-edit" title="Edit">
-        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </a>
-      <a href="{% url 'project_delete' project.pk %}" class="apl-action-btn apl-action-delete" title="Delete">
-        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-      </a>
-    </div>
-
   </div>
-  {% endfor %}
 
-</div>
+  <div class="adm-section-head">All Projects Overview</div>
 
-{% else %}
-<div class="empty-state">
-  <div class="empty-icon">
-    <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-  </div>
-  <p class="empty-title">No projects yet</p>
-  <p class="empty-sub">No user has created a project yet</p>
-</div>
-{% endif %}
-
-{% else %}
-<!-- ══════════════════════════════════════════════════════
-     USER VIEW — Original card-grid (unchanged)
-═══════════════════════════════════════════════════════ -->
-
-<div class="page-header">
-  <div>
-    <span class="eyebrow">
-      <span class="eyebrow-dot"></span>
-      Dashboard
-    </span>
-    <h1 class="page-title">Your Projects</h1>
-    <p class="page-sub">Manage and track your cash flow across all projects</p>
-  </div>
-  <a href="{% url 'project_create' %}" class="btn-primary">
-    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    New Project
-  </a>
-</div>
-
-{% if projects %}
-  <div class="projects-grid">
+  {% if projects %}
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
     {% for project in projects %}
-    <a href="{% url 'project_detail' project.pk %}" class="project-card">
-      <div class="project-card-body">
-        <div class="project-card-header">
-          <div class="project-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <div class="project-meta">
-            <h3 class="project-name">{{ project.name }}</h3>
-            {% if project.description %}
-              <p class="project-desc">{{ project.description|truncatechars:60 }}</p>
-            {% endif %}
-          </div>
-          <svg class="project-arrow" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-          </svg>
+    <div class="adm-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 220px; position: relative;">
+      <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--indigo); border-radius: var(--radius-lg) 0 0 var(--radius-lg);"></div>
+      
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text); margin: 0;">{{ project.name }}</h3>
+          <span style="font-size: 11px; font-weight: 600; color: var(--text3); background: var(--surface2); padding: 2px 8px; border-radius: 20px;">
+            By: {{ project.user.username }}
+          </span>
         </div>
-        <hr class="divider" style="margin: 14px 0;">
-        <div class="project-stats">
-          <div class="pstat income">
-            <span class="pstat-label">Income</span>
-            <span class="pstat-value">৳{{ project.total_income|floatformat:0 }}</span>
-          </div>
-          <div class="pstat-sep"></div>
-          <div class="pstat expense">
-            <span class="pstat-label">Expense</span>
-            <span class="pstat-value">৳{{ project.total_expense|floatformat:0 }}</span>
-          </div>
-          <div class="pstat-sep"></div>
-          <div class="pstat balance">
-            <span class="pstat-label">Balance</span>
-            <span class="pstat-value {% if project.balance < 0 %}neg{% endif %}">৳{{ project.balance|floatformat:0 }}</span>
+        <p style="font-size: 13px; color: var(--text3); line-height: 1.5; margin-bottom: 20px;">
+          {{ project.description|default:"No description available."|truncatechars:100 }}
+        </p>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Net Balance</span>
+          <div style="font-family: var(--mono); font-size: 16px; font-weight: 700; color: {% if project.balance < 0 %}var(--rose){% else %}var(--emerald){% endif %}; margin-top: 2px;">
+            ৳{{ project.balance|floatformat:0 }}
           </div>
         </div>
-      </div>
-      <div class="project-card-footer">
-        <a href="{% url 'project_edit' project.pk %}"
-           class="paction edit"
-           onclick="event.preventDefault(); event.stopPropagation(); window.location='{% url 'project_edit' project.pk %}'">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          Edit
-        </a>
-        <a href="{% url 'project_delete' project.pk %}"
-           class="paction delete"
-           onclick="event.preventDefault(); event.stopPropagation(); window.location='{% url 'project_delete' project.pk %}'">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6"/><path d="M14 11v6"/>
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
-          Delete
+        <a href="{% url 'project_detail' project.pk %}" class="adm-btn-sm" style="background: var(--indigo-fog); border-color: var(--indigo-line); color: var(--indigo);">
+          View Workspace <svg viewBox="0 0 24 24" style="width: 12px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
       </div>
-    </a>
+    </div>
     {% endfor %}
   </div>
-{% else %}
-  <div class="empty-state">
-    <div class="empty-icon">
-      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    </div>
-    <p class="empty-title">No projects yet</p>
-    <p class="empty-sub">Create your first project to start tracking cash flow</p>
-    <a href="{% url 'project_create' %}" class="btn-primary" style="margin-top:20px; display:inline-flex;">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Create Project
-    </a>
+  {% else %}
+  <div class="adm-empty">
+    <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+    <p class="adm-empty-title">No projects active</p>
+    <p class="adm-empty-sub">Get started by creating your first budget scope.</p>
   </div>
-{% endif %}
+  {% endif %}
 
-{% endif %}
-{% endblock %}
-
-{% block extra_css %}
-<style>
-
-/* ── USER VIEW: card grid (unchanged) ────────────────────────────────── */
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
-.project-card {
-  display: flex; flex-direction: column;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-xl); text-decoration: none;
-  overflow: hidden;
-  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-  position: relative;
-}
-.project-card:hover {
-  border-color: var(--border2); transform: translateY(-3px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-.project-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--indigo), #818cf8);
-}
-.project-card-body { padding: 20px 20px 0; flex: 1; }
-.project-card-header { display: flex; align-items: flex-start; gap: 12px; }
-.project-icon {
-  width: 38px; height: 38px; border-radius: var(--radius);
-  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.project-icon svg { width: 16px; height: 16px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; }
-.project-meta { flex: 1; min-width: 0; }
-.project-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.project-desc { font-size: 12.5px; color: var(--text3); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.project-arrow { width: 14px; height: 14px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; margin-top: 3px; transition: stroke var(--transition), transform var(--transition); }
-.project-card:hover .project-arrow { stroke: var(--indigo); transform: translateX(3px); }
-.project-stats { display: flex; align-items: center; padding-bottom: 16px; }
-.pstat { flex: 1; text-align: center; }
-.pstat-sep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
-.pstat-label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; }
-.pstat-value { display: block; font-family: var(--mono); font-size: 13.5px; font-weight: 500; }
-.pstat.income  .pstat-value { color: var(--emerald); }
-.pstat.expense .pstat-value { color: var(--rose); }
-.pstat.balance .pstat-value { color: var(--indigo); }
-.pstat.balance .pstat-value.neg { color: var(--rose); }
-.project-card-footer { display: flex; border-top: 1px solid var(--border); }
-.paction { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px; font-size: 12.5px; font-weight: 500; text-decoration: none; transition: all var(--transition); }
-.paction svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
-.paction.edit   { color: var(--text3); border-right: 1px solid var(--border); }
-.paction.delete { color: var(--text3); }
-.paction.edit:hover   { color: var(--indigo); background: var(--indigo-fog); }
-.paction.delete:hover { color: var(--rose);   background: var(--rose-fog); }
-
-/* ── ADMIN VIEW: table style ─────────────────────────────────────────── */
-.apl-thead {
-  display: grid;
-  grid-template-columns: 1.8fr 130px 180px 90px 90px 100px 110px;
-  gap: 12px; padding: 10px 22px;
-  background: var(--surface2); border-bottom: 1px solid var(--border);
-}
-.apl-thead span {
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3);
-}
-
-.apl-row {
-  display: grid;
-  grid-template-columns: 1.8fr 130px 180px 90px 90px 100px 110px;
-  align-items: center; gap: 12px;
-  padding: 14px 22px; border-bottom: 1px solid var(--border);
-  transition: background var(--transition);
-}
-.apl-row:last-child { border-bottom: none; }
-.apl-row:hover { background: rgba(255,255,255,0.015); }
-
-/* Project cell */
-.apl-project-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.apl-project-icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--indigo-fog); border: 1px solid var(--indigo-line);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.apl-project-icon svg { width: 13px; height: 13px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; }
-.apl-project-name { font-size: 13.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.apl-project-desc { font-size: 11.5px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* Owner cell */
-.apl-owner-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.apl-avatar {
-  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; font-family: var(--mono);
-}
-.apl-avatar--owner { background: var(--indigo-fog); border: 1px solid var(--indigo-line); color: var(--indigo); }
-.apl-owner-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* Members cell */
-.apl-members-cell { display: flex; flex-direction: column; gap: 4px; }
-.apl-member-stack { display: flex; align-items: center; }
-.apl-member-chip {
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--surface3); border: 1.5px solid var(--surface);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; color: var(--text2);
-  margin-left: -7px; font-family: var(--mono);
-  transition: transform var(--transition);
-}
-.apl-member-chip:first-child { margin-left: 0; }
-.apl-member-chip:hover { transform: translateY(-2px); z-index: 1; }
-.apl-member-more { background: var(--indigo-fog); color: var(--indigo); font-size: 8px; }
-.apl-member-count { font-size: 11px; color: var(--text3); }
-
-/* Amount cells */
-.apl-income  { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--emerald); }
-.apl-expense { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--rose); }
-.apl-balance {
-  display: inline-flex; align-items: center;
-  font-family: var(--mono); font-size: 12.5px; font-weight: 600;
-  padding: 3px 9px; border-radius: 99px;
-}
-.apl-balance.positive { color: var(--emerald); background: var(--emerald-fog); }
-.apl-balance.negative { color: var(--rose); background: var(--rose-fog); }
-
-/* Action buttons */
-.apl-action-btn {
-  width: 28px; height: 28px; border-radius: var(--radius);
-  display: flex; align-items: center; justify-content: center;
-  text-decoration: none; border: 1px solid var(--border);
-  background: var(--surface); transition: all var(--transition); flex-shrink: 0;
-}
-.apl-action-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
-.apl-action-view:hover   { color: #818cf8; border-color: var(--indigo-line); background: var(--indigo-fog); }
-.apl-action-edit:hover   { color: var(--indigo); border-color: var(--indigo-line); background: var(--indigo-fog); }
-.apl-action-delete:hover { color: var(--rose); border-color: rgba(244,63,94,0.3); background: var(--rose-fog); }
-.apl-action-view   { color: var(--text3); }
-.apl-action-edit   { color: var(--text3); }
-.apl-action-delete { color: var(--text3); }
-
-/* Responsive — hide some columns on small screens */
-@media (max-width: 900px) {
-  .apl-thead, .apl-row { grid-template-columns: 1.5fr 110px 1fr 80px 100px; }
-  .apl-thead span:nth-child(4),
-  .apl-row > div:nth-child(4),
-  .apl-thead span:nth-child(5),
-  .apl-row > div:nth-child(5) { display: none; }
-}
-@media (max-width: 640px) {
-  .apl-thead { display: none; }
-  .apl-row { grid-template-columns: 1fr 80px 90px; }
-  .apl-row > div:nth-child(2),
-  .apl-row > div:nth-child(3),
-  .apl-row > div:nth-child(5),
-  .apl-row > div:nth-child(6) { display: none; }
-}
-</style>
+</div>
 {% endblock %}
