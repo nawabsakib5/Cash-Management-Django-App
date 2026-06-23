@@ -1,847 +1,117 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <title>Categories — CashManager</title>
+{% extends 'base.html' %}
+{% block title %}Categories — CashManager{% endblock %}
+{% block nav_settings %}active{% endblock %}
 
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <!-- Tabler Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <!-- Google Fonts (Inter) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-
-  <style>
-    :root {
-      --sidebar-width: 280px;
-      --topbar-height: 70px;
-
-      /* Premium Dasher Palette */
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --primary-soft: rgba(99, 102, 241, 0.06);
-      --primary-border: rgba(99, 102, 241, 0.15);
-
-      --emerald: #10b981;
-      --emerald-soft: rgba(16, 185, 129, 0.08);
-      --amber: #f59e0b;
-      --amber-soft: rgba(245, 158, 11, 0.08);
-      --rose: #f43f5e;
-      --rose-soft: rgba(244, 63, 94, 0.08);
-
-      --body-bg: #f8fafc;
-      --sidebar-bg: #ffffff;
-      --topbar-bg: rgba(255, 255, 255, 0.85);
-      --card-bg: #ffffff;
-
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #94a3b8;
-
-      --border-color: #f1f5f9;
-      --border-color-darker: #e2e8f0;
-      --border-radius-lg: 16px;
-      --border-radius-md: 12px;
-      --border-radius-sm: 8px;
-
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
-      --shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.04), 0 4px 6px -4px rgba(15, 23, 42, 0.02);
-      --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
-
-      --font: 'Inter', sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-    }
-
-    body {
-      font-family: var(--font);
-      background: var(--body-bg);
-      color: var(--text-primary);
-      margin: 0;
-      font-size: 14px;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── Sidebar ── */
-    .sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0;
-      width: var(--sidebar-width);
-      background: var(--sidebar-bg);
-      border-right: 1px solid var(--border-color-darker);
-      display: flex; flex-direction: column;
-      z-index: 1040;
-    }
-    .sidebar-brand {
-      height: var(--topbar-height);
-      display: flex; align-items: center; gap: 12px;
-      padding: 0 24px;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 18px; font-weight: 800; color: var(--text-primary);
-      text-decoration: none;
-      letter-spacing: -0.02em;
-    }
-    .sidebar-brand .brand-icon {
-      width: 36px; height: 36px; border-radius: var(--border-radius-md);
-      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); 
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
-    }
-    .sidebar-brand .brand-icon i { color: #fff; font-size: 18px; }
-
-    .sidebar-nav { flex: 1; overflow-y: auto; padding: 24px 16px; }
-    .nav-label {
-      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--text-muted); padding: 0 12px; margin: 24px 0 8px;
-    }
-    .nav-label:first-child { margin-top: 0; }
-
-    .nav-item a {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 14px; border-radius: var(--border-radius-md);
-      font-size: 14px; font-weight: 500; color: var(--text-secondary);
-      text-decoration: none;
-    }
-    .nav-item a i { font-size: 19px; color: var(--text-secondary); }
-    .nav-item a:hover { background: var(--body-bg); color: var(--text-primary); }
-    .nav-item a:hover i { color: var(--text-primary); }
-    
-    .nav-item a.active {
-      background: var(--primary-soft); color: var(--primary); font-weight: 600;
-      border: 1px solid var(--primary-border);
-    }
-    .nav-item a.active i { color: var(--primary); }
-    .nav-item a .nav-badge {
-      margin-left: auto; font-size: 11px; font-weight: 700;
-      background: var(--primary); color: #fff;
-      border-radius: 20px; padding: 2px 8px;
-    }
-
-    .sidebar-footer {
-      padding: 20px;
-      border-top: 1px solid var(--border-color);
-      background: var(--body-bg);
-    }
-    .user-card { display: flex; align-items: center; gap: 12px; }
-    .user-avatar {
-      width: 40px; height: 40px; border-radius: 50%; overflow: hidden;
-      background: var(--primary-soft); border: 2px solid var(--primary-border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700; color: var(--primary); flex-shrink: 0;
-    }
-    .user-name { font-size: 13.5px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
-    .user-role { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-    /* ── Topbar (Glassmorphism) ── */
-    .topbar {
-      position: fixed; top: 0; left: var(--sidebar-width); right: 0;
-      height: var(--topbar-height);
-      background: var(--topbar-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-color-darker);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px; z-index: 1000;
-    }
-    .topbar-left { display: flex; align-items: center; gap: 16px; }
-    
-    .sidebar-toggle {
-      display: none;
-      background: none; border: 1px solid var(--border-color-darker);
-      border-radius: var(--border-radius-sm); width: 38px; height: 38px;
-      align-items: center; justify-content: center; cursor: pointer; color: var(--text-primary);
-    }
-    .sidebar-toggle:hover { background: var(--body-bg); }
-
-    .breadcrumb-top {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: var(--text-muted);
-    }
-    .breadcrumb-top span { color: var(--text-secondary); font-weight: 500; }
-    .breadcrumb-sep { color: var(--text-muted); opacity: 0.5; }
-
-    .topbar-right { display: flex; align-items: center; gap: 10px; }
-    .topbar-btn {
-      width: 38px; height: 38px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color-darker);
-      background: var(--sidebar-bg); display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-secondary); position: relative;
-    }
-    .topbar-btn:hover { background: var(--body-bg); color: var(--text-primary); transform: translateY(-1px); }
-    .topbar-btn i { font-size: 20px; }
-    .notif-dot {
-      position: absolute; top: 8px; right: 8px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--rose); border: 2px solid #fff;
-    }
-
-    /* ── Main Content ── */
-    .main {
-      margin-left: var(--sidebar-width);
-      padding-top: var(--topbar-height);
-      min-height: 100vh;
-    }
-    .content { padding: 40px 40px 60px; max-width: 1100px; margin: 0 auto; }
-
-    /* ── Page Header ── */
-    .page-header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 20px; flex-wrap: wrap; margin-bottom: 32px;
-    }
-    .page-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--primary); margin-bottom: 8px;
-    }
-    .page-eyebrow::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--primary); display: inline-block;
-    }
-    .page-title { font-size: 28px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px; letter-spacing: -0.02em; }
-    .page-sub { font-size: 14px; color: var(--text-secondary); margin: 0; }
-
-    /* ── Dasher-style Cards ── */
-    .ds-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color-darker);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .ds-card-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 24px; border-bottom: 1px solid var(--border-color);
-      background: rgba(248, 250, 252, 0.4);
-    }
-    .ds-card-title {
-      font-size: 15px; font-weight: 700; color: var(--text-primary);
-      display: flex; align-items: center; gap: 10px;
-    }
-    .ds-card-title i { font-size: 20px; color: var(--primary); }
-    .ds-card-body { padding: 24px; }
-
-    /* ── Interactive Buttons ── */
-    .btn-primary-ds {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
-      color: #fff; border: none; border-radius: var(--border-radius-md); padding: 11px 22px;
-      font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    }
-    .btn-primary-ds:hover {
-      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-      color: #fff; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(99, 102, 241, 0.35);
-    }
-    .btn-primary-ds i { font-size: 16px; }
-
-    .btn-outline-ds {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--card-bg); color: var(--text-secondary);
-      border: 1px solid var(--border-color-darker); border-radius: var(--border-radius-md); padding: 10px 20px;
-      font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none;
-    }
-    .btn-outline-ds:hover {
-      background: var(--body-bg); color: var(--text-primary); border-color: var(--text-secondary);
-      transform: translateY(-1px);
-    }
-    .btn-outline-ds i { font-size: 16px; }
-
-    .btn-danger-ds {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: transparent; color: var(--rose);
-      border: 1.5px solid rgba(244, 63, 94, 0.15); border-radius: var(--border-radius-sm); padding: 7px 13px;
-      font-size: 12.5px; font-weight: 600; cursor: pointer;
-    }
-    .btn-danger-ds:hover {
-      background: var(--rose-soft); border-color: var(--rose); transform: translateY(-1px);
-    }
-    .btn-danger-ds i { font-size: 15px; }
-
-    /* ── Form Styling ── */
-    .ds-input {
-      width: 100%;
-      padding: 11px 16px 11px 42px;
-      background: var(--body-bg); border: 1.5px solid var(--border-color-darker);
-      border-radius: var(--border-radius-md); font-size: 14px; color: var(--text-primary);
-      outline: none;
-    }
-    .ds-input:focus {
-      border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background: #fff;
-    }
-    .ds-input::placeholder { color: var(--text-muted); }
-    .input-wrap { position: relative; }
-    .input-wrap .input-icon {
-      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-      color: var(--text-muted); font-size: 18px; pointer-events: none;
-    }
-    .form-label-ds {
-      font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
-      display: block; margin-bottom: 8px; letter-spacing: .01em;
-    }
-
-    /* ── Search & Filter Controls ── */
-    .filter-row {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
-    }
-    .count-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 13px; font-weight: 600; color: var(--text-secondary);
-      background: var(--card-bg); border: 1px solid var(--border-color-darker);
-      border-radius: 30px; padding: 6px 16px; box-shadow: var(--shadow-sm);
-    }
-    .count-badge strong { color: var(--primary); }
-
-    .search-wrap { position: relative; flex: 1; max-width: 320px; min-width: 220px; }
-    .search-wrap .search-icon {
-      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-      color: var(--text-muted); font-size: 18px; pointer-events: none;
-    }
-    .search-wrap input {
-      width: 100%; padding: 10px 16px 10px 44px;
-      background: var(--card-bg); border: 1px solid var(--border-color-darker);
-      border-radius: 30px; font-size: 13.5px; color: var(--text-primary);
-      outline: none; box-shadow: var(--shadow-sm);
-    }
-    .search-wrap input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
-
-    /* ── Premium Category Card ── */
-    .cat-list { display: flex; flex-direction: column; gap: 16px; }
-    
-    .cat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color-darker);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--shadow);
-      padding: 24px 28px;
-      position: relative;
-      overflow: hidden;
-    }
-    .cat-card:hover {
-      border-color: var(--border-color-darker);
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-    .cat-card::before {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-    }
-    .cat-card.hidden { display: none; }
-
-    /* Assign beautiful left border based on colors */
-    .cat-card.border-indigo::before  { background: var(--primary); }
-    .cat-card.border-emerald::before { background: var(--emerald); }
-    .cat-card.border-amber::before   { background: var(--amber); }
-    .cat-card.border-rose::before    { background: var(--rose); }
-
-    .cat-head {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
-    }
-    .cat-info { display: flex; align-items: center; gap: 16px; min-width: 0; }
-
-    .cat-icon {
-      width: 48px; height: 48px; border-radius: var(--border-radius-md);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 22px;
-    }
-    .cat-icon.indigo  { background: var(--primary-soft); color: var(--primary); border: 1px solid var(--primary-border); }
-    .cat-icon.emerald { background: var(--emerald-soft); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.15); }
-    .cat-icon.amber   { background: var(--amber-soft);   color: var(--amber);   border: 1px solid rgba(245, 158, 11, 0.15); }
-    .cat-icon.rose    { background: var(--rose-soft);    color: var(--rose);    border: 1px solid rgba(244, 63, 94, 0.15); }
-
-    .cat-name { font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
-    .cat-meta { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
-    .cat-meta strong { color: var(--text-secondary); font-weight: 600; }
-
-    .cat-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-
-    /* ── Sub-category Chips ── */
-    .sub-zone {
-      border-top: 1px solid var(--border-color);
-      padding-top: 18px;
-      display: flex; flex-wrap: wrap; gap: 10px;
-    }
-    .chip {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--body-bg); border: 1px solid var(--border-color-darker);
-      border-radius: 30px; padding: 6px 8px 6px 14px;
-    }
-    .chip:hover {
-      border-color: var(--text-muted);
-      background: #f1f5f9;
-      transform: translateY(-1px);
-    }
-    /* Private chips styled elegantly */
-    .chip.private {
-      background: var(--primary-soft);
-      border: 1.5px solid var(--primary-border);
-    }
-    .chip.private:hover {
-      background: rgba(99, 102, 241, 0.1);
-    }
-
-    .chip-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
-    .chip.private .chip-name { color: var(--primary); }
-
-    .chip-icon { font-size: 14px; color: var(--primary); flex-shrink: 0; }
-
-    .chip-owner {
-      font-size: 9.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
-      color: var(--primary); background: rgba(99, 102, 241, 0.12);
-      border-radius: 20px; padding: 2px 8px; white-space: nowrap;
-    }
-    .chip-del {
-      background: none; border: none; cursor: pointer; padding: 2px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; color: var(--text-muted);
-      font-size: 15px;
-    }
-    .chip-del:hover { background: var(--rose-soft); color: var(--rose); }
-
-    .no-sub {
-      font-size: 13.5px; color: var(--text-muted);
-      border-top: 1px solid var(--border-color); padding-top: 18px;
-    }
-    .no-sub a { color: var(--primary); text-decoration: none; font-weight: 600; }
-    .no-sub a:hover { text-decoration: underline; }
-
-    /* ── Empty State ── */
-    .empty-box {
-      text-align: center; padding: 60px 24px;
-    }
-    .empty-icon {
-      width: 60px; height: 60px; border-radius: var(--border-radius-lg);
-      background: var(--body-bg); border: 1px solid var(--border-color-darker);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 28px; color: var(--text-muted); margin-bottom: 16px;
-    }
-    .empty-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
-    .empty-sub { font-size: 13.5px; color: var(--text-muted); }
-
-    #no-results { display: none; }
-
-    .section-gap { margin-bottom: 32px; }
-
-    /* ── Responsive Viewport Adjustments ── */
-    @media (max-width: 992px) {
-      .sidebar {
-        transform: translateX(-100%);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .sidebar.open { transform: translateX(0); }
-      .main { margin-left: 0; }
-      .topbar { left: 0; padding: 0 20px; }
-      .sidebar-toggle { display: inline-flex; }
-      .content { padding: 30px 20px 60px; }
-    }
-    @media (max-width: 576px) {
-      .cat-head { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .cat-actions { width: 100%; justify-content: flex-end; }
-      .filter-row { flex-direction: column-reverse; align-items: stretch; }
-      .search-wrap { max-width: 100%; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
-<aside class="sidebar" id="sidebar">
-  <a href="#" class="sidebar-brand">
-    <div class="brand-icon"><i class="ti ti-currency-dollar"></i></div>
-    CashManager
-  </a>
-
-  <nav class="sidebar-nav">
-    <p class="nav-label">Main</p>
-
-    <div class="nav-item">
-      <a href="#"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-    </div>
-    <div class="nav-item">
-      <a href="#"><i class="ti ti-arrows-right-left"></i> Transactions <span class="nav-badge">12</span></a>
-    </div>
-    <div class="nav-item">
-      <a href="#"><i class="ti ti-chart-bar"></i> Reports</a>
-    </div>
-    <div class="nav-item">
-      <a href="#"><i class="ti ti-wallet"></i> Budgets</a>
-    </div>
-
-    <p class="nav-label">Settings</p>
-
-    <div class="nav-item">
-      <a href="#" class="active"><i class="ti ti-tags"></i> Categories</a>
-    </div>
-    <div class="nav-item">
-      <a href="#"><i class="ti ti-users"></i> Users</a>
-    </div>
-    <div class="nav-item">
-      <a href="#"><i class="ti ti-settings"></i> Preferences</a>
-    </div>
-  </nav>
-
-  <div class="sidebar-footer">
-    <div class="user-card">
-      <div class="user-avatar">JD</div>
-      <div>
-        <div class="user-name">John Doe</div>
-        <div class="user-role">Administrator</div>
+{% block content %}
+<div class="adm-layout" style="display: flex; flex-direction: column; padding: 40px;">
+  
+  <div class="adm-page-head" style="margin-bottom: 32px;">
+    <div>
+      <div class="adm-breadcrumb">
+        Workspace
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        Categories
       </div>
+      <h1 class="adm-page-title">Financial Categories</h1>
     </div>
   </div>
-</aside>
 
-<!-- Back Drop Overlay for Mobile Sidebar -->
-<div class="modal-backdrop fade show d-none" id="sidebar-backdrop" style="z-index: 1030;"></div>
-
-<!-- ═══════════════════════ TOPBAR ═══════════════════════ -->
-<header class="topbar">
-  <div class="topbar-left">
-    <button class="sidebar-toggle" id="toggle-sidebar" aria-label="Toggle Sidebar">
-      <i class="ti ti-menu-2"></i>
-    </button>
-    <div class="breadcrumb-top d-none d-sm-flex">
-      <span>Settings</span>
-      <span class="breadcrumb-sep">/</span>
-      <span style="color:var(--text-primary); font-weight:600;">Categories</span>
-    </div>
-  </div>
-  <div class="topbar-right">
-    <button class="topbar-btn" title="Search">
-      <i class="ti ti-search"></i>
-    </button>
-    <button class="topbar-btn" title="Notifications">
-      <i class="ti ti-bell"></i>
-      <span class="notif-dot"></span>
-    </button>
-    <button class="topbar-btn" title="Toggle theme">
-      <i class="ti ti-moon"></i>
-    </button>
-    <div class="user-avatar" style="width:36px;height:36px;font-size:12px;cursor:pointer;margin-left:4px;">JD</div>
-  </div>
-</header>
-
-<!-- ═══════════════════════ MAIN ═══════════════════════ -->
-<main class="main">
-  <div class="content">
-
-    <!-- Page Header -->
-    <div class="page-header">
-      <div>
-        <div class="page-eyebrow">Settings</div>
-        <h1 class="page-title">Categories</h1>
-        <p class="page-sub">Manage categories and sub-categories for your transactions.</p>
-      </div>
-      <a href="#" class="btn-primary-ds shadow-none">
-        <i class="ti ti-plus"></i> Add Sub-Category
-      </a>
-    </div>
-
-    <!-- Add Category Card -->
-    <div class="ds-card section-gap">
-      <div class="ds-card-header">
-        <div class="ds-card-title">
-          <i class="ti ti-folder-plus"></i>
-          Add New Category
+  <div class="adm-cat-grid">
+    <!-- Category tree -->
+    <div class="adm-table-card">
+      <div class="adm-table-head">
+        <div class="adm-table-title">
+          <span class="adm-table-title-dot"></span>
+          Structure Overview
         </div>
       </div>
-      <div class="ds-card-body">
-        <form method="post" id="add-category-form">
-          <div class="row g-3 align-items-end">
-            <div class="col">
-              <label class="form-label-ds">Category Name <span style="color:var(--rose)">*</span></label>
-              <div class="input-wrap">
-                <i class="ti ti-tag input-icon"></i>
-                <input
-                  type="text"
-                  name="name"
-                  class="ds-input"
-                  placeholder="e.g. Food, Transport, Salary…"
-                  required
-                />
+      <div style="padding: 20px;">
+        {% if categories %}
+          {% for cat in categories %}
+          <div class="adm-cat-row {% if forloop.first %}open{% endif %}" id="cat-{{ cat.pk }}">
+            <div class="adm-cat-row-head" onclick="toggleCat('cat-{{ cat.pk }}')">
+              <div class="adm-cat-name">
+                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                {{ cat.name }}
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="adm-cat-meta" style="font-size: 11px; background: var(--surface); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px;">
+                  {{ cat.subcategories.count }} sub
+                </span>
+                <svg class="adm-cat-chevron" viewBox="0 0 24 24" style="width: 14px;"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
             </div>
-            <div class="col-auto">
-              <button type="submit" class="btn-primary-ds">
-                <i class="ti ti-check"></i> Create
-              </button>
+            <div class="adm-cat-subs" style="padding: 14px; background: var(--surface); border-top: 1px solid var(--border);">
+              {% if cat.subcategories.all %}
+                {% for sub in cat.subcategories.all %}
+                  <span class="adm-sub-chip">
+                    {{ sub.name }}
+                    {% if request.user.is_admin %}
+                    <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="margin:0; display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="adm-sub-del" onclick="return confirm('Delete \'{{ sub.name }}\'?')">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </form>
+                    {% endif %}
+                  </span>
+                {% endfor %}
+              {% else %}
+                <span class="adm-cat-no-sub" style="font-size:12px; color:var(--text3);">No sub-categories yet.</span>
+              {% endif %}
             </div>
           </div>
-        </form>
+          {% endfor %}
+        {% else %}
+        <div class="adm-empty">
+          <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
+          <p class="adm-empty-title">No categories defined</p>
+        </div>
+        {% endif %}
       </div>
     </div>
 
-    <!-- Search & Count Row -->
-    <div class="filter-row">
-      <span class="count-badge">
-        <strong>6</strong> categories
-      </span>
-      <div class="search-wrap">
-        <i class="ti ti-search search-icon"></i>
-        <input type="text" id="search-input" placeholder="Search categories…" autocomplete="off" />
+    <!-- Forms panel -->
+    <div>
+      {% if not request.user.is_frozen %}
+      <div class="adm-form-panel" style="margin-bottom: 20px;">
+        <div class="adm-form-panel-head">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Main Category
+        </div>
+        <div class="adm-form-panel-body">
+          <form method="post">
+            {% csrf_token %}
+            <div class="adm-inline-form">
+              <input type="text" name="name" class="form-control" placeholder="e.g. Health, Investments" style="width:100%; height:40px; padding:0 12px; border:1px solid var(--border); border-radius: var(--radius); outline:none; background: var(--surface2);" required />
+              <button type="submit" class="adm-inline-btn" style="height:40px;">Create</button>
+            </div>
+          </form>
+        </div>
       </div>
+      {% endif %}
+
+      {% if request.user.is_admin %}
+      <div class="adm-form-panel">
+        <div class="adm-form-panel-head">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Sub-category
+        </div>
+        <div class="adm-form-panel-body">
+          <a href="{% url 'subcategory_create' %}" class="adm-btn-primary" style="width: 100%; justify-content: center; height: 40px;">
+            Open Sub-Category Wizard
+          </a>
+        </div>
+      </div>
+      {% endif %}
     </div>
+  </div>
 
-    <!-- Categories List -->
-    <div class="cat-list" id="cat-list">
-
-      <!-- Category 1 — indigo -->
-      <div class="cat-card border-indigo" data-search="food & dining">
-        <div class="cat-head">
-          <div class="cat-info">
-            <div class="cat-icon indigo"><i class="ti ti-tools-kitchen-2"></i></div>
-            <div>
-              <div class="cat-name">Food &amp; Dining</div>
-              <div class="cat-meta"><strong>4</strong> sub-categories · Created by <strong>admin</strong></div>
-            </div>
-          </div>
-          <div class="cat-actions">
-            <a href="#" class="btn-outline-ds" style="padding:7px 14px; font-size:13px;">
-              <i class="ti ti-plus" style="font-size:14px;"></i> Add Sub
-            </a>
-            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
-              <i class="ti ti-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-        <div class="sub-zone">
-          <div class="chip">
-            <span class="chip-name">Restaurants</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip">
-            <span class="chip-name">Groceries</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip private">
-            <i class="ti ti-user chip-icon"></i>
-            <span class="chip-name">Personal Snacks</span>
-            <span class="chip-owner">You</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip">
-            <span class="chip-name">Coffee</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category 2 — emerald -->
-      <div class="cat-card border-emerald" data-search="income & salary">
-        <div class="cat-head">
-          <div class="cat-info">
-            <div class="cat-icon emerald"><i class="ti ti-trending-up"></i></div>
-            <div>
-              <div class="cat-name">Income &amp; Salary</div>
-              <div class="cat-meta"><strong>3</strong> sub-categories · Created by <strong>admin</strong></div>
-            </div>
-          </div>
-          <div class="cat-actions">
-            <a href="#" class="btn-outline-ds" style="padding:7px 14px; font-size:13px;">
-              <i class="ti ti-plus" style="font-size:14px;"></i> Add Sub
-            </a>
-            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
-              <i class="ti ti-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-        <div class="sub-zone">
-          <div class="chip">
-            <span class="chip-name">Monthly Salary</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip">
-            <span class="chip-name">Freelance</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip private">
-            <i class="ti ti-user chip-icon"></i>
-            <span class="chip-name">Bonus</span>
-            <span class="chip-owner">sarah</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category 3 — amber -->
-      <div class="cat-card border-amber" data-search="transport & travel">
-        <div class="cat-head">
-          <div class="cat-info">
-            <div class="cat-icon amber"><i class="ti ti-car"></i></div>
-            <div>
-              <div class="cat-name">Transport &amp; Travel</div>
-              <div class="cat-meta"><strong>2</strong> sub-categories · Created by <strong>admin</strong></div>
-            </div>
-          </div>
-          <div class="cat-actions">
-            <a href="#" class="btn-outline-ds" style="padding:7px 14px; font-size:13px;">
-              <i class="ti ti-plus" style="font-size:14px;"></i> Add Sub
-            </a>
-            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
-              <i class="ti ti-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-        <div class="sub-zone">
-          <div class="chip">
-            <span class="chip-name">Fuel</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip">
-            <span class="chip-name">Rideshare</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category 4 — rose -->
-      <div class="cat-card border-rose" data-search="health & medical">
-        <div class="cat-head">
-          <div class="cat-info">
-            <div class="cat-icon rose"><i class="ti ti-heart-plus"></i></div>
-            <div>
-              <div class="cat-name">Health &amp; Medical</div>
-              <div class="cat-meta"><strong>0</strong> sub-categories · Created by <strong>admin</strong></div>
-            </div>
-          </div>
-          <div class="cat-actions">
-            <a href="#" class="btn-outline-ds" style="padding:7px 14px; font-size:13px;">
-              <i class="ti ti-plus" style="font-size:14px;"></i> Add Sub
-            </a>
-            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
-              <i class="ti ti-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-        <div class="no-sub">
-          No sub-categories yet. <a href="#">Add one →</a>
-        </div>
-      </div>
-
-      <!-- Category 5 — indigo -->
-      <div class="cat-card border-indigo" data-search="utilities & bills">
-        <div class="cat-head">
-          <div class="cat-info">
-            <div class="cat-icon indigo"><i class="ti ti-bolt"></i></div>
-            <div>
-              <div class="cat-name">Utilities &amp; Bills</div>
-              <div class="cat-meta"><strong>3</strong> sub-categories · Created by <strong>admin</strong></div>
-            </div>
-          </div>
-          <div class="cat-actions">
-            <a href="#" class="btn-outline-ds" style="padding:7px 14px; font-size:13px;">
-              <i class="ti ti-plus" style="font-size:14px;"></i> Add Sub
-            </a>
-            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
-              <i class="ti ti-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-        <div class="sub-zone">
-          <div class="chip">
-            <span class="chip-name">Electricity</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip">
-            <span class="chip-name">Internet</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip">
-            <span class="chip-name">Water</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category 6 — emerald -->
-      <div class="cat-card border-emerald" data-search="entertainment">
-        <div class="cat-head">
-          <div class="cat-info">
-            <div class="cat-icon emerald"><i class="ti ti-devicegamepad-2"></i></div>
-            <div>
-              <div class="cat-name">Entertainment</div>
-              <div class="cat-meta"><strong>2</strong> sub-categories · Created by <strong>john</strong></div>
-            </div>
-          </div>
-          <div class="cat-actions">
-            <a href="#" class="btn-outline-ds" style="padding:7px 14px; font-size:13px;">
-              <i class="ti ti-plus" style="font-size:14px;"></i> Add Sub
-            </a>
-            <button class="btn-danger-ds" onclick="return confirm('Delete this category?')">
-              <i class="ti ti-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-        <div class="sub-zone">
-          <div class="chip">
-            <span class="chip-name">Streaming</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="chip">
-            <span class="chip-name">Gaming</span>
-            <button class="chip-del" onclick="return confirm('Delete sub-category?')" title="Delete"><i class="ti ti-x"></i></button>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /.cat-list -->
-
-    <!-- No Results -->
-    <div id="no-results" class="ds-card">
-      <div class="empty-box">
-        <div class="empty-icon"><i class="ti ti-search-off"></i></div>
-        <div class="empty-title">No matching categories</div>
-        <div class="empty-sub">Try a different search term.</div>
-      </div>
-    </div>
-
-  </div><!-- /.content -->
-</main>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</div>
 
 <script>
-  // Search filter
-  (function () {
-    var input = document.getElementById('search-input');
-    if (!input) return;
-    var cards = document.querySelectorAll('#cat-list .cat-card');
-    var noResults = document.getElementById('no-results');
-
-    input.addEventListener('input', function () {
-      var q = this.value.trim().toLowerCase();
-      var visible = 0;
-      cards.forEach(function (c) {
-        var match = c.dataset.search.indexOf(q) !== -1;
-        c.classList.toggle('hidden', !match);
-        if (match) visible++;
-      });
-      noResults.style.display = (visible === 0 && q) ? 'block' : 'none';
-    });
-  })();
-
-  // Mobile sidebar toggle with overlay backdrop
-  document.addEventListener('DOMContentLoaded', function () {
-    var toggleBtn = document.getElementById('toggle-sidebar');
-    var sidebar = document.getElementById('sidebar');
-    var backdrop = document.getElementById('sidebar-backdrop');
-
-    if (toggleBtn && sidebar && backdrop) {
-      function toggleMenu() {
-        sidebar.classList.toggle('open');
-        backdrop.classList.toggle('d-none');
-      }
-
-      toggleBtn.addEventListener('click', toggleMenu);
-      backdrop.addEventListener('click', toggleMenu);
-    }
-  });
+  window.toggleCat = function (id) {
+    document.getElementById(id).classList.toggle('open');
+  };
 </script>
-
-</body>
-</html>
+{% endblock %}
