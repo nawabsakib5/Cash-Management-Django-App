@@ -1,225 +1,70 @@
 {% extends 'base.html' %}
-{% block title %}{% if form.instance.pk %}Edit Transaction{% else %}Add Transaction{% endif %} — CashManager{% endblock %}
+{% block title %}{% if form.instance.pk %}Edit Entry{% else %}New Entry{% endif %} — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
 {% block content %}
-
-{% if project %}
-<a href="{% url 'project_detail' project.pk %}" class="back-link">
-  <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-  Back to {{ project.name }}
-</a>
-{% endif %}
-
-<div style="max-width: 480px; margin: 0 auto;">
-
-  <div style="margin-bottom: 28px;">
-    <span class="eyebrow">
-      <span class="eyebrow-dot"></span>
-      {% if form.instance.pk %}Edit{% else %}New{% endif %} Transaction
-    </span>
-    <h1 class="page-title">{% if form.instance.pk %}Edit Transaction{% else %}Add Transaction{% endif %}</h1>
-    {% if project %}
-      <p class="page-sub">For project: <strong style="color: var(--text2);">{{ project.name }}</strong></p>
-    {% endif %}
-  </div>
-
-  {% if balance_warning %}
-    <div class="alert-box alert-warning" style="margin-bottom: 18px;">
-      <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      <span>Current balance: ৳{{ balance }}. This expense may make the balance negative.</span>
+<div class="adm-layout" style="display: flex; justify-content: center; padding: 40px 20px;">
+  <div class="adm-card" style="width: 100%; max-width: 600px; padding: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);">
+    
+    <div style="text-align: center; margin-bottom: 32px;">
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--indigo-fog); display: inline-flex; align-items: center; justify-content: center; color: var(--indigo); margin-bottom: 16px;">
+        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <h2 style="font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px;">
+        {% if form.instance.pk %}Modify Entry{% else %}Add Transaction Entry{% endif %}
+      </h2>
+      <p style="font-size: 13px; color: var(--text3); margin: 0;">Specify entry flow, categories and absolute amounts.</p>
     </div>
-  {% endif %}
 
-  <div class="card">
-    <form method="post" novalidate>
+    <form method="post">
       {% csrf_token %}
-
-      {% if form.non_field_errors %}
-        {% for err in form.non_field_errors %}
-          <div class="alert-box alert-danger" style="margin-bottom: 18px;">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>{{ err }}</span>
-          </div>
-        {% endfor %}
-      {% endif %}
-
-      <!-- Title -->
-      <div class="form-group">
-        <label class="form-label" for="{{ form.title.id_for_label }}">
-          Title <span class="required"></span>
-        </label>
-        <input
-          type="text"
-          id="{{ form.title.id_for_label }}"
-          name="{{ form.title.html_name }}"
-          value="{{ form.title.value|default_if_none:'' }}"
-          class="form-control"
-          placeholder="e.g. Office Rent, Client Payment…"
-          required autofocus
-        >
-        {% if form.title.errors %}
-          <p class="form-error">{{ form.title.errors.0 }}</p>
-        {% endif %}
-      </div>
-
-      <!-- Amount + Type -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="{{ form.amount.id_for_label }}">
-            Amount <span class="required"></span>
-          </label>
-          <input
-            type="number" step="0.01"
-            id="{{ form.amount.id_for_label }}"
-            name="{{ form.amount.html_name }}"
-            value="{{ form.amount.value|default_if_none:'' }}"
-            class="form-control" placeholder="0.00" required
-          >
-          {% if form.amount.errors %}
-            <p class="form-error">{{ form.amount.errors.0 }}</p>
-          {% endif %}
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Entry Title <span style="color: var(--rose);">*</span></label>
+          <input type="text" name="title" placeholder="e.g. Domain purchase" style="width: 100%; height: 42px; padding: 0 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;" value="{{ form.title.value|default:'' }}" required />
         </div>
-
-        <div class="form-group">
-          <label class="form-label" for="{{ form.type.id_for_label }}">
-            Type <span class="required"></span>
-          </label>
-          <select id="{{ form.type.id_for_label }}" name="{{ form.type.html_name }}" class="form-control" required>
-            {% for value, label in form.fields.type.choices %}
-              <option value="{{ value }}" {% if form.type.value == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-          {% if form.type.errors %}
-            <p class="form-error">{{ form.type.errors.0 }}</p>
-          {% endif %}
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Flow Type <span style="color: var(--rose);">*</span></label>
+          {{ form.type }}
         </div>
       </div>
 
-      <!-- Date -->
-      <div class="form-group">
-        <label class="form-label" for="{{ form.date.id_for_label }}">
-          Date <span class="required"></span>
-        </label>
-        <input
-          type="date"
-          id="{{ form.date.id_for_label }}"
-          name="{{ form.date.html_name }}"
-          value="{{ form.date.value|date:'Y-m-d' }}"
-          class="form-control" required
-        >
-        {% if form.date.errors %}
-          <p class="form-error">{{ form.date.errors.0 }}</p>
-        {% endif %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Category Scope <span style="color: var(--rose);">*</span></label>
+          {{ form.subcategory }}
+        </div>
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Amount (৳) <span style="color: var(--rose);">*</span></label>
+          <input type="number" name="amount" placeholder="e.g. 500" style="width: 100%; height: 42px; padding: 0 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;" value="{{ form.amount.value|default:'' }}" required />
+        </div>
       </div>
 
-      <!-- Category -->
-      <div class="form-group">
-        <label class="form-label" for="{{ form.category.id_for_label }}">
-          Category
-          <span style="font-size:11px; color:var(--text3); font-weight:400; margin-left:4px;">(optional)</span>
-        </label>
-        <select id="{{ form.category.id_for_label }}" name="{{ form.category.html_name }}" class="form-control" id="id_category">
-          <option value="">— Select category —</option>
-          {% for cat in form.fields.category.queryset %}
-            <option value="{{ cat.pk }}" {% if form.category.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>
-              {{ cat.name }}
-            </option>
-          {% endfor %}
-        </select>
-        {% if form.category.errors %}
-          <p class="form-error">{{ form.category.errors.0 }}</p>
-        {% endif %}
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Entry Date <span style="color: var(--rose);">*</span></label>
+        <input type="date" name="date" style="width: 100%; height: 42px; padding: 0 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;" value="{{ form.date.value|default:'' }}" required />
       </div>
 
-      <!-- Sub-Category (dynamic) -->
-      <div class="form-group" style="margin-bottom: 24px;">
-        <label class="form-label" for="id_sub_category">
-          Sub-Category
-          <span style="font-size:11px; color:var(--text3); font-weight:400; margin-left:4px;">(optional)</span>
-        </label>
-        <select name="sub_category" id="id_sub_category" class="form-control">
-          <option value="">— Select sub-category —</option>
-          {% if form.instance.pk and form.instance.sub_category %}
-            <option value="{{ form.instance.sub_category.pk }}" selected>
-              {{ form.instance.sub_category.name }}
-            </option>
-          {% endif %}
-        </select>
-        {% if form.sub_category.errors %}
-          <p class="form-error">{{ form.sub_category.errors.0 }}</p>
-        {% endif %}
-        <p style="font-size:12px; color:var(--text3); margin-top:5px;">
-          Select a category first to see sub-categories.
-        </p>
+      <div style="margin-bottom: 26px;">
+        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Supplementary Information</label>
+        <textarea name="description" placeholder="Add some notes about this transaction..." style="width: 100%; height: 100px; padding: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none; resize: none;">{{ form.description.value|default:'' }}</textarea>
       </div>
 
-      <hr class="divider">
-
-      <div style="display: flex; gap: 10px;">
-        <button type="submit" class="btn-primary" style="flex: 1.4; justify-content: center;">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          {% if form.instance.pk %}Save Changes{% else %}Add Transaction{% endif %}
+      <div style="display: flex; gap: 12px;">
+        <button type="submit" class="adm-btn-primary" style="flex: 1; justify-content: center; height: 44px;">
+          Publish Entry
         </button>
-        <a href="{% if project %}{% url 'project_detail' project.pk %}{% else %}{% url 'project_list' %}{% endif %}"
-           class="btn-secondary" style="flex: 1; justify-content: center;">
-          Cancel
-        </a>
+        <a href="{% url 'project_detail' project.pk %}" class="adm-btn-ghost" style="height: 44px; align-items: center; justify-content: center;">Cancel</a>
       </div>
     </form>
-  </div>
 
+  </div>
 </div>
 
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  const categorySelect    = document.getElementById('id_category');
-  const subCategorySelect = document.getElementById('id_sub_category');
-  const ajaxUrl           = "{% url 'get_subcategories' %}";
-
-  // Existing sub_category value (edit mode)
-  const existingSubCatId  = "{{ form.instance.sub_category_id|default:'' }}";
-
-  function loadSubCategories(categoryId, preselectId) {
-    subCategorySelect.innerHTML = '<option value="">— Select sub-category —</option>';
-
-    if (!categoryId) return;
-
-    fetch(`${ajaxUrl}?category_id=${categoryId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.subcategories.length === 0) {
-          const opt = document.createElement('option');
-          opt.disabled = true;
-          opt.textContent = 'No sub-categories available';
-          subCategorySelect.appendChild(opt);
-          return;
-        }
-        data.subcategories.forEach(sub => {
-          const opt = document.createElement('option');
-          opt.value = sub.id;
-          opt.textContent = sub.name;
-          if (String(sub.id) === String(preselectId)) {
-            opt.selected = true;
-          }
-          subCategorySelect.appendChild(opt);
-        });
-      })
-      .catch(() => {
-        subCategorySelect.innerHTML = '<option value="">Failed to load</option>';
-      });
+<style>
+  select.form-control, select[name="type"], select[name="subcategory"] {
+    width: 100%; height: 42px; padding: 0 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;
   }
-
-  // On category change
-  categorySelect.addEventListener('change', function () {
-    loadSubCategories(this.value, null);
-  });
-
-  // On page load: if category already selected (edit mode), load its subs
-  if (categorySelect.value) {
-    loadSubCategories(categorySelect.value, existingSubCatId);
-  }
-</script>
+</style>
 {% endblock %}
