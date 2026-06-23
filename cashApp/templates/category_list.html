@@ -5,101 +5,132 @@
 {% block content %}
 <div class="adm-layout" style="display: flex; flex-direction: column; padding: 40px;">
   
-  <div class="adm-page-head" style="margin-bottom: 32px;">
+  <!-- Page Header -->
+  <div class="adm-page-head" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
-      <div class="adm-breadcrumb">
+      <div class="adm-breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
         Workspace
-        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
         Categories
       </div>
-      <h1 class="adm-page-title">Financial Categories</h1>
+      <h1 class="adm-page-title" style="font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">Financial Categories</h1>
     </div>
   </div>
 
-  <div class="adm-cat-grid">
-    <!-- Category tree -->
-    <div class="adm-table-card">
-      <div class="adm-table-head">
-        <div class="adm-table-title">
-          <span class="adm-table-title-dot"></span>
+  <div class="adm-cat-grid" style="display: grid; grid-template-columns: 1fr 340px; gap: 24px;">
+    
+    <!-- Left Column: Category Tree Overview -->
+    <div class="adm-table-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+      <div class="adm-table-head" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+        <div class="adm-table-title" style="font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+          <span class="adm-table-title-dot" style="width: 7px; height: 7px; border-radius: 50%; background: var(--indigo);"></span>
           Structure Overview
         </div>
       </div>
       <div style="padding: 20px;">
         {% if categories %}
           {% for cat in categories %}
-          <div class="adm-cat-row {% if forloop.first %}open{% endif %}" id="cat-{{ cat.pk }}">
-            <div class="adm-cat-row-head" onclick="toggleCat('cat-{{ cat.pk }}')">
-              <div class="adm-cat-name">
-                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <div class="adm-cat-row {% if forloop.first %}open{% endif %}" id="cat-{{ cat.pk }}" style="background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 8px;">
+            <div class="adm-cat-row-head" onclick="toggleCat('cat-{{ cat.pk }}')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; transition: background 0.2s;">
+              <div class="adm-cat-name" style="font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--indigo);">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
                 {{ cat.name }}
               </div>
               <div style="display:flex; align-items:center; gap:10px;">
-                <span class="adm-cat-meta" style="font-size: 11px; background: var(--surface); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px;">
+                <span class="adm-cat-meta" style="font-size: 11px; background: var(--surface); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px; color: var(--text3); font-weight: 600;">
                   {{ cat.subcategories.count }} sub
                 </span>
-                <svg class="adm-cat-chevron" viewBox="0 0 24 24" style="width: 14px;"><polyline points="6 9 12 15 18 9"/></svg>
+                <svg class="adm-cat-chevron" viewBox="0 0 24 24" style="width: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
             </div>
-            <div class="adm-cat-subs" style="padding: 14px; background: var(--surface); border-top: 1px solid var(--border);">
+            <div class="adm-cat-subs" style="display: none; padding: 14px; background: var(--surface); border-top: 1px solid var(--border); flex-wrap: wrap; gap: 6px;">
               {% if cat.subcategories.all %}
                 {% for sub in cat.subcategories.all %}
-                  <span class="adm-sub-chip">
+                  <span class="adm-sub-chip" style="display: inline-flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 99px; padding: 4px 10px; font-size: 12.5px; font-weight: 600; color: var(--text2);">
                     {{ sub.name }}
                     {% if request.user.is_admin %}
                     <form method="post" action="{% url 'subcategory_delete' sub.pk %}" style="margin:0; display:inline;">
                       {% csrf_token %}
-                      <button type="submit" class="adm-sub-del" onclick="return confirm('Delete \'{{ sub.name }}\'?')">
-                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      <button type="submit" class="adm-sub-del" style="background: none; border: none; cursor: pointer; padding: 0; display: inline-flex; align-items: center; color: var(--text3); transition: color 0.2s;" onclick="return confirm('Delete \'{{ sub.name }}\'?')">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/>
+                          <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
                       </button>
                     </form>
                     {% endif %}
                   </span>
                 {% endfor %}
               {% else %}
-                <span class="adm-cat-no-sub" style="font-size:12px; color:var(--text3);">No sub-categories yet.</span>
+                <span class="adm-cat-no-sub" style="font-size:12.5px; color:var(--text3); font-style: italic;">No sub-categories yet.</span>
               {% endif %}
             </div>
           </div>
           {% endfor %}
         {% else %}
-        <div class="adm-empty">
-          <div class="adm-empty-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
-          <p class="adm-empty-title">No categories defined</p>
+        <div class="adm-empty" style="text-align: center; padding: 48px 24px;">
+          <div class="adm-empty-icon" style="width: 48px; height: 48px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: var(--text3);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
+          <p class="adm-empty-title" style="font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 4px;">No categories defined</p>
         </div>
         {% endif %}
       </div>
     </div>
 
-    <!-- Forms panel -->
+    <!-- Right Column: Scoped Action Panels -->
     <div>
       {% if not request.user.is_frozen %}
-      <div class="adm-form-panel" style="margin-bottom: 20px;">
-        <div class="adm-form-panel-head">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <!-- Create Main Category Panel -->
+      <div class="adm-form-panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px;">
+        <div class="adm-form-panel-head" style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13.5px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--indigo);">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
           Add Main Category
         </div>
-        <div class="adm-form-panel-body">
+        <div class="adm-form-panel-body" style="padding: 16px 18px;">
           <form method="post">
             {% csrf_token %}
-            <div class="adm-inline-form">
-              <input type="text" name="name" class="form-control" placeholder="e.g. Health, Investments" style="width:100%; height:40px; padding:0 12px; border:1px solid var(--border); border-radius: var(--radius); outline:none; background: var(--surface2);" required />
-              <button type="submit" class="adm-inline-btn" style="height:40px;">Create</button>
+            <div class="adm-inline-form" style="display: flex; gap: 10px;">
+              <input type="text" name="name" class="form-control" placeholder="e.g. Health, Investments" style="flex: 1; height: 42px; padding: 0 16px; border: 1.5px solid var(--border); border-radius: 8px; outline: none; background: var(--surface2); color: var(--text); font-size: 13.5px;" required />
+              
+              <!-- Premium Noticeable Create Button -->
+              <button type="submit" class="btn-create-category-v2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Create</span>
+              </button>
             </div>
           </form>
         </div>
       </div>
       {% endif %}
 
+      <!-- Open Sub-Category Wizard Panel -->
       {% if request.user.is_admin %}
-      <div class="adm-form-panel">
-        <div class="adm-form-panel-head">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <div class="adm-form-panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+        <div class="adm-form-panel-head" style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13.5px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--indigo);">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
           Add Sub-category
         </div>
-        <div class="adm-form-panel-body">
-          <a href="{% url 'subcategory_create' %}" class="adm-btn-primary" style="width: 100%; justify-content: center; height: 40px;">
-            Open Sub-Category Wizard
+        <div class="adm-form-panel-body" style="padding: 16px 18px;">
+          <!-- Premium Noticeable Wizard Link Styled as Button -->
+          <a href="{% url 'subcategory_create' %}" class="btn-wizard-link-v2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h6v6"/>
+              <path d="M10 14 21 3"/>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            </svg>
+            <span>Open Wizard</span>
           </a>
         </div>
       </div>
@@ -111,7 +142,122 @@
 
 <script>
   window.toggleCat = function (id) {
-    document.getElementById(id).classList.toggle('open');
+    const row = document.getElementById(id);
+    const chevron = row.querySelector('.adm-cat-chevron');
+    const subs = row.querySelector('.adm-cat-subs');
+    const isClosed = subs.style.display === 'none' || !subs.style.display;
+
+    if (isClosed) {
+      subs.style.display = 'flex';
+      row.classList.add('open');
+      chevron.style.transform = 'rotate(180deg)';
+    } else {
+      subs.style.display = 'none';
+      row.classList.remove('open');
+      chevron.style.transform = 'rotate(0deg)';
+    }
   };
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Extra animations & overrides for collapsible rows */
+  .adm-cat-row-head:hover {
+    background: var(--surface3);
+  }
+  .adm-cat-row.open {
+    border-color: var(--indigo-line) !important;
+  }
+  .adm-sub-chip:hover {
+    border-color: var(--text-muted);
+  }
+  .adm-sub-del:hover {
+    color: var(--rose) !important;
+  }
+
+  /* ── 10x Beautiful Glowing "Create" Button ── */
+  .btn-create-category-v2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    animation: pulse-glow 2.5s infinite;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-create-category-v2:hover {
+    transform: translateY(-1.5px);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  }
+
+  .btn-create-category-v2:active {
+    transform: translateY(0);
+  }
+
+  /* ── 10x Beautiful Sub-category Wizard Button ── */
+  .btn-wizard-link-v2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 42px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #ffffff;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    animation: wizard-pulse-glow 2.5s infinite;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-wizard-link-v2:hover {
+    transform: translateY(-1.5px);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+  }
+
+  .btn-wizard-link-v2:active {
+    transform: translateY(0);
+  }
+
+  /* Pulsing Animation for Category Create Button */
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35), 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+    50% {
+      box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4), 0 0 0 6px rgba(99, 102, 241, 0);
+    }
+    100% {
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35), 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+  }
+
+  /* Pulsing Animation for Wizard Button */
+  @keyframes wizard-pulse-glow {
+    0% {
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3), 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35), 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3), 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+  }
+</style>
 {% endblock %}

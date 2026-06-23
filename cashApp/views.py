@@ -22,7 +22,7 @@ def Signup(request):
         full_name        = request.POST.get('full_name')
         phone            = request.POST.get('phone')
         email            = request.POST.get('email')
-        user_type        = request.POST.get('user_type')
+        # user_type রিকোয়েস্ট সিকিউরিটি কারণে মুছে দেওয়া হয়েছে
         password         = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
@@ -42,19 +42,20 @@ def Signup(request):
             messages.error(request, "This email already exists.")
             return render(request, 'register.html')
 
+        # ব্যবহারকারী তৈরির সময় সরাসরি টাইপ 'user' ফোর্স করা হলো
         user = CustomUser.objects.create_user(
             username  = username,
             full_name = full_name or '',
             phone     = phone or '',
             email     = email,
-            user_type = user_type or 'user',
+            user_type = 'user',
             password  = password,
         )
         login(request, user)
         send_welcome_email(user)
         messages.success(request, f"Welcome {username}! Your account has been created.")
-        if user.user_type == 'admin':
-            return redirect('admin_dashboard')
+        
+        # নতুন ব্যবহারকারী যেহেতু সবসময় 'user' হবে, তাই সরাসরি প্রজেক্ট লিস্টে রিডাইরেক্ট হবে
         return redirect('project_list')
 
     return render(request, 'register.html')

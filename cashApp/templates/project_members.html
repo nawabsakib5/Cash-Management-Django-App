@@ -5,84 +5,134 @@
 {% block content %}
 <div class="adm-layout" style="display: flex; flex-direction: column; padding: 40px; max-width: 800px; margin: 0 auto;">
   
-  <div class="adm-page-head" style="margin-bottom: 32px;">
+  <!-- Page Header -->
+  <div class="adm-page-head" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
-      <div class="adm-breadcrumb">
+      <div class="adm-breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
         {{ project.name }}
-        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
         Members
       </div>
-      <h1 class="adm-page-title">Workspace Members</h1>
+      <h1 class="adm-page-title" style="font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">Workspace Members</h1>
     </div>
-    <a href="{% url 'project_detail' project.pk %}" class="adm-btn-ghost">Back to Project</a>
+    <a href="{% url 'project_detail' project.pk %}" class="adm-btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text2); background: var(--surface); border: 1px solid var(--border); text-decoration: none;">
+      Back to Project
+    </a>
   </div>
 
+  <!-- Messages / Alerts -->
   {% if messages %}
     {% for message in messages %}
     <div style="display: flex; align-items: center; gap: 10px; background: var(--indigo-fog); border: 1px solid var(--indigo-line); border-radius: var(--radius); padding: 12px; margin-bottom: 20px; font-size: 13.5px; color: var(--indigo);">
-      <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
       <span>{{ message }}</span>
     </div>
     {% endfor %}
   {% endif %}
 
-  <!-- Add Member Panel -->
+  <!-- Add Member Form Panel (Now Collapsible and Interactive) -->
   {% if not request.user.is_frozen %}
-  <div class="adm-form-panel" style="margin-bottom: 28px;">
-    <div class="adm-form-panel-head">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Workspace Member
+  <div class="adm-form-panel collapsible-panel" id="addMemberPanel" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 28px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- Clickable Header Trigger -->
+    <div class="panel-header-trigger" onclick="toggleAddMemberForm()" style="padding: 16px 18px; font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; transition: background 0.2s;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="plus-icon-container" style="width: 24px; height: 24px; border-radius: 6px; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; color: var(--indigo); transition: all 0.3s;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <span>Add Workspace Member</span>
+      </div>
+      <!-- Chevron indicator -->
+      <svg class="panel-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text3); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
     </div>
-    <div class="adm-form-panel-body">
-      <form method="post" class="adm-inline-form">
-        {% csrf_token %}
-        <input type="text" name="username" class="form-control" placeholder="Search by username..." required />
-        <button type="submit" class="adm-inline-btn">Invite Member</button>
-      </form>
+
+    <!-- Hidden Form Container -->
+    <div class="panel-form-content" id="panelFormContent" style="max-height: 0; opacity: 0; overflow: hidden; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+      <div style="padding: 18px; border-top: 1px solid var(--border);">
+        <form method="post" class="adm-inline-form" style="display: flex; gap: 10px;">
+          {% csrf_token %}
+          <input type="text" name="username" class="form-control" placeholder="Search by username..." style="flex: 1; height: 42px; padding: 0 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; color: var(--text); outline: none;" required />
+          <button type="submit" class="adm-inline-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 0 18px; height: 42px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff; background: var(--indigo); border: none; cursor: pointer; transition: background 0.2s;">
+            Invite Member
+          </button>
+        </form>
+      </div>
     </div>
   </div>
   {% endif %}
 
-  <!-- Members List Table -->
-  <div class="adm-table-card">
-    <div class="adm-table-head">
-      <div class="adm-table-title">
-        <span class="adm-table-title-dot"></span>
+  <!-- Active Members Table Card -->
+  <div class="adm-table-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+    <div class="adm-table-head" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+      <div class="adm-table-title" style="font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+        <span class="adm-table-title-dot" style="width: 7px; height: 7px; border-radius: 50%; background: var(--indigo);"></span>
         Active Access Users
       </div>
     </div>
-    <table class="adm-table">
+    
+    <table class="adm-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
       <thead>
-        <tr>
-          <th>User Profile</th>
-          <th>Workspace Role</th>
-          <th style="text-align: right;">Action</th>
+        <tr style="background: var(--surface2); border-bottom: 1px solid var(--border);">
+          <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">User Profile</th>
+          <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">Workspace Role</th>
+          <th style="padding: 12px 20px; text-align: right; font-size: 11px; text-transform: uppercase; color: var(--text3);">Action</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>
-            <div class="adm-cell-user">
-              <div class="adm-avatar" style="background: var(--emerald-fog); color: var(--emerald); border-color: rgba(16,185,129,0.22);">{{ project.user.username|first|upper }}</div>
-              <span class="adm-cell-name">{{ project.user.username }}</span>
+        <!-- Owner Row -->
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 14px 20px; vertical-align: middle;">
+            <div class="adm-cell-user" style="display: flex; align-items: center; gap: 10px;">
+              <div class="adm-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--emerald-fog); border: 1px solid rgba(16,185,129,0.22); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--emerald); text-transform: uppercase;">
+                {{ project.user.username|first|upper }}
+              </div>
+              <span style="font-weight: 600; color: var(--text);">{{ project.user.username }}</span>
             </div>
           </td>
-          <td><span class="adm-badge adm-badge--green"><span class="adm-badge-dot"></span>Project Creator</span></td>
-          <td style="text-align: right; font-size: 12px; color: var(--text3); font-style: italic;">Owner</td>
+          <td style="padding: 14px 20px; vertical-align: middle;">
+            <span class="adm-badge adm-badge--green" style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; border: 1px solid rgba(16,185,129,0.22); background: var(--emerald-fog); color: var(--emerald);">
+              <span class="adm-badge-dot" style="width: 5px; height: 5px; border-radius: 50%; background: var(--emerald);"></span>
+              Project Creator
+            </span>
+          </td>
+          <td style="padding: 14px 20px; vertical-align: middle; text-align: right; font-size: 12px; color: var(--text3); font-style: italic;">
+            Owner
+          </td>
         </tr>
+        
+        <!-- Members Loop -->
         {% for member in project.members.all %}
-        <tr>
-          <td>
-            <div class="adm-cell-user">
-              <div class="adm-avatar">{{ member.username|first|upper }}</div>
-              <span class="adm-cell-name">{{ member.username }}</span>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 14px 20px; vertical-align: middle;">
+            <div class="adm-cell-user" style="display: flex; align-items: center; gap: 10px;">
+              <div class="adm-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--indigo); text-transform: uppercase;">
+                {{ member.username|first|upper }}
+              </div>
+              <span style="font-weight: 500; color: var(--text2);">{{ member.username }}</span>
             </div>
           </td>
-          <td><span class="adm-badge adm-badge--indigo"><span class="adm-badge-dot"></span>Invited Member</span></td>
-          <td style="text-align: right;">
+          <td style="padding: 14px 20px; vertical-align: middle;">
+            <span class="adm-badge adm-badge--indigo" style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; border: 1px solid var(--indigo-line); background: var(--indigo-fog); color: var(--indigo);">
+              <span class="adm-badge-dot" style="width: 5px; height: 5px; border-radius: 50%; background: var(--indigo);"></span>
+              Invited Member
+            </span>
+          </td>
+          <td style="padding: 14px 20px; vertical-align: middle; text-align: right;">
             {% if not request.user.is_frozen %}
             <form method="post" action="{% url 'project_member_remove' project.pk member.pk %}" style="margin: 0; display: inline;">
               {% csrf_token %}
-              <button type="submit" class="adm-btn-sm" style="color: var(--rose);" onclick="return confirm('Remove {{ member.username }} from project?')">
+              <button type="submit" class="adm-btn-sm" style="display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--rose); background: var(--surface2); border: 1px solid var(--border); text-decoration: none; cursor: pointer;" onclick="return confirm('Remove {{ member.username }} from project?')">
                 Revoke Access
               </button>
             </form>
@@ -95,4 +145,56 @@
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleAddMemberForm() {
+    const panel = document.getElementById('addMemberPanel');
+    const content = document.getElementById('panelFormContent');
+    const isClosed = content.style.maxHeight === '0px' || !content.style.maxHeight;
+
+    if (isClosed) {
+      // Open panel
+      content.style.maxHeight = '120px'; // Forms and padding fits inside 120px safely
+      content.style.opacity = '1';
+      panel.classList.add('panel-active');
+      panel.querySelector('.panel-chevron').style.transform = 'rotate(180deg)';
+      panel.querySelector('.plus-icon-container').style.transform = 'rotate(90deg)';
+    } else {
+      // Close panel
+      content.style.maxHeight = '0px';
+      content.style.opacity = '0';
+      panel.classList.remove('panel-active');
+      panel.querySelector('.panel-chevron').style.transform = 'rotate(0deg)';
+      panel.querySelector('.plus-icon-container').style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // Set initial state
+  document.addEventListener('DOMContentLoaded', () => {
+    const content = document.getElementById('panelFormContent');
+    if (content) {
+      content.style.maxHeight = '0px';
+    }
+  });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Extra hover transitions for the interactive header trigger */
+  .panel-header-trigger:hover {
+    background: var(--surface2);
+  }
+  .panel-header-trigger:hover .plus-icon-container {
+    background: var(--indigo);
+    color: #fff;
+    border-color: var(--indigo);
+  }
+  .panel-active {
+    border-color: var(--indigo-line) !important;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05);
+  }
+</style>
 {% endblock %}

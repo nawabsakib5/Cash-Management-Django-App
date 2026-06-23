@@ -46,8 +46,8 @@
     
     .input-wrap { position: relative; }
     .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text4); font-size: 18px; pointer-events: none; }
-    .ds-input, .ds-select { width: 100%; height: 46px; padding: 0 16px 0 44px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; appearance: none; }
-    .ds-input:focus, .ds-select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); background: #fff; }
+    .ds-input { width: 100%; height: 46px; padding: 0 16px 0 44px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; }
+    .ds-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); background: #fff; }
 
     .btn-submit { width: 100%; height: 48px; background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); color: #fff; border: none; border-radius: var(--radius); font-size: 14.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 18px var(--primary-glow); margin-top: 8px; }
     .btn-submit:hover { transform: translateY(-1.5px); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
@@ -76,6 +76,10 @@
 
     <form method="post" action="{% url 'signup' %}">
       {% csrf_token %}
+      
+      <!-- Secure hidden field to enforce regular user type in background -->
+      <input type="hidden" name="user_type" value="user" />
+
       <div class="grid-fields">
         <div class="field no-margin">
           <label class="field-label">Username <span class="req">*</span></label>
@@ -93,7 +97,7 @@
         </div>
       </div>
 
-      <div class="grid-fields">
+      <div class="grid-fields" style="margin-bottom: 20px;">
         <div class="field no-margin">
           <label class="field-label">Email Address <span class="req">*</span></label>
           <div class="input-wrap">
@@ -107,17 +111,6 @@
             <i class="ti ti-phone input-icon"></i>
             <input type="text" name="phone" class="ds-input" placeholder="+88017..." />
           </div>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">User Type <span class="req">*</span></label>
-        <div class="input-wrap">
-          <i class="ti ti-users input-icon" style="z-index: 10;"></i>
-          <select name="user_type" class="ds-select" style="padding-left: 44px;" required>
-            <option value="user">Regular User</option>
-            <option value="admin">Administrator</option>
-          </select>
         </div>
       </div>
 

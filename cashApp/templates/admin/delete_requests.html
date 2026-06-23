@@ -1,492 +1,250 @@
 {% extends 'base.html' %}
 {% block title %}Delete Requests — CashManager{% endblock %}
-
-{% block content %}
-
-<!-- ── Page Header ────────────────────────────────────────────────────────── -->
-<div class="page-header">
-  <div>
-    <span class="eyebrow">
-      <span class="eyebrow-dot" style="background:var(--rose)"></span>
-      Admin Panel
-    </span>
-    <h1 class="page-title">Delete Requests</h1>
-    <p class="page-sub">Pending transaction delete requests from users.</p>
-  </div>
-  <a href="{% url 'admin_dashboard' %}" class="btn-back">
-    <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    Dashboard
-  </a>
-</div>
-
-<!-- ── Stats Bar ─────────────────────────────────────────────────────────── -->
-<div class="dr-stats-grid">
-  <div class="dr-stat-card {% if pending %}dr-stat-card--warn{% endif %}">
-    <div class="dr-stat-icon-box">
-      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-    </div>
-    <div>
-      <div class="dr-stat-num">{{ pending|length }}</div>
-      <div class="dr-stat-label">Pending Requests</div>
-    </div>
-  </div>
-
-  <div class="dr-stat-card">
-    <div class="dr-stat-icon-box dr-stat-icon-box--indigo">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    </div>
-    <div>
-      <div class="dr-stat-num">
-        {% if pending %}{{ pending.0.delete_requested_at|date:"d M Y" }}{% else %}—{% endif %}
-      </div>
-      <div class="dr-stat-label">Oldest Request</div>
-    </div>
-  </div>
-</div>
-
-<!-- ── Empty State ────────────────────────────────────────────────────────── -->
-{% if not pending %}
-<div class="dr-empty">
-  <div class="dr-empty-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-  </div>
-  <h2 class="dr-empty-title">All clear!</h2>
-  <p class="dr-empty-sub">No pending delete requests right now.</p>
-</div>
-
-<!-- ── Request List ───────────────────────────────────────────────────────── -->
-{% else %}
-<div class="dr-list">
-  {% for tx in pending %}
-  <div class="dr-card">
-
-    <!-- Card top accent -->
-    <div class="dr-card-top"></div>
-
-    <div class="dr-card-body">
-
-      <!-- Left: Transaction Info -->
-      <div class="dr-card-left">
-
-        <!-- Type badge -->
-        <span class="dr-type-badge dr-type-badge--{{ tx.type }}">
-          {% if tx.type == 'income' %}
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-            </svg>
-          {% else %}
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-            </svg>
-          {% endif %}
-          {{ tx.type|capfirst }}
-        </span>
-
-        <!-- Title & Amount -->
-        <div class="dr-tx-title">{{ tx.title }}</div>
-        <div class="dr-tx-amount dr-tx-amount--{{ tx.type }}">
-          {% if tx.type == 'expense' %}−{% else %}+{% endif %}৳{{ tx.amount }}
-        </div>
-
-        <!-- Meta -->
-        <div class="dr-tx-meta">
-          <span class="dr-meta-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            {{ tx.date|date:"d M Y" }}
-          </span>
-          <span class="dr-meta-sep">·</span>
-          <span class="dr-meta-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-            {{ tx.project.name }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Divider -->
-      <div class="dr-card-divider"></div>
-
-      <!-- Right: User & Request Info -->
-      <div class="dr-card-right">
-
-        <!-- User -->
-        <div class="dr-user-row">
-          <div class="dr-user-avatar">{{ tx.user.username|first|upper }}</div>
-          <div class="dr-user-info">
-            <div class="dr-user-name">{{ tx.user.username }}</div>
-            <div class="dr-user-email">{{ tx.user.email }}</div>
-          </div>
-        </div>
-
-        <!-- Requested at -->
-        <div class="dr-req-time">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-          Requested {{ tx.delete_requested_at|date:"d M Y, H:i" }}
-        </div>
-
-        <!-- Actions -->
-        <div class="dr-actions">
-          <!-- Confirm Delete -->
-          <form method="post" action="{% url 'admin_delete_confirm' tx.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="dr-btn dr-btn--confirm">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              Confirm Delete
-            </button>
-          </form>
-
-          <!-- Reject -->
-          <form method="post" action="{% url 'admin_delete_reject' tx.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="dr-btn dr-btn--reject">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-              Reject
-            </button>
-          </form>
-        </div>
-
-      </div>
-    </div>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-
-{% endblock %}
-
+{% block nav_delete_requests %}active{% endblock %}
 
 {% block extra_css %}
 <style>
-
-/* ── Stats Grid (matches dashboard stat-card language) ───────────────────── */
-.dr-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(200px, 260px));
-  gap: 16px;
-  margin-bottom: 32px;
-}
-@media (max-width: 560px) { .dr-stats-grid { grid-template-columns: 1fr; } }
-
-.dr-stat-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: linear-gradient(165deg, var(--surface2), var(--surface));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
-  box-shadow: var(--shadow-card, 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -12px rgba(0,0,0,0.5));
-  position: relative;
-  overflow: hidden;
-  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-}
-.dr-stat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-.dr-stat-card::after {
-  content: '';
-  position: absolute; top: 16%; left: 0; width: 3px; height: 68%;
-  border-radius: 0 3px 3px 0; background: var(--indigo);
-  box-shadow: 0 0 12px rgba(99,102,241,0.5);
-}
-.dr-stat-card--warn::after { background: var(--rose); box-shadow: 0 0 12px rgba(244,63,94,0.5); }
-
-.dr-stat-icon-box {
-  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--rose-fog); border: 1px solid rgba(244,63,94,0.22);
-}
-.dr-stat-icon-box svg { width: 18px; height: 18px; stroke: var(--rose); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.dr-stat-icon-box--indigo { background: var(--indigo-fog); border-color: var(--indigo-line); }
-.dr-stat-icon-box--indigo svg { stroke: var(--indigo); }
-
-.dr-stat-num {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-  font-family: var(--mono);
-  letter-spacing: -0.5px;
-}
-.dr-stat-card--warn .dr-stat-num { color: var(--rose); }
-.dr-stat-label {
-  font-size: 11px;
-  color: var(--text3);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-/* ── Empty State ──────────────────────────────────────────────────────────── */
-.dr-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 70px 24px;
-  text-align: center;
-  background: linear-gradient(165deg, var(--surface2), var(--surface));
-  border: 1px dashed rgba(255,255,255,0.1);
-  border-radius: var(--radius-xl);
-}
-.dr-empty-icon {
-  width: 62px;
-  height: 62px;
-  border-radius: 50%;
-  background: var(--emerald-fog);
-  border: 1px solid rgba(16,185,129,0.28);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  box-shadow: 0 0 24px rgba(16,185,129,0.15);
-}
-.dr-empty-icon svg {
-  width: 26px;
-  height: 26px;
-  stroke: var(--emerald);
-}
-.dr-empty-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 7px;
-  letter-spacing: -0.3px;
-}
-.dr-empty-sub {
-  font-size: 13.5px;
-  color: var(--text3);
-  margin: 0;
-}
-
-/* ── Card List ────────────────────────────────────────────────────────────── */
-.dr-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* ── Card ─────────────────────────────────────────────────────────────────── */
-.dr-card {
-  background: linear-gradient(165deg, var(--surface2), var(--surface));
-  border: 1px solid rgba(244,63,94,0.2);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-card, 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -12px rgba(0,0,0,0.5));
-  transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
-}
-.dr-card:hover {
-  box-shadow: var(--shadow-pop, 0 4px 16px -4px rgba(0,0,0,0.4), 0 24px 48px -16px rgba(0,0,0,0.55));
-  transform: translateY(-2px);
-  border-color: rgba(244,63,94,0.32);
-}
-.dr-card-top {
-  height: 3px;
-  background: linear-gradient(90deg, var(--rose), #fb7185);
-  box-shadow: 0 0 12px rgba(244,63,94,0.4);
-}
-.dr-card-body {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  padding: 24px 26px;
-}
-.dr-card-divider {
-  width: 1px;
-  background: var(--border);
-  margin: 0 24px;
-  flex-shrink: 0;
-}
-
-/* ── Left ─────────────────────────────────────────────────────────────────── */
-.dr-card-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  min-width: 0;
-}
-
-.dr-type-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  padding: 4px 11px;
-  border-radius: 99px;
-  width: fit-content;
-}
-.dr-type-badge svg { width: 11px; height: 11px; stroke: currentColor; fill: none; }
-.dr-type-badge--income  {
-  background: var(--emerald-fog);
-  color: var(--emerald);
-  border: 1px solid rgba(16,185,129,0.25);
-}
-.dr-type-badge--expense {
-  background: var(--rose-fog);
-  color: var(--rose);
-  border: 1px solid rgba(244,63,94,0.25);
-}
-
-.dr-tx-title {
-  font-size: 15.5px;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.2px;
-}
-.dr-tx-amount {
-  font-size: 21px;
-  font-weight: 700;
-  line-height: 1;
-  font-family: var(--mono);
-  letter-spacing: -0.5px;
-}
-.dr-tx-amount--income  { color: var(--emerald); }
-.dr-tx-amount--expense { color: var(--rose); }
-
-.dr-tx-meta {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-  margin-top: 3px;
-}
-.dr-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--text3);
-}
-.dr-meta-item svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; }
-.dr-meta-sep { color: var(--border2); font-size: 12px; }
-
-/* ── Right ────────────────────────────────────────────────────────────────── */
-.dr-card-right {
-  min-width: 230px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  justify-content: space-between;
-}
-
-.dr-user-row {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.dr-user-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: linear-gradient(155deg, var(--indigo), var(--indigo-deep));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-  flex-shrink: 0;
-  font-family: var(--mono);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
-}
-.dr-user-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-.dr-user-email {
-  font-size: 11.5px;
-  color: var(--text3);
-  font-family: var(--mono);
-}
-
-.dr-req-time {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: var(--text3);
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  padding: 5px 11px;
-  width: fit-content;
-}
-.dr-req-time svg { width: 12px; height: 12px; stroke: var(--text3); fill: none; flex-shrink: 0; }
-
-/* ── Actions ──────────────────────────────────────────────────────────────── */
-.dr-actions {
-  display: flex;
-  gap: 9px;
-  flex-wrap: wrap;
-}
-.dr-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 16px;
-  border: none;
-  border-radius: var(--radius);
-  font-size: 12.5px;
-  font-weight: 600;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: all var(--transition);
-  white-space: nowrap;
-}
-.dr-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
-.dr-btn:active { transform: scale(0.97); }
-
-.dr-btn--confirm {
-  background: linear-gradient(155deg, var(--rose), #e11d48);
-  color: #fff;
-  border: 1px solid rgba(244,63,94,0.6);
-  box-shadow: 0 2px 12px rgba(244,63,94,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
-}
-.dr-btn--confirm:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(244,63,94,0.45), inset 0 1px 0 rgba(255,255,255,0.14); }
-
-.dr-btn--reject {
-  background: var(--surface2);
-  color: var(--text3);
-  border: 1px solid var(--border);
-}
-.dr-btn--reject:hover { color: var(--text); border-color: var(--border2); background: var(--surface3); transform: translateY(-1px); }
-
-/* ── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .dr-card-body {
-    flex-direction: column;
-    gap: 18px;
-    padding: 20px;
+  /* ── Reset main-wrapper for full-width layout (ডবল সাইডবার রোধ করতে) ── */
+  .main-wrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    animation: none !important;
   }
-  .dr-card-divider {
+
+  .adm-layout {
+    display: block !important;
     width: 100%;
-    height: 1px;
-    margin: 0;
+    min-height: calc(100vh - var(--topbar-h));
   }
-  .dr-card-right {
-    min-width: unset;
-  }
-}
 
+  .adm-main {
+    width: 100% !important;
+    padding: 32px;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+
+  /* ── Page Header ── */
+  .adm-page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .adm-breadcrumb {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .adm-breadcrumb svg {
+    width: 12px !important;
+    height: 12px !important;
+    stroke: var(--text3);
+    fill: none;
+    stroke-width: 2.5;
+  }
+
+  /* ── 10x Premium Dashboard Back Button ── */
+  .btn-back-dashboard-v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--indigo) !important;
+    background: var(--indigo-fog);
+    border: 1px solid var(--indigo-line);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-back-dashboard-v2 svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.5;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-back-dashboard-v2:hover {
+    transform: translateX(-2.5px);
+    background: var(--indigo);
+    color: #ffffff !important;
+    border-color: var(--indigo);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  }
+
+  .btn-back-dashboard-v2:hover svg {
+    transform: translateX(-2px);
+  }
+
+  .btn-back-dashboard-v2:active {
+    transform: scale(0.97);
+  }
+
+  /* ── Action Buttons ── */
+  .btn-action-confirm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--rose);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(244, 63, 94, 0.2);
+    transition: all 0.2s;
+  }
+  .btn-action-confirm:hover {
+    background: #e11d48;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(244, 63, 94, 0.35);
+  }
+
+  .btn-action-reject {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text2);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-action-reject:hover {
+    background: var(--surface3);
+    color: var(--text);
+    border-color: var(--border2);
+  }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="adm-layout">
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="adm-main">
+
+    <!-- Page Header & Eye-catching Back Link -->
+    <div class="adm-page-head">
+      <div>
+        <div class="adm-breadcrumb">
+          Admin Panel
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          Delete Requests
+        </div>
+        <h1 class="adm-page-title" style="font-size: 26px; font-weight: 800; color: var(--text); margin: 0; letter-spacing: -0.02em;">Delete Requests</h1>
+        <p style="font-size: 14px; color: var(--text3); margin-top: 6px;">Pending transaction delete requests from users awaiting review.</p>
+      </div>
+
+      <!-- Highly Noticeable Dashboard Link styled as Premium Button [3] -->
+      <a href="{% url 'admin_dashboard' %}" class="btn-back-dashboard-v2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+
+    <!-- Requests Table Card -->
+    <div class="adm-table-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 10px;">
+      <div class="adm-table-head" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+        <div class="adm-table-title" style="font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+          <span class="adm-table-title-dot" style="width: 7px; height: 7px; border-radius: 50%; background: var(--indigo);"></span>
+          Pending Deletions
+        </div>
+      </div>
+
+      {% if pending %}
+      <table class="adm-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+          <tr style="background: var(--surface2); border-bottom: 1px solid var(--border);">
+            <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">Transaction Details</th>
+            <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">Workspace</th>
+            <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">Amount</th>
+            <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">Requested By</th>
+            <th style="padding: 12px 20px; text-align: right; font-size: 11px; text-transform: uppercase; color: var(--text3);">Action Control</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tx in pending %}
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 14px 20px; vertical-align: middle;">
+              <div style="font-weight: 600; color: var(--text);">{{ tx.title }}</div>
+              <span class="adm-badge adm-badge--muted" style="display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; border: 1px solid var(--border); background: var(--surface2); color: var(--text3); margin-top: 4px;">
+                <span class="adm-badge-dot" style="width: 5px; height: 5px; border-radius: 50%; background: var(--text3);"></span>
+                {{ tx.subcategory.name }}
+              </span>
+            </td>
+            <td style="padding: 14px 20px; vertical-align: middle;">
+              <span style="font-weight: 700; color: var(--indigo);">{{ tx.project.name }}</span>
+            </td>
+            <td style="padding: 14px 20px; vertical-align: middle; font-family: var(--mono); font-weight: 700; color: {% if tx.type == 'income' %}var(--emerald){% else %}var(--rose){% endif %};">
+              ৳{{ tx.amount|floatformat:0 }}
+            </td>
+            <td style="padding: 14px 20px; vertical-align: middle;">
+              <div class="adm-cell-user" style="display: flex; align-items: center; gap: 10px;">
+                <div class="adm-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--indigo); text-transform: uppercase;">{{ tx.user.username|first|upper }}</div>
+                <span style="font-weight: 500; color: var(--text2);">{{ tx.user.username }}</span>
+              </div>
+            </td>
+            <td style="padding: 14px 20px; vertical-align: middle; text-align: right;">
+              <div style="display: inline-flex; gap: 8px; justify-content: flex-end;">
+                <!-- Confirm Deletion Form -->
+                <form method="post" action="{% url 'admin_delete_confirm' tx.pk %}" style="margin: 0; display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-action-confirm" onclick="return confirm('Permanently delete {{ tx.title }}?')">
+                    Confirm Delete
+                  </button>
+                </form>
+                <!-- Reject Deletion Form -->
+                <form method="post" action="{% url 'admin_delete_reject' tx.pk %}" style="margin: 0; display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-action-reject" onclick="return confirm('Reject deletion request for {{ tx.title }}?')">
+                    Reject
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="adm-empty" style="text-align: center; padding: 48px 24px;">
+        <div class="adm-empty-icon" style="width: 48px; height: 48px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: var(--text3);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <p class="adm-empty-title" style="font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 4px;">No deletion requests</p>
+        <p class="adm-empty-sub" style="font-size: 12.5px; color: var(--text3);">Pending delete requests from users will show up here.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
 {% endblock %}
