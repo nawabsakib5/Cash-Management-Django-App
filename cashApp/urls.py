@@ -45,4 +45,5 @@ urlpatterns = [
     path('admin-panel/audit-log/',views.admin_audit_log, name='admin_audit_log'),
     path('admin-panel/users/<int:user_id>/activity/',views.admin_user_activity, name='admin_user_activity'),
     path('admin-panel/users/<int:user_id>/subcategory/', views.admin_user_subcategory, name='admin_user_subcategory'),
+    path('admin/projects/<int:pk>/export/', views.admin_export_project_data, name='admin_export_project_data'),
 ]

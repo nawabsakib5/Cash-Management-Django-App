@@ -1,6 +1,88 @@
 {% extends 'base.html' %}
-{% block title %}{{ project.name }} — CashManager{% endblock %}
+{% block title %}Project Details — {{ project.name }} — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Reset main-wrapper for full-width layout (সাইডবার ডবল হওয়া রোধ করতে) ── */
+  .main-wrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
+
+  .adm-layout {
+    display: block !important;
+    width: 100%;
+    min-height: calc(100vh - var(--topbar-h));
+  }
+
+  .adm-main {
+    width: 100% !important;
+    padding: 32px;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+
+  /* ── Premium Amber-Glow Download CSV Button ── */
+  .btn-export-csv-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--amber) !important;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-export-csv-premium svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.5;
+  }
+  .btn-export-csv-premium:hover {
+    transform: translateY(-1.5px);
+    background: var(--amber);
+    color: #000000 !important;
+    border-color: var(--amber);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+  }
+
+  /* ── Premium Emerald Google Sheets Button ── */
+  .btn-sheets-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--emerald) !important;
+    background: var(--emerald-fog);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-sheets-premium svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.5;
+  }
+  .btn-sheets-premium:hover {
+    transform: translateY(-1.5px);
+    background: var(--emerald);
+    color: #ffffff !important;
+    border-color: var(--emerald);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="adm-layout" style="display: flex; flex-direction: column; padding: 40px;">
@@ -27,7 +109,32 @@
       </h1>
     </div>
     
+    <!-- মার্জ করা অ্যাকশন বাটন সেকশন -->
     <div class="adm-page-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      
+      <!-- শুধুমাত্র অ্যাডমিনদের জন্য Ledger ডাউনলোড এবং গুগল শিটের বাটন [3] -->
+      {% if is_admin_view %}
+      <a href="{% url 'admin_export_project_data' project.pk %}" class="btn-export-csv-premium">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Download BDT Ledger</span>
+      </a>
+
+      <!-- লাইভ গুগল শিট বাটন (এখানে আপনার গুগল শিটের আইডিটি SPREADSHEET_ID এর জায়গায় বসাবেন) [3] -->
+      <a href="https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SPREADSHEET_ID_HERE/edit" target="_blank" class="btn-sheets-premium">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="3" y1="15" x2="21" y2="15"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+        </svg>
+        <span>Live Google Sheets</span>
+      </a>
+      {% endif %}
+
       {% if is_owner or is_admin_view %}
       <a href="{% url 'project_members' project.pk %}" class="adm-btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text2); background: var(--surface); border: 1px solid var(--border); text-decoration: none;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
