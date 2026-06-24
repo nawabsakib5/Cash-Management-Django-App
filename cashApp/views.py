@@ -1,14 +1,88 @@
+import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Prefetch
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory
 from .forms import *
 from .decorators import admin_required, not_frozen, log_action
 from .utils import *
+
+
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
+# আপনার গুগল শিটের আইডিটি এখানে বসান
+SPREADSHEET_ID = "YOUR_GOOGLE_SPREADSHEET_ID_HERE" 
+
+def sync_to_google_sheet(transaction):
+    
+    try:
+        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+        creds = service_account.Credentials.from_service_account_file(
+            'google_credentials.json', scopes=SCOPES
+        )
+        service = build('sheets', 'v4', credentials=creds)
+        sheet = service.spreadsheets()
+
+        
+        entry_time = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        row_data = [
+            transaction.project.name,                           
+            transaction.title,                                  
+            transaction.type.upper(),                           
+            transaction.subcategory.category.name,              
+            transaction.subcategory.name,                       
+            float(transaction.amount),                          
+            transaction.user.username,                         
+            transaction.date.strftime('%Y-%m-%d'),              
+            entry_time                                          
+        ]
+
+        body = {'values': [row_data]}
+        sheet.values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range="Sheet1!A:I",  
+            valueInputOption="RAW",
+            insertDataOption="INSERT_ROWS",
+            body=body
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"Google Sheet Sync Error: {e}")
+        return False
+
+
+@admin_required
+def admin_export_project_data(request, pk):
+    
+    project = get_object_or_404(Project, pk=pk)
+    transactions = project.transactions.filter(is_deleted=False).order_by('-date')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="project_{project.name}_report.csv"'
+
+    writer = csv.writer(response)
+    
+    writer.writerow(['Project', 'Title', 'Type', 'Category', 'Sub-Category', 'Amount (BDT)', 'Contributor', 'Date'])
+
+    for tx in transactions:
+        writer.writerow([
+            project.name,
+            tx.title,
+            tx.type.upper(),
+            tx.subcategory.category.name,
+            tx.subcategory.name,
+            tx.amount,
+            tx.user.username,
+            tx.date.strftime('%Y-%m-%d')
+        ])
+
+    return response
 
 
 def Signup(request):
@@ -22,7 +96,6 @@ def Signup(request):
         full_name        = request.POST.get('full_name')
         phone            = request.POST.get('phone')
         email            = request.POST.get('email')
-        # user_type রিকোয়েস্ট সিকিউরিটি কারণে মুছে দেওয়া হয়েছে
         password         = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
@@ -42,7 +115,6 @@ def Signup(request):
             messages.error(request, "This email already exists.")
             return render(request, 'register.html')
 
-        # ব্যবহারকারী তৈরির সময় সরাসরি টাইপ 'user' ফোর্স করা হলো
         user = CustomUser.objects.create_user(
             username  = username,
             full_name = full_name or '',
@@ -55,7 +127,6 @@ def Signup(request):
         send_welcome_email(user)
         messages.success(request, f"Welcome {username}! Your account has been created.")
         
-        # নতুন ব্যবহারকারী যেহেতু সবসময় 'user' হবে, তাই সরাসরি প্রজেক্ট লিস্টে রিডাইরেক্ট হবে
         return redirect('project_list')
 
     return render(request, 'register.html')
@@ -319,6 +390,8 @@ def transaction_create(request, pk):
             tx.user    = request.user
             tx.project = project
             tx.save()
+
+            sync_to_google_sheet(tx)
 
             send_transaction_confirmation(tx)
 
