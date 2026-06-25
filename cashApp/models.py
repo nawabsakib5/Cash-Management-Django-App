@@ -92,6 +92,10 @@ class Project(models.Model):
     name        = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     created_at  = models.DateTimeField(auto_now_add=True)
+    
+    # ── নতুন যুক্ত করা ডাইনামিক ফিল্ড দুটি ──
+    is_dynamic  = models.BooleanField(default=False)
+    dynamic_fields = models.JSONField(default=list, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -217,3 +221,33 @@ class AuditLog(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+
+
+
+
+
+class ProjectPermission(models.Model):
+    PERMISSION_CHOICES = [
+        ('view', 'View Only'),
+        ('edit', 'Edit (View & Add Transactions)'),
+        ('hide', 'Hidden / No Access'),
+    ]
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='user_permissions')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='project_permissions')
+    access_level = models.CharField(max_length=10, choices=PERMISSION_CHOICES, default='view')
+
+    class Meta:
+        unique_together = ('project', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.project.name} ({self.get_access_level_display()})"
+
+
+class DynamicRow(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='dynamic_rows')
+    data = models.JSONField(default=dict)  
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Row for {self.project.name} by {self.user.username}"

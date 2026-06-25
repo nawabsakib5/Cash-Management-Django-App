@@ -18,17 +18,34 @@
       <h1 class="adm-page-title" style="font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">Managed Projects</h1>
     </div>
     
-    <!-- Ultra Visible & Eye-catching Add Project Button -->
-    {% if not request.user.is_frozen %}
-    <a href="{% url 'project_create' %}" class="btn-create-project-v2">
-      <div class="btn-shine"></div>
-      <svg class="plus-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg> 
-      <span>Create New Project</span>
-    </a>
-    {% endif %}
+    <!-- Header Action buttons -->
+    <div style="display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      
+      <!-- ১. ডাইনামিক সিএসভি ইম্পোর্ট বাটন: শুধুমাত্র অ্যাডমিন এবং নন-ফ্রোজেনদের জন্য দৃশ্যমান -->
+      {% if request.user.user_type == 'admin' and not request.user.is_frozen %}
+      <a href="{% url 'admin_import_project_sheet' %}" class="btn-import-project-v2">
+        <svg class="import-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Import Project Sheet</span>
+      </a>
+      {% endif %}
+
+      <!-- ২. রেগুলার প্রজেক্ট ক্রিয়েশন বাটন -->
+      {% if not request.user.is_frozen %}
+      <a href="{% url 'project_create' %}" class="btn-create-project-v2">
+        <div class="btn-shine"></div>
+        <svg class="plus-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg> 
+        <span>Create New Project</span>
+      </a>
+      {% endif %}
+
+    </div>
   </div>
 
   <!-- Stats Grid -->
@@ -106,7 +123,7 @@
 
 {% block extra_css %}
 <style>
-  /* ── Ultra Premium Animated Create Button ── */
+  /* ── ১. Ultra Premium Animated Create Button ── */
   .btn-create-project-v2 {
     position: relative;
     display: inline-flex;
@@ -127,12 +144,10 @@
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Rotating plus icon on hover */
   .btn-create-project-v2 .plus-icon {
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
-  /* Shine sweep overlay effect */
   .btn-shine {
     position: absolute;
     top: 0; left: -100%; width: 50%; height: 100%;
@@ -141,7 +156,6 @@
     transition: none;
   }
 
-  /* Trigger hover events */
   .btn-create-project-v2:hover {
     transform: translateY(-2.5px);
     box-shadow: 0 8px 25px rgba(99, 102, 241, 0.55), 0 0 0 2px rgba(99, 102, 241, 0.2);
@@ -159,20 +173,56 @@
 
   .btn-create-project-v2:active {
     transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
   }
 
-  /* Glow Pulse Ring Animation */
   @keyframes glow-pulse {
-    0% {
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0.5);
-    }
-    50% {
-      box-shadow: 0 4px 25px rgba(99, 102, 241, 0.45), 0 0 0 8px rgba(99, 102, 241, 0);
-    }
-    100% {
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0);
-    }
+    0% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0.5); }
+    50% { box-shadow: 0 4px 25px rgba(99, 102, 241, 0.45), 0 0 0 8px rgba(99, 102, 241, 0); }
+    100% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0); }
+  }
+
+  /* ── ২. Ultra Premium Animated Import Sheet Button ── */
+  .btn-import-project-v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(16, 185, 129, 0.1);
+    animation: import-glow-pulse 2.5s infinite;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-import-project-v2 .import-icon {
+    transition: transform 0.3s ease;
+  }
+
+  .btn-import-project-v2:hover {
+    transform: translateY(-2.5px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.55), 0 0 0 2px rgba(16, 185, 129, 0.2);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  }
+
+  .btn-import-project-v2:hover .import-icon {
+    transform: translateY(-2px);
+  }
+
+  .btn-import-project-v2:active {
+    transform: translateY(0);
+  }
+
+  @keyframes import-glow-pulse {
+    0% { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    50% { box-shadow: 0 4px 25px rgba(16, 185, 129, 0.45), 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(16, 185, 129, 0); }
   }
 </style>
 {% endblock %}

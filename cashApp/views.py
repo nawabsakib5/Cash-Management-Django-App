@@ -6,7 +6,9 @@ from django.contrib import messages
 from django.db.models import Q, Prefetch
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
-from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory
+import io
+from django.db import transaction as db_transaction
+from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory, ProjectPermission, DynamicRow
 from .forms import *
 from .decorators import admin_required, not_frozen, log_action
 from .utils import *
@@ -18,6 +20,7 @@ from googleapiclient.discovery import build
 # আপনার গুগল শিটের আইডিটি এখানে বসান
 SPREADSHEET_ID = "YOUR_GOOGLE_SPREADSHEET_ID_HERE" 
 
+
 def sync_to_google_sheet(transaction):
     
     try:
@@ -28,15 +31,18 @@ def sync_to_google_sheet(transaction):
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
 
-        
         entry_time = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        
+        category_name = transaction.sub_category.category.name if transaction.sub_category else "Uncategorized"
+        sub_category_name = transaction.sub_category.name if transaction.sub_category else "Uncategorized"
 
         row_data = [
             transaction.project.name,                           
             transaction.title,                                  
             transaction.type.upper(),                           
-            transaction.subcategory.category.name,              
-            transaction.subcategory.name,                       
+            category_name,              
+            sub_category_name,                                 
             float(transaction.amount),                          
             transaction.user.username,                         
             transaction.date.strftime('%Y-%m-%d'),              
@@ -46,7 +52,7 @@ def sync_to_google_sheet(transaction):
         body = {'values': [row_data]}
         sheet.values().append(
             spreadsheetId=SPREADSHEET_ID,
-            range="Sheet1!A:I",  
+            range=f"'{transaction.project.name}'!A:I",  
             valueInputOption="RAW",
             insertDataOption="INSERT_ROWS",
             body=body
@@ -54,6 +60,83 @@ def sync_to_google_sheet(transaction):
         return True
     except Exception as e:
         print(f"Google Sheet Sync Error: {e}")
+        return False
+
+
+def create_google_sheet_tab(project):
+    
+    try:
+        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+        creds = service_account.Credentials.from_service_account_file(
+            'google_credentials.json', scopes=SCOPES
+        )
+        service = build('sheets', 'v4', credentials=creds)
+        
+        
+        body = {
+            'requests': [
+                {
+                    'addSheet': {
+                        'properties': {
+                            'title': project.name
+                        }
+                    }
+                }
+            ]
+        }
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=SPREADSHEET_ID,
+            body=body
+        ).execute()
+
+        
+        if project.is_dynamic:
+            headers = project.dynamic_fields
+        else:
+            headers = ['Project Name', 'Purpose / Title', 'Flow Type', 'Main Category', 'Sub Category', 'Amount', 'Contributor', 'Transaction Date', 'Entry Timestamp']
+        
+        header_body = {'values': [headers]}
+        
+        service.spreadsheets().values().update(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f"'{project.name}'!A1",  
+            valueInputOption="RAW",
+            body=header_body
+        ).execute()
+        
+        return True
+    except Exception as e:
+        print(f"Google Sheet Create Tab Error: {e}")
+        return False
+
+
+def sync_dynamic_row_to_sheet(dynamic_row):
+    
+    try:
+        project = dynamic_row.project
+        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+        creds = service_account.Credentials.from_service_account_file(
+            'google_credentials.json', scopes=SCOPES
+        )
+        service = build('sheets', 'v4', credentials=creds)
+        sheet = service.spreadsheets()
+
+        
+        row_data = []
+        for header in project.dynamic_fields:
+            row_data.append(dynamic_row.data.get(header, ''))
+
+        body = {'values': [row_data]}
+        sheet.values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f"'{project.name}'!A:Z",  
+            valueInputOption="RAW",
+            insertDataOption="INSERT_ROWS",
+            body=body
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"Dynamic Sheet Sync Error: {e}")
         return False
 
 
@@ -67,16 +150,19 @@ def admin_export_project_data(request, pk):
     response['Content-Disposition'] = f'attachment; filename="project_{project.name}_report.csv"'
 
     writer = csv.writer(response)
-    
     writer.writerow(['Project', 'Title', 'Type', 'Category', 'Sub-Category', 'Amount (BDT)', 'Contributor', 'Date'])
 
     for tx in transactions:
+        
+        category_name = tx.sub_category.category.name if tx.sub_category else "Uncategorized"
+        sub_category_name = tx.sub_category.name if tx.sub_category else "Uncategorized"
+
         writer.writerow([
             project.name,
             tx.title,
             tx.type.upper(),
-            tx.subcategory.category.name,
-            tx.subcategory.name,
+            category_name,
+            sub_category_name,
             tx.amount,
             tx.user.username,
             tx.date.strftime('%Y-%m-%d')
@@ -203,9 +289,15 @@ def project_list(request):
     if request.user.is_admin:
         projects = Project.objects.select_related('user').prefetch_related('members').all().order_by('-created_at')
     else:
-        owned  = request.user.owned_projects.all()
-        joined = request.user.joined_projects.all()
+        
+        hidden_project_ids = ProjectPermission.objects.filter(
+            user=request.user, access_level='hide'
+        ).values_list('project_id', flat=True)
+
+        owned  = request.user.owned_projects.exclude(id__in=hidden_project_ids)
+        joined = request.user.joined_projects.exclude(id__in=hidden_project_ids)
         projects = (owned | joined).distinct().order_by('-created_at')
+        
     return render(request, 'project_list.html', {
         'projects': projects,
         'is_admin_view': request.user.is_admin,
@@ -221,12 +313,16 @@ def project_create(request):
             project      = form.save(commit=False)
             project.user = request.user
             project.save()
+            
+            create_google_sheet_tab(project)
+            
             log_action(request.user, 'create', target=project, request=request)
             messages.success(request, "Project created successfully.")
             return redirect('project_list')
     else:
         form = ProjectForm()
     return render(request, 'project_form.html', {'form': form})
+
 
 
 @login_required(login_url='login')
@@ -237,9 +333,21 @@ def project_detail(request, pk):
     is_owner      = request.user == project.user
     is_member     = request.user in project.members.all()
 
-    if not is_admin_view and not is_owner and not is_member:
-        messages.error(request, "You do not have permission to access this project.")
-        return redirect('project_list')
+    
+    user_permission = None
+    if not is_admin_view and not is_owner:
+        user_perm_obj = project.user_permissions.filter(user=request.user).first()
+        if user_perm_obj:
+            user_permission = user_perm_obj.access_level
+            if user_permission == 'hide':
+                messages.error(request, "You do not have permission to access this project.")
+                return redirect('project_list')
+        elif not is_member:
+            messages.error(request, "You do not have permission to access this project.")
+            return redirect('project_list')
+
+    
+    can_edit = is_admin_view or is_owner or (user_permission == 'edit') or (not user_permission and is_member)
 
     today        = timezone.now().date()
     transactions = project.transactions.filter(is_deleted=False)
@@ -274,6 +382,18 @@ def project_detail(request, pk):
     if not is_admin_view:
         transactions = transactions.exclude(delete_requested=True)
 
+    
+    dynamic_rows_data = []
+    if project.is_dynamic:
+        for row in project.dynamic_rows.select_related('user').all():
+            row_values = []
+            for header in project.dynamic_fields:
+                row_values.append(row.data.get(header, ''))
+            dynamic_rows_data.append({
+                'values': row_values,
+                'user': row.user
+            })
+
     return render(request, 'project_detail.html', {
         'project':          project,
         'transactions':     transactions,
@@ -290,8 +410,9 @@ def project_detail(request, pk):
         'active_amount':    amount_range,
         'active_date_from': date_from,
         'active_date_to':   date_to,
+        'can_edit':         can_edit,  
+        'dynamic_rows_data': dynamic_rows_data, 
     })
-
 
 @login_required(login_url='login')
 @not_frozen
@@ -858,3 +979,125 @@ def admin_user_subcategory(request, user_id):
         'assigned_subs':  assigned_subs,
         'all_categories': all_categories,
     })
+
+
+
+@admin_required
+def admin_import_project_sheet(request):
+    
+    if request.method == 'POST':
+        project_name = request.POST.get('project_name', '').strip()
+        description = request.POST.get('description', '').strip()
+        csv_file = request.FILES.get('csv_file')
+
+        if not project_name or not csv_file:
+            messages.error(request, "Project Name and CSV File are required.")
+            return render(request, 'admin/import_project.html')
+
+        try:
+            
+            data_set = csv_file.read().decode('UTF-8')
+            io_string = io.StringIO(data_set)
+            reader = csv.reader(io_string, delimiter=',')
+            headers = next(reader)
+            headers = [h.strip() for h in headers if h.strip()]
+
+            with db_transaction.atomic():
+                
+                project = Project.objects.create(
+                    name=project_name,
+                    description=description,
+                    user=request.user,
+                    is_dynamic=True,
+                    dynamic_fields=headers
+                )
+
+                for row in reader:
+                    if not row:
+                        continue
+                    row_dict = {}
+                    for i, h in enumerate(headers):
+                        if i < len(row):
+                            row_dict[h] = row[i].strip()
+                    
+                    DynamicRow.objects.create(
+                        project=project,
+                        data=row_dict,
+                        user=request.user
+                    )
+
+            create_google_sheet_tab(project)
+
+            messages.success(request, f"Dynamic Project '{project_name}' created with {len(headers)} fields!")
+            return redirect('project_detail', pk=project.pk)
+        except Exception as e:
+            messages.error(request, f"Error processing file: {e}")
+            return render(request, 'admin/import_project.html')
+
+    return render(request, 'admin/import_project.html')
+
+
+@admin_required
+def admin_manage_project_permissions(request, pk):
+    
+    project = get_object_or_404(Project, pk=pk)
+    users = CustomUser.objects.filter(user_type='user')
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        access_level = request.POST.get('access_level')
+        target_user = get_object_or_404(CustomUser, pk=user_id)
+
+        perm, created = ProjectPermission.objects.update_or_create(
+            project=project,
+            user=target_user,
+            defaults={'access_level': access_level}
+        )
+        
+        if access_level in ['view', 'edit']:
+            project.members.add(target_user)
+        else:
+            project.members.remove(target_user)
+
+        messages.success(request, f"Permissions updated for {target_user.username} successfully.")
+        return redirect('admin_manage_project_permissions', pk=project.pk)
+
+    permissions_map = {p.user_id: p.access_level for p in project.user_permissions.all()}
+    for u in users:
+        u.current_access_level = permissions_map.get(u.id, 'view')  
+
+    return render(request, 'admin/project_permissions.html', {
+        'project': project,
+        'users': users,
+    })
+
+@login_required(login_url='login')
+@not_frozen
+def dynamic_entry_create(request, pk):
+    
+    project = get_object_or_404(Project, pk=pk, is_dynamic=True)
+    
+    
+    if not request.user.is_admin and request.user != project.user:
+        user_perm = project.user_permissions.filter(user=request.user).first()
+        if not user_perm or user_perm.access_level != 'edit':
+            messages.error(request, "You do not have permission to add rows to this project.")
+            return redirect('project_detail', pk=project.pk)
+
+    if request.method == 'POST':
+        entry_data = {}
+        for header in project.dynamic_fields:
+            entry_data[header] = request.POST.get(header, '').strip()
+
+        row = DynamicRow.objects.create(
+            project=project,
+            data=entry_data,
+            user=request.user
+        )
+
+        sync_dynamic_row_to_sheet(row)
+
+        messages.success(request, "Data entry successfully synchronized!")
+        return redirect('project_detail', pk=project.pk)
+
+    return render(request, 'dynamic_entry_form.html', {'project': project})

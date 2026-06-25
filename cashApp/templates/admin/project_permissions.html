@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Permissions — {{ project.name }} — CashManager{% endblock %}
+{% block nav_projects %}active{% endblock %}
+
+{% block content %}
+<div class="adm-layout" style="display: flex; flex-direction: column; padding: 40px; max-width: 800px; margin: 0 auto;">
+  
+  <!-- Page Header -->
+  <div class="adm-page-head" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <div class="adm-breadcrumb" style="display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
+        {{ project.name }}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        Access Permissions
+      </div>
+      <h1 class="adm-page-title" style="font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">User Access Matrix</h1>
+    </div>
+    <a href="{% url 'project_detail' project.pk %}" class="adm-btn-ghost" style="text-decoration: none;">Back to Project</a>
+  </div>
+
+  <!-- User Permissions Table Card -->
+  <div class="adm-table-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+    <div class="adm-table-head" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+      <div class="adm-table-title" style="font-size: 14px; font-weight: 700; color: var(--text);">Allocated User Access Levels</div>
+    </div>
+    
+    <table class="adm-table" style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: var(--surface2); border-bottom: 1px solid var(--border);">
+          <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">User</th>
+          <th style="padding: 12px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text3);">Current Access</th>
+          <th style="padding: 12px 20px; text-align: right; font-size: 11px; text-transform: uppercase; color: var(--text3);">Assign Authority</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 14px 20px; vertical-align: middle;">
+            <div class="adm-cell-user" style="display: flex; align-items: center; gap: 10px;">
+              <div class="adm-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--indigo); text-transform: uppercase;">{{ u.username|first|upper }}</div>
+              <span style="font-weight: 600; color: var(--text2);">{{ u.username }}</span>
+            </div>
+          </td>
+          <td style="padding: 14px 20px; vertical-align: middle;">
+            <!-- Render attached access level directly -->
+            {% if u.current_access_level == 'edit' %}
+              <span class="adm-badge adm-badge--green" style="font-size: 10.5px; padding: 2px 10px; border-radius: 20px; color: var(--emerald); border: 1px solid rgba(16,185,129,0.2); background: var(--emerald-fog);">Edit Access</span>
+            {% elif u.current_access_level == 'hide' %}
+              <span class="adm-badge adm-badge--rose" style="font-size: 10.5px; padding: 2px 10px; border-radius: 20px; color: var(--rose); border: 1px solid rgba(244,63,94,0.2); background: var(--rose-fog);">Hidden / Restricted</span>
+            {% else %}
+              <span class="adm-badge adm-badge--indigo" style="font-size: 10.5px; padding: 2px 10px; border-radius: 20px; color: var(--indigo); border: 1px solid var(--indigo-line); background: var(--indigo-fog);">View Only</span>
+            {% endif %}
+          </td>
+          <td style="padding: 14px 20px; text-align: right; vertical-align: middle;">
+            <!-- inline permission changer form -->
+            <form method="post" style="display: inline-flex; gap: 8px; align-items: center; margin: 0;">
+              {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{ u.id }}">
+              <select name="access_level" style="height: 32px; padding: 0 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--text); outline: none;">
+                <option value="view" {% if u.current_access_level == 'view' %}selected{% endif %}>View Only</option>
+                <option value="edit" {% if u.current_access_level == 'edit' %}selected{% endif %}>Edit Access</option>
+                <option value="hide" {% if u.current_access_level == 'hide' %}selected{% endif %}>Hidden (No Access)</option>
+              </select>
+              <button type="submit" class="adm-btn-sm" style="height: 32px; font-size: 12px; cursor: pointer;">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

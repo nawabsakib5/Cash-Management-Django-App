@@ -2,69 +2,243 @@
 {% block title %}{% if form.instance.pk %}Edit Entry{% else %}New Entry{% endif %} — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── Page Card Styling ── */
+  .transaction-form-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .transaction-form-card {
+    width: 100%;
+    max-width: 600px;
+    padding: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* Form Elements Custom Styling */
+  .form-label-premium {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+  .form-label-premium .req {
+    color: var(--rose);
+    margin-left: 2px;
+  }
+
+  .form-control-premium {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .form-control-premium:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    background: #fff;
+  }
+  .form-control-premium::placeholder {
+    color: var(--text3);
+  }
+
+  /* Custom dropdown styling */
+  select.form-control-premium {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2352526a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+  }
+
+  .grid-fields-premium {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 576px) {
+    .grid-fields-premium { grid-template-columns: 1fr; }
+  }
+
+  /* ── 10x Premium Publish Button ── */
+  .btn-publish-entry-premium {
+    flex: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, var(--indigo) 0%, #4f46e5 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-publish-entry-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-publish-entry-premium:hover {
+    transform: translateY(-1.5px);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  }
+  .btn-publish-entry-premium:active {
+    transform: translateY(0);
+  }
+
+  /* ── Highly Visible & Eye-catching Cancel Button ── */
+  .btn-cancel-entry-premium {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text) !important;
+    background: var(--surface2);
+    border: 1.5px solid var(--border3);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-cancel-entry-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-cancel-entry-premium:hover {
+    transform: translateY(-1.5px);
+    background: var(--surface3);
+    border-color: var(--text2);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  }
+  .btn-cancel-entry-premium:active {
+    transform: translateY(0);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="adm-layout" style="display: flex; justify-content: center; padding: 40px 20px;">
-  <div class="adm-card" style="width: 100%; max-width: 600px; padding: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);">
+<div class="transaction-form-container">
+  <div class="transaction-form-card">
     
+    <!-- Form Header -->
     <div style="text-align: center; margin-bottom: 32px;">
-      <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--indigo-fog); display: inline-flex; align-items: center; justify-content: center; color: var(--indigo); margin-bottom: 16px;">
-        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: inline-flex; align-items: center; justify-content: center; color: var(--indigo); margin-bottom: 16px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
       </div>
-      <h2 style="font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px;">
-        {% if form.instance.pk %}Modify Entry{% else %}Add Transaction Entry{% endif %}
+      <h2 style="font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em;">
+        {% if form.instance.pk %}Modify Ledger Entry{% else %}Add Transaction Entry{% endif %}
       </h2>
-      <p style="font-size: 13px; color: var(--text3); margin: 0;">Specify entry flow, categories and absolute amounts.</p>
+      <p style="font-size: 13.5px; color: var(--text3); margin: 0;">Specify entry flow, categories and absolute amounts.</p>
     </div>
 
+    <!-- Form Content -->
     <form method="post">
       {% csrf_token %}
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+      <!-- Grid 1: Title & Flow Type -->
+      <div class="grid-fields-premium">
         <div>
-          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Entry Title <span style="color: var(--rose);">*</span></label>
-          <input type="text" name="title" placeholder="e.g. Domain purchase" style="width: 100%; height: 42px; padding: 0 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;" value="{{ form.title.value|default:'' }}" required />
+          <label class="form-label-premium">Entry Title <span class="req">*</span></label>
+          <input type="text" name="title" class="form-control-premium" placeholder="e.g. Domain purchase" value="{{ form.title.value|default:'' }}" required />
+          {% if form.title.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.title.errors.0 }}</p>{% endif %}
         </div>
         <div>
-          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Flow Type <span style="color: var(--rose);">*</span></label>
-          {{ form.type }}
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-        <div>
-          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Category Scope <span style="color: var(--rose);">*</span></label>
-          {{ form.subcategory }}
-        </div>
-        <div>
-          <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Amount (৳) <span style="color: var(--rose);">*</span></label>
-          <input type="number" name="amount" placeholder="e.g. 500" style="width: 100%; height: 42px; padding: 0 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;" value="{{ form.amount.value|default:'' }}" required />
+          <label class="form-label-premium">Flow Type <span class="req">*</span></label>
+          <select name="type" class="form-control-premium" required>
+            <option value="income" {% if form.type.value == 'income' %}selected{% endif %}>Income</option>
+            <option value="expense" {% if form.type.value == 'expense' %}selected{% endif %}>Expense</option>
+          </select>
+          {% if form.type.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.type.errors.0 }}</p>{% endif %}
         </div>
       </div>
 
+      <!-- Grid 2: Category Scope & Amount -->
+      <div class="grid-fields-premium">
+        <div>
+          <label class="form-label-premium">Category Scope <span class="req">*</span></label>
+          <select name="sub_category" class="form-control-premium" required>
+            <option value="">— Select sub-category —</option>
+            {% for choice_id, choice_label in form.fields.sub_category.choices %}
+              {% if choice_id %}
+                <option value="{{ choice_id }}" {% if form.sub_category.value|stringformat:"s" == choice_id|stringformat:"s" %}selected{% endif %}>{{ choice_label }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          {% if form.sub_category.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.sub_category.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="form-label-premium">Amount (৳) <span class="req">*</span></label>
+          <input type="number" name="amount" class="form-control-premium" placeholder="e.g. 500" value="{{ form.amount.value|default:'' }}" required />
+          {% if form.amount.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.amount.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <!-- Entry Date -->
       <div style="margin-bottom: 20px;">
-        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Entry Date <span style="color: var(--rose);">*</span></label>
-        <input type="date" name="date" style="width: 100%; height: 42px; padding: 0 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;" value="{{ form.date.value|default:'' }}" required />
+        <label class="form-label-premium">Entry Date <span class="req">*</span></label>
+        <input type="date" name="date" class="form-control-premium" value="{{ form.date.value|default:'' }}" required />
+        {% if form.date.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.date.errors.0 }}</p>{% endif %}
       </div>
 
-      <div style="margin-bottom: 26px;">
-        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Supplementary Information</label>
-        <textarea name="description" placeholder="Add some notes about this transaction..." style="width: 100%; height: 100px; padding: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none; resize: none;">{{ form.description.value|default:'' }}</textarea>
+      <!-- Supplementary Information -->
+      <div style="margin-bottom: 32px;">
+        <label class="form-label-premium">Supplementary Information</label>
+        <textarea name="description" class="form-control-premium" placeholder="Add some notes about this transaction..." style="height: 100px; resize: none; line-height: 1.5; padding: 12px 16px;">{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}<p style="color: var(--rose); font-size: 12px; margin-top: 6px;">{{ form.description.errors.0 }}</p>{% endif %}
       </div>
 
-      <div style="display: flex; gap: 12px;">
-        <button type="submit" class="adm-btn-primary" style="flex: 1; justify-content: center; height: 44px;">
-          Publish Entry
+      <!-- Actions Footer Grid -->
+      <div style="display: flex; gap: 16px;">
+        <!-- Premium Publish Button -->
+        <button type="submit" class="btn-publish-entry-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg> 
+          <span>Publish Entry</span>
         </button>
-        <a href="{% url 'project_detail' project.pk %}" class="adm-btn-ghost" style="height: 44px; align-items: center; justify-content: center;">Cancel</a>
+
+        <!-- Highly Noticeable Cancel Button -->
+        <a href="{% url 'project_detail' project.pk %}" class="btn-cancel-entry-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          <span>Cancel &amp; Keep</span>
+        </a>
       </div>
     </form>
 
   </div>
 </div>
-
-<style>
-  select.form-control, select[name="type"], select[name="subcategory"] {
-    width: 100%; height: 42px; padding: 0 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13.5px; color: var(--text); outline: none;
-  }
-</style>
 {% endblock %}
