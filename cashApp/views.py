@@ -18,7 +18,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 # আপনার গুগল শিটের আইডিটি এখানে বসান
-SPREADSHEET_ID = "YOUR_GOOGLE_SPREADSHEET_ID_HERE" 
+SPREADSHEET_ID = "1Non3fdui16sefT-4fOwme9zzMmGNPIbtlBDaIxd8tas" 
 
 
 def sync_to_google_sheet(transaction):
