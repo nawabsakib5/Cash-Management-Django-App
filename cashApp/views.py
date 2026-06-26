@@ -12,6 +12,10 @@ from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Ca
 from .forms import *
 from .decorators import admin_required, not_frozen, log_action
 from .utils import *
+import json
+import os
+
+
 
 
 from google.oauth2 import service_account
@@ -21,19 +25,28 @@ from googleapiclient.discovery import build
 SPREADSHEET_ID = "1Non3fdui16sefT-4fOwme9zzMmGNPIbtlBDaIxd8tas" 
 
 
-def sync_to_google_sheet(transaction):
+def get_google_credentials(scopes):
     
+    google_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    if google_json:
+        info = json.loads(google_json)
+        return service_account.Credentials.from_service_account_info(info, scopes=scopes) [5]
+    else:
+        return service_account.Credentials.from_service_account_file(
+            'google_credentials.json', scopes=scopes
+        )
+
+
+
+def sync_to_google_sheet(transaction):
     try:
         SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        creds = service_account.Credentials.from_service_account_file(
-            'google_credentials.json', scopes=SCOPES
-        )
+        creds = get_google_credentials(SCOPES) 
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
 
         entry_time = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        
         category_name = transaction.sub_category.category.name if transaction.sub_category else "Uncategorized"
         sub_category_name = transaction.sub_category.name if transaction.sub_category else "Uncategorized"
 
@@ -64,14 +77,10 @@ def sync_to_google_sheet(transaction):
 
 
 def create_google_sheet_tab(project):
-    
     try:
         SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        creds = service_account.Credentials.from_service_account_file(
-            'google_credentials.json', scopes=SCOPES
-        )
+        creds = get_google_credentials(SCOPES) 
         service = build('sheets', 'v4', credentials=creds)
-        
         
         body = {
             'requests': [
@@ -89,39 +98,33 @@ def create_google_sheet_tab(project):
             body=body
         ).execute()
 
-        
         if project.is_dynamic:
             headers = project.dynamic_fields
         else:
             headers = ['Project Name', 'Purpose / Title', 'Flow Type', 'Main Category', 'Sub Category', 'Amount', 'Contributor', 'Transaction Date', 'Entry Timestamp']
         
         header_body = {'values': [headers]}
-        
         service.spreadsheets().values().update(
             spreadsheetId=SPREADSHEET_ID,
             range=f"'{project.name}'!A1",  
             valueInputOption="RAW",
             body=header_body
         ).execute()
-        
         return True
     except Exception as e:
         print(f"Google Sheet Create Tab Error: {e}")
         return False
 
 
+
 def sync_dynamic_row_to_sheet(dynamic_row):
-    
     try:
         project = dynamic_row.project
         SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        creds = service_account.Credentials.from_service_account_file(
-            'google_credentials.json', scopes=SCOPES
-        )
+        creds = get_google_credentials(SCOPES) 
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
 
-        
         row_data = []
         for header in project.dynamic_fields:
             row_data.append(dynamic_row.data.get(header, ''))

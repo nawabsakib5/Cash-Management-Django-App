@@ -2,55 +2,297 @@
 {% block title %}Import Project Sheet — CashManager{% endblock %}
 {% block nav_projects %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── Reset main-wrapper for full-width layout (সাইডবার ডবল হওয়া রোধ করতে) ── */
+  .main-wrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
+
+  .adm-layout {
+    display: block !important;
+    width: 100%;
+    min-height: calc(100vh - var(--topbar-h));
+  }
+
+  .adm-main {
+    width: 100% !important;
+    padding: 32px;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+
+  /* ── Centered Card Shell ── */
+  .import-shell {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .import-card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Accent Glow Header Bar */
+  .import-glow-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #6366f1, #818cf8, #a5b4fc);
+  }
+
+  /* Header Icon Container */
+  .import-icon-wrap {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    background: var(--indigo-fog);
+    border: 1px solid var(--indigo-line);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--indigo);
+    margin-bottom: 20px;
+  }
+
+  /* Form Labels & Controls */
+  .form-label-premium {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+  .form-label-premium .req {
+    color: var(--rose);
+    margin-left: 2px;
+  }
+
+  .form-control-premium {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .form-control-premium:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    background: #fff;
+  }
+  .form-control-premium::placeholder {
+    color: var(--text3);
+  }
+
+  /* ── High-End Glassmorphic Drag & Drop Upload Zone ── */
+  .upload-drop-zone {
+    position: relative;
+    background: var(--surface2);
+    border: 1.5px dashed var(--border3);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .upload-drop-zone:hover {
+    border-color: var(--indigo);
+    background: var(--indigo-fog);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05);
+  }
+  .upload-drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .upload-icon-box {
+    color: var(--text3);
+    font-size: 24px;
+    margin-bottom: 10px;
+    transition: color 0.2s;
+  }
+  .upload-drop-zone:hover .upload-icon-box {
+    color: var(--indigo);
+  }
+
+  /* ── 10x Premium Glow Create Button ── */
+  .btn-create-workspace-premium {
+    flex: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, var(--indigo) 0%, #4f46e5 100%);
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+    animation: glow-pulse 2.5s infinite;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-create-workspace-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-create-workspace-premium:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.55);
+  }
+  .btn-create-workspace-premium:active {
+    transform: translateY(0);
+  }
+
+  @keyframes glow-pulse {
+    0% { box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0.4); }
+    50% { box-shadow: 0 4px 22px rgba(99, 102, 241, 0.5), 0 0 0 8px rgba(99, 102, 241, 0); }
+    100% { box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0); }
+  }
+
+  /* ── Highly Visible & Eye-catching Cancel Button ── */
+  .btn-cancel-workspace-premium {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text) !important;
+    background: var(--surface2);
+    border: 1.5px solid var(--border3);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-cancel-workspace-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-cancel-workspace-premium:hover {
+    transform: translateY(-1.5px);
+    background: var(--surface3);
+    border-color: var(--text2);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="adm-layout" style="display: flex; justify-content: center; padding: 40px 20px;">
-  <div class="adm-card" style="width: 100%; max-width: 550px; padding: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);">
-    
-    <!-- Title & Icon -->
-    <div style="text-align: center; margin-bottom: 32px;">
-      <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--indigo-fog); border: 1px solid var(--indigo-line); display: inline-flex; align-items: center; justify-content: center; color: var(--indigo); margin-bottom: 16px;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
+<div class="adm-layout">
+  <main class="adm-main">
+
+    <!-- Page Header -->
+    <div class="adm-page-head" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <div class="adm-breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
+          Workspace
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          Import Sheet
+        </div>
+        <h1 class="adm-page-title" style="font-size: 26px; font-weight: 800; color: var(--text); margin: 0; letter-spacing: -0.02em;">Import Project Sheet</h1>
       </div>
-      <h2 style="font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em;">Import Project Sheet</h2>
-      <p style="font-size: 13.5px; color: var(--text3); margin: 0;">Upload any CSV sheet to instantly generate an active dynamic workspace.</p>
+      <a href="{% url 'project_list' %}" class="btn-back-dashboard-v2" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--indigo) !important; background: var(--indigo-fog); border: 1px solid var(--indigo-line); text-decoration: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1); transition: all 0.2s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        <span>Back to Projects</span>
+      </a>
     </div>
 
-    <!-- Form -->
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      
-      <!-- Project Name -->
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Project Title <span style="color: var(--rose);">*</span></label>
-        <input type="text" name="project_name" placeholder="e.g. Dynamic Inventory Workspace" style="width: 100%; height: 44px; padding: 0 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.2s;" required />
-      </div>
+    <!-- Centered Card Shell -->
+    <div class="import-shell">
+      <div class="import-card">
+        <!-- Top Gradient Glow Bar -->
+        <div class="import-glow-bar"></div>
 
-      <!-- Description -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Scope Description</label>
-        <textarea name="description" placeholder="Brief metadata about this imported data set..." style="width: 100%; height: 80px; padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; color: var(--text); outline: none; resize: none; line-height: 1.5;"></textarea>
-      </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+          <div class="import-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <h2 style="font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em;">Import Project Sheet</h2>
+          <p style="font-size: 13.5px; color: var(--text3); margin: 0; line-height: 1.5;">Upload a CSV ledger to instantly generate an active dynamic workspace.</p>
+        </div>
 
-      <!-- CSV File Upload -->
-      <div style="margin-bottom: 30px;">
-        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">Upload CSV File <span style="color: var(--rose);">*</span></label>
-        <input type="file" name="csv_file" accept=".csv" style="width: 100%; padding: 10px; background: var(--surface2); border: 1px dashed var(--border3); border-radius: 8px; color: var(--text2); cursor: pointer;" required />
-        <p style="font-size: 11.5px; color: var(--text3); margin-top: 8px; line-height: 1.4;">The first row of your CSV file will be dynamically analyzed and converted into workspace headers.</p>
-      </div>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <!-- Project Title -->
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label-premium">Project Title <span class="req">*</span></label>
+            <input type="text" name="project_name" class="form-control-premium" placeholder="e.g. Dynamic Inventory Workspace" required />
+          </div>
 
-      <!-- Actions -->
-      <div style="display: flex; gap: 12px;">
-        <button type="submit" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 8px; font-size: 14px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--indigo) 0%, #4f46e5 100%); border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);">
-          Create Workspace
-        </button>
-        <a href="{% url 'project_list' %}" class="adm-btn-ghost" style="height: 44px; align-items: center; justify-content: center; text-decoration: none;">Cancel</a>
-      </div>
-    </form>
+          <!-- Scope Description -->
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label-premium">Scope Description</label>
+            <textarea name="description" class="form-control-premium" placeholder="Brief metadata about this imported data set..." style="height: 100px; resize: none; line-height: 1.5; padding: 12px 16px;"></textarea>
+          </div>
 
-  </div>
+          <!-- Glassmorphic Drag & Drop Upload Zone -->
+          <div class="form-group" style="margin-bottom: 32px;">
+            <label class="form-label-premium">Upload CSV File <span class="req">*</span></label>
+            <div class="upload-drop-zone">
+              <i class="ti ti-cloud-upload upload-icon-box"></i>
+              <div style="font-size: 13.5px; font-weight: 600; color: var(--text2); margin-bottom: 4px;">Choose a CSV file or drag it here</div>
+              <div style="font-size: 11.5px; color: var(--text3); line-height: 1.4;">The first row of your CSV file will be dynamically analyzed and converted into workspace headers.</div>
+              <input type="file" name="csv_file" accept=".csv" required />
+            </div>
+          </div>
+
+          <!-- Actions Footer Grid -->
+          <div style="display: flex; gap: 16px;">
+            <!-- Premium Save Button -->
+            <button type="submit" class="btn-create-workspace-premium">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg> 
+              <span>Create Workspace</span>
+            </button>
+
+            <!-- Highly Noticeable Cancel Button -->
+            <a href="{% url 'project_list' %}" class="btn-cancel-workspace-premium">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              <span>Cancel</span>
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+  </main>
 </div>
 {% endblock %}
