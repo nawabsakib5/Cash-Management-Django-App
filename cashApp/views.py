@@ -1,3 +1,4 @@
+from .tasks import send_dashboard_update
 import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
