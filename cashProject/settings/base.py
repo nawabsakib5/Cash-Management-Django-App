@@ -13,7 +13,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',          # ← নতুন
+    'channels',
     'cashApp',
     'django_celery_beat',
 ]
@@ -77,16 +77,10 @@ EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL  = config('EMAIL_HOST_USER', default='')
 
-
-
 # Celery
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL     = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_TIMEZONE = 'Asia/Dhaka'
-
-# django-celery-beat
-INSTALLED_APPS += ['django_celery_beat']
-
+CELERY_TIMEZONE       = 'Asia/Dhaka'
 
 # Channels
 ASGI_APPLICATION = 'cashProject.asgi.application'
