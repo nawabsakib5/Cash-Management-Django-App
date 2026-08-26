@@ -1,18 +1,11 @@
-
 from pathlib import Path
 import os
 from decouple import config
 
+# settings/base.py আছে, তাই তিনটা .parent লাগবে
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-replace-this-in-production')
-DEBUG      = os.environ.get('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = ['*']
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
-]
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -53,17 +46,6 @@ TEMPLATES = [
     },
 ]
 
-
-RENDER_DISK = Path('/data')
-DB_PATH = (RENDER_DISK / 'db.sqlite3') if RENDER_DISK.exists() else (BASE_DIR / 'db.sqlite3')
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_PATH,
-    }
-}
-
 AUTH_USER_MODEL    = 'cashApp.CustomUser'
 LOGIN_URL          = 'login'
 LOGIN_REDIRECT_URL = 'project_list'
@@ -80,16 +62,12 @@ TIME_ZONE     = 'Asia/Dhaka'
 USE_I18N      = True
 USE_TZ        = True
 
-STATIC_URL    = '/static/'
-STATIC_ROOT   = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL  = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DEBUG = True
-
-
-# ─── Email Configuration ───────────────────────────────────
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
 EMAIL_PORT          = 587
