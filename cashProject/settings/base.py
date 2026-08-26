@@ -74,3 +74,13 @@ EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL  = config('EMAIL_HOST_USER', default='')
+
+
+
+# Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = 'Asia/Dhaka'
+
+# django-celery-beat
+INSTALLED_APPS += ['django_celery_beat']
