@@ -13,7 +13,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',          # ← নতুন
     'cashApp',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -84,3 +86,16 @@ CELERY_TIMEZONE = 'Asia/Dhaka'
 
 # django-celery-beat
 INSTALLED_APPS += ['django_celery_beat']
+
+
+# Channels
+ASGI_APPLICATION = 'cashProject.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+}
