@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Realtime Dashboard — CashManager</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-glow: rgba(99,102,241,0.25);
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --amber: #f59e0b;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text2: #334155;
+      --text3: #475569;
+      --text4: #94a3b8;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --radius-xl: 24px;
+      --font: 'Inter', sans-serif;
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* LEFT PANEL */
+    .left-panel { width: 260px; flex-shrink: 0; background: #090d16; display: flex; flex-direction: column; justify-content: space-between; padding: 32px 24px; position: relative; overflow: hidden; }
+    .left-panel::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(99,102,241,0.03) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(99,102,241,0.03) 1.5px, transparent 1.5px); background-size: 50px 50px; pointer-events: none; }
+    .glow-bg { position: absolute; top: -100px; left: -80px; width: 400px; height: 350px; background: radial-gradient(ellipse, rgba(99,102,241,0.2) 0%, transparent 70%); pointer-events: none; }
+
+    .lp-brand { display: flex; align-items: center; gap: 10px; position: relative; z-index: 2; opacity: 0; }
+    .lp-brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+    .lp-brand-icon i { color: #fff; font-size: 18px; }
+    .lp-brand-name { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+
+    .nav-section { margin-top: 36px; position: relative; z-index: 2; }
+    .nav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #334155; margin-bottom: 8px; padding: 0 8px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); color: #64748b; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-bottom: 2px; text-decoration: none; }
+    .nav-item:hover { background: rgba(99,102,241,0.1); color: #818cf8; }
+    .nav-item.active { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+    .nav-item i { font-size: 18px; }
+
+    .live-badge { display: flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 20px; padding: 6px 12px; margin-top: 16px; position: relative; z-index: 2; }
+    .pulse-dot { width: 8px; height: 8px; background: var(--emerald); border-radius: 50%; box-shadow: 0 0 10px var(--emerald); }
+    .live-text { font-size: 12px; font-weight: 600; color: var(--emerald); }
+
+    .lp-footer { opacity: 0; position: relative; z-index: 2; }
+    .lp-footer-text { font-size: 12px; color: #334155; }
+    .lp-footer a { color: #6366f1; text-decoration: none; font-weight: 600; font-size: 12px; }
+
+    /* RIGHT PANEL */
+    .right-panel { flex: 1; padding: 32px 36px; overflow-y: auto; }
+
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; opacity: 0; }
+    .page-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+    .page-sub { font-size: 13px; color: var(--text4); margin-top: 2px; }
+    .ws-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text4); background: var(--card); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; }
+    .ws-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; transition: background 0.3s; }
+    .ws-dot.connected { background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
+
+    /* STAT CARDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px 22px; opacity: 0; transition: box-shadow 0.3s; }
+    .stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+    .stat-icon.green { background: rgba(16,185,129,0.1); color: var(--emerald); }
+    .stat-icon.rose { background: rgba(244,63,94,0.1); color: var(--rose); }
+    .stat-icon.blue { background: rgba(99,102,241,0.1); color: var(--primary); }
+    .stat-icon.amber { background: rgba(245,158,11,0.1); color: var(--amber); }
+    .stat-icon i { font-size: 20px; }
+    .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text4); margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    .stat-value.positive { color: var(--emerald); }
+    .stat-value.negative { color: var(--rose); }
+
+    /* TRANSACTIONS TABLE */
+    .section-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 24px; opacity: 0; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .section-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .section-badge { font-size: 11px; font-weight: 600; color: var(--primary); background: rgba(99,102,241,0.08); padding: 4px 10px; border-radius: 20px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text4); padding: 0 12px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 14px 12px; font-size: 13.5px; color: var(--text2); border-bottom: 1px solid #f1f5f9; }
+    tr:last-child td { border-bottom: none; }
+    .tx-type { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .tx-type.income { background: rgba(16,185,129,0.1); color: var(--emerald); }
+    .tx-type.expense { background: rgba(244,63,94,0.1); color: var(--rose); }
+    .tx-amount { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .tx-amount.income { color: var(--emerald); }
+    .tx-amount.expense { color: var(--rose); }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--text4); font-size: 14px; }
+
+    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) { .left-panel { display: none; } .stats-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="glow-bg"></div>
+
+    <div>
+      <div class="lp-brand">
+        <div class="lp-brand-icon"><i class="ti ti-currency-dollar"></i></div>
+        <span class="lp-brand-name">CashManager</span>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Main Menu</div>
+        <a href="{% url 'project_list' %}" class="nav-item"><i class="ti ti-folder"></i> Projects</a>
+        <a href="{% url 'realtime_dashboard' %}" class="nav-item active"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="{% url 'category_list' %}" class="nav-item"><i class="ti ti-tags"></i> Categories</a>
+        {% if user.is_admin %}
+        <a href="{% url 'admin_dashboard' %}" class="nav-item"><i class="ti ti-shield"></i> Admin Panel</a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="nav-item"><i class="ti ti-logout"></i> Logout</a>
+      </div>
+
+      <div class="live-badge">
+        <span class="pulse-dot"></span>
+        <span class="live-text">Realtime Active</span>
+      </div>
+    </div>
+
+    <div class="lp-footer">
+      <div class="lp-footer-text">Logged in as</div>
+      <a href="#">{{ user.username }}</a>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Realtime Dashboard</div>
+        <div class="page-sub">Live data — updates automatically</div>
+      </div>
+      <div class="ws-status">
+        <span class="ws-dot" id="ws-dot"></span>
+        <span id="ws-label">Connecting...</span>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="ti ti-trending-up"></i></div>
+        <div class="stat-label">Total Income</div>
+        <div class="stat-value positive" id="total-income">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon rose"><i class="ti ti-trending-down"></i></div>
+        <div class="stat-label">Total Expense</div>
+        <div class="stat-value negative" id="total-expense">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="ti ti-wallet"></i></div>
+        <div class="stat-label">Balance</div>
+        <div class="stat-value" id="balance">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="ti ti-folder"></i></div>
+        <div class="stat-label">Total Projects</div>
+        <div class="stat-value" id="total-projects">—</div>
+      </div>
+    </div>
+
+    <!-- RECENT TRANSACTIONS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">Recent Transactions</div>
+        <div class="section-badge">Live</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="tx-tbody">
+          <tr><td colspan="4" class="empty-state">Connecting to live feed...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // WebSocket connect
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(`${wsScheme}://${window.location.host}/ws/dashboard/`);
+
+    const dot = document.getElementById('ws-dot');
+    const label = document.getElementById('ws-label');
+
+    ws.onopen = () => {
+      dot.classList.add('connected');
+      label.textContent = 'Connected';
+    };
+
+    ws.onclose = () => {
+      dot.classList.remove('connected');
+      label.textContent = 'Disconnected';
+    };
+
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      updateDashboard(data);
+    };
+
+    function fmt(amount) {
+      return '৳ ' + parseFloat(amount).toLocaleString('en-BD', { minimumFractionDigits: 2 });
+    }
+
+    function updateDashboard(data) {
+      document.getElementById('total-income').textContent = fmt(data.total_income);
+      document.getElementById('total-expense').textContent = fmt(data.total_expense);
+
+      const bal = parseFloat(data.balance);
+      const balEl = document.getElementById('balance');
+      balEl.textContent = fmt(data.balance);
+      balEl.className = 'stat-value ' + (bal >= 0 ? 'positive' : 'negative');
+
+      document.getElementById('total-projects').textContent = data.total_projects;
+
+      const tbody = document.getElementById('tx-tbody');
+      if (!data.recent_transactions || data.recent_transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No transactions yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.recent_transactions.map(tx => `
+        <tr>
+          <td>${tx.title}</td>
+          <td><span class="tx-type ${tx.type}">${tx.type === 'income' ? '↑ Income' : '↓ Expense'}</span></td>
+          <td class="tx-amount ${tx.type}">${fmt(tx.amount)}</td>
+          <td>${tx.date}</td>
+        </tr>
+      `).join('');
+    }
+
+    // GSAP Animations
+    document.addEventListener("DOMContentLoaded", () => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.to(".lp-brand", { opacity: 1, y: 0, duration: 0.6, startAt: { y: -20 } })
+        .to(".lp-footer", { opacity: 1, duration: 0.5 }, "-=0.2")
+        .to(".page-header", { opacity: 1, y: 0, duration: 0.6, startAt: { y: -15 } }, "-=0.3")
+        .to(".stat-card", { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, startAt: { y: 20 } }, "-=0.3")
+        .to(".section-card", { opacity: 1, y: 0, duration: 0.6, startAt: { y: 20 } }, "-=0.2");
+
+      gsap.to(".glow-bg", { scale: 1.15, opacity: 0.7, duration: 4, repeat: -1, yoyo: true, ease: "sine.easeInOut" });
+    });
+  </script>
+</body>
+</html>

@@ -546,7 +546,7 @@ def transaction_create(request, pk):
             tx.save()
 
             sync_to_google_sheet(tx)
-
+            send_dashboard_update.delay()
             send_transaction_confirmation(tx)
 
             log_action(request.user, 'create', target=tx,
