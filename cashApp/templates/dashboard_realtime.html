@@ -31,7 +31,6 @@
     }
     body { font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; display: flex; min-height: 100vh; overflow-x: hidden; }
 
-    /* LEFT PANEL */
     .left-panel { width: 260px; flex-shrink: 0; background: #090d16; display: flex; flex-direction: column; justify-content: space-between; padding: 32px 24px; position: relative; overflow: hidden; }
     .left-panel::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(99,102,241,0.03) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(99,102,241,0.03) 1.5px, transparent 1.5px); background-size: 50px 50px; pointer-events: none; }
     .glow-bg { position: absolute; top: -100px; left: -80px; width: 400px; height: 350px; background: radial-gradient(ellipse, rgba(99,102,241,0.2) 0%, transparent 70%); pointer-events: none; }
@@ -56,7 +55,6 @@
     .lp-footer-text { font-size: 12px; color: #334155; }
     .lp-footer a { color: #6366f1; text-decoration: none; font-weight: 600; font-size: 12px; }
 
-    /* RIGHT PANEL */
     .right-panel { flex: 1; padding: 32px 36px; overflow-y: auto; }
 
     .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; opacity: 0; }
@@ -66,7 +64,6 @@
     .ws-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; transition: background 0.3s; }
     .ws-dot.connected { background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
 
-    /* STAT CARDS */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px 22px; opacity: 0; transition: box-shadow 0.3s; }
     .stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
@@ -81,7 +78,6 @@
     .stat-value.positive { color: var(--emerald); }
     .stat-value.negative { color: var(--rose); }
 
-    /* TRANSACTIONS TABLE */
     .section-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 24px; opacity: 0; }
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
     .section-title { font-size: 15px; font-weight: 700; color: var(--text); }
@@ -97,7 +93,6 @@
     .tx-amount { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
     .tx-amount.income { color: var(--emerald); }
     .tx-amount.expense { color: var(--rose); }
-
     .empty-state { text-align: center; padding: 40px; color: var(--text4); font-size: 14px; }
 
     @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -106,16 +101,13 @@
 </head>
 <body>
 
-  <!-- LEFT PANEL -->
   <div class="left-panel">
     <div class="glow-bg"></div>
-
     <div>
       <div class="lp-brand">
         <div class="lp-brand-icon"><i class="ti ti-currency-dollar"></i></div>
         <span class="lp-brand-name">CashManager</span>
       </div>
-
       <div class="nav-section">
         <div class="nav-label">Main Menu</div>
         <a href="{% url 'project_list' %}" class="nav-item"><i class="ti ti-folder"></i> Projects</a>
@@ -126,22 +118,18 @@
         {% endif %}
         <a href="{% url 'logout' %}" class="nav-item"><i class="ti ti-logout"></i> Logout</a>
       </div>
-
       <div class="live-badge">
         <span class="pulse-dot"></span>
         <span class="live-text">Realtime Active</span>
       </div>
     </div>
-
     <div class="lp-footer">
       <div class="lp-footer-text">Logged in as</div>
       <a href="#">{{ user.username }}</a>
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
   <div class="right-panel">
-
     <div class="page-header">
       <div>
         <div class="page-title">Realtime Dashboard</div>
@@ -153,7 +141,6 @@
       </div>
     </div>
 
-    <!-- STAT CARDS -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon green"><i class="ti ti-trending-up"></i></div>
@@ -177,7 +164,6 @@
       </div>
     </div>
 
-    <!-- RECENT TRANSACTIONS -->
     <div class="section-card">
       <div class="section-header">
         <div class="section-title">Recent Transactions</div>
@@ -197,11 +183,9 @@
         </tbody>
       </table>
     </div>
-
   </div>
 
   <script>
-    // WebSocket connect
     const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
     const ws = new WebSocket(`${wsScheme}://${window.location.host}/ws/dashboard/`);
 
@@ -211,15 +195,22 @@
     ws.onopen = () => {
       dot.classList.add('connected');
       label.textContent = 'Connected';
+      console.log('WebSocket connected!');
     };
 
     ws.onclose = () => {
       dot.classList.remove('connected');
       label.textContent = 'Disconnected';
+      console.log('WebSocket disconnected!');
+    };
+
+    ws.onerror = (e) => {
+      console.log('WebSocket error:', e);
     };
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
+      console.log('WebSocket data received:', data);
       updateDashboard(data);
     };
 
@@ -254,7 +245,6 @@
       `).join('');
     }
 
-    // GSAP Animations
     document.addEventListener("DOMContentLoaded", () => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl.to(".lp-brand", { opacity: 1, y: 0, duration: 0.6, startAt: { y: -20 } })
