@@ -236,13 +236,11 @@ def Login(request):
             messages.error(request, "Please enter both username/email and password.")
             return render(request, 'login.html')
 
-        # ১. ইউজারনেম বা ইমেইল দিয়ে ফাস্ট ইউজার ফিল্টার করা
         user_obj = CustomUser.objects.filter(
             Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
         ).first()
 
         if user_obj:
-            # ২. অ্যাকাউন্ট ইন-অ্যাক্টিভ বা ফ্রোজেন কিনা দেখা
             if not user_obj.is_active:
                 messages.error(request, "This account is inactive. Please contact support.")
                 return render(request, 'login.html')
@@ -251,19 +249,21 @@ def Login(request):
                 messages.error(request, "Your account is frozen. Please contact administrator.")
                 return render(request, 'login.html')
 
-            # ৩. পাসওয়ার্ড হ্যাশ যাচাই করা
             if user_obj.check_password(password):
                 user = authenticate(request, username=user_obj.username, password=password)
-                
-                # ফেইলসেফ: authenticate ব্যর্থ হলেও ব্যাকএন্ড সেট করে সুরক্ষিত লগইন করানো
+
                 if user is None:
                     user = user_obj
                     user.backend = 'django.contrib.auth.backends.ModelBackend'
 
                 login(request, user)
-                log_action(user, 'login', detail='Logged in', request=request)
+                print(f"DEBUG: user={user.username}, user_type={user.user_type}, is_admin={user.is_admin}")
 
-                # রিডাইরেক্ট লজিক (next প্যারামিটার থাকলে সেখানে পাঠাবে)
+                try:
+                    log_action(user, 'login', detail='Logged in', request=request)
+                except Exception:
+                    pass
+
                 next_url = request.GET.get('next') or request.POST.get('next')
                 if next_url:
                     return redirect(next_url)
@@ -272,12 +272,10 @@ def Login(request):
                     return redirect('admin_dashboard')
                 return redirect('project_list')
 
-        # তথ্য ভুল হলে এরর মেসেজ
         messages.error(request, "Invalid username/email or password.")
         return render(request, 'login.html')
 
     return render(request, 'login.html')
-
 
 def logoutpage(request):
     if request.user.is_authenticated:
