@@ -47,4 +47,6 @@ urlpatterns = [
     path('admin-panel/projects/<int:pk>/permissions/', views.admin_manage_project_permissions, name='admin_manage_project_permissions'),
     path('admin-panel/projects/<int:pk>/export/', views.admin_export_project_data, name='admin_export_project_data'),
     path('projects/<int:pk>/dynamic-entry/', views.dynamic_entry_create, name='dynamic_entry_create'),
+
+    path('dashboard/realtime/', views.realtime_dashboard, name='realtime_dashboard'),
 ]

@@ -1134,3 +1134,9 @@ def dynamic_entry_create(request, pk):
         return redirect('project_detail', pk=project.pk)
 
     return render(request, 'dynamic_entry_form.html', {'project': project})
+
+
+
+@login_required(login_url='login')
+def realtime_dashboard(request):
+    return render(request, 'dashboard_realtime.html')
