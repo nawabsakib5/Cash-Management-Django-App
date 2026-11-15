@@ -1,10 +1,14 @@
 from pathlib import Path
-import os
+
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this')
+# ── Core ───────────────────────────────────────────────────────────────────────
+# No insecure fallback here. dev.py supplies a throw-away key for local work and
+# production.py refuses to start without a real one.
+SECRET_KEY = config('SECRET_KEY', default='')
+SITE_URL   = config('SITE_URL', default='')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,6 +35,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF     = 'cashProject.urls'
 WSGI_APPLICATION = 'cashProject.wsgi.application'
+ASGI_APPLICATION = 'cashProject.asgi.application'
 
 TEMPLATES = [
     {
@@ -42,6 +47,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'cashApp.context_processors.global_context',
             ],
         },
     },
@@ -63,33 +69,75 @@ TIME_ZONE     = 'Asia/Dhaka'
 USE_I18N      = True
 USE_TZ        = True
 
+# ── Static files ───────────────────────────────────────────────────────────────
+# STATICFILES_STORAGE was removed in Django 5.1; the STORAGES dict is the
+# replacement (the old setting was being silently ignored).
 STATIC_URL  = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ── Email ──────────────────────────────────────────────────────────────────────
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST          = 'smtp.gmail.com'
-EMAIL_PORT          = 587
+EMAIL_HOST          = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT          = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL  = config('EMAIL_HOST_USER', default='')
+DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 
-# Celery
-CELERY_BROKER_URL     = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_TIMEZONE       = 'Asia/Dhaka'
+# ── Redis / Celery / Channels ──────────────────────────────────────────────────
+# With REDIS_URL set, Celery uses it as broker and Channels uses it as the layer.
+# Without it (local dev, first deploy) everything falls back to in-process
+# equivalents so the app still boots and nothing crashes on .delay().
+REDIS_URL = config('REDIS_URL', default='')
 
-# Channels
-ASGI_APPLICATION = 'cashProject.asgi.application'
+CELERY_BROKER_URL     = REDIS_URL or 'memory://'
+CELERY_RESULT_BACKEND = REDIS_URL or 'cache+memory://'
+CELERY_TIMEZONE       = TIME_ZONE
+# Run tasks inline unless a real worker is deployed (set CELERY_EAGER=False then).
+CELERY_TASK_ALWAYS_EAGER    = config('CELERY_EAGER', default=not bool(REDIS_URL), cast=bool)
+CELERY_TASK_EAGER_PROPAGATES = False
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [REDIS_URL]},
         },
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'},
+    }
+
+# ── Google Sheets sync ─────────────────────────────────────────────────────────
+GOOGLE_SHEET_ID         = config('GOOGLE_SHEET_ID', default='')
+GOOGLE_CREDENTIALS_JSON = config('GOOGLE_CREDENTIALS_JSON', default='')
+GOOGLE_CREDENTIALS_FILE = config(
+    'GOOGLE_CREDENTIALS_FILE', default=str(BASE_DIR / 'google_credentials.json')
+)
+
+# ── Logging ────────────────────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {'format': '%(asctime)s %(levelname)s %(name)s: %(message)s'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'},
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': config('LOG_LEVEL', default='INFO'),
     },
 }
