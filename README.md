@@ -118,10 +118,10 @@ Cash-Management-Django-App/
 ## 🚀 Getting Started
 
 ### ✅ Prerequisites
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Required-F05032?style=flat-square&logo=git&logoColor=white)
 
-### 📦 Installation
+### 📦 Installation (local development)
 
 ```bash
 # 1. Clone the repository
@@ -135,37 +135,48 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Apply migrations
+# 4. Configure environment (all values are optional locally)
+cp .env.example .env
+
+# 5. Apply migrations (SQLite is used unless DB_NAME is set)
 python manage.py migrate
 
-# 5. Create a superuser
-python manage.py createsuperuser
+# 6. Create the first admin (reads ADMIN_* from .env)
+python manage.py create_default_admin
 
-# 6. Run the development server
+# 7. Run the development server
 python manage.py runserver
 ```
 
 Visit **`http://127.0.0.1:8000/`** to start tracking. 🎉
 
+> `manage.py` uses `cashProject.settings.dev`. `wsgi.py`, `asgi.py` and Celery default to
+> `cashProject.settings.production`; to run them locally set
+> `DJANGO_SETTINGS_MODULE=cashProject.settings.dev`.
+
 ---
 
 ## ⚙️ Environment Variables
 
-Create a `.env` file in the project root for email notifications:
+Every variable is documented in [`.env.example`](.env.example). The ones that matter:
 
-```env
-SECRET_KEY=your-django-secret-key
-DEBUG=True
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-gmail-address@gmail.com
-EMAIL_HOST_PASSWORD=your-gmail-app-password
-```
-
-> 💡 Use a Gmail **App Password**, not your regular Gmail password, for SMTP auth.
+| Variable | Needed | Purpose |
+|---|---|---|
+| `SECRET_KEY` | production | Django secret. The app refuses to start in production without a strong one. |
+| `DATABASE_URL` | production | PostgreSQL connection string. |
+| `ALLOWED_HOSTS` | production | Comma-separated hostnames (Render's hostname is added automatically). |
+| `ADMIN_USERNAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | first deploy | Used by `create_default_admin`. There is no built-in default password. |
+| `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | optional | Gmail SMTP (use an **App Password**). Emails print to the console locally if unset. |
+| `GOOGLE_SHEET_ID` / `GOOGLE_CREDENTIALS_JSON` | optional | Google Sheets sync. Never commit the credentials file. |
+| `REDIS_URL` | optional | Enables a Redis channel layer / Celery broker. Without it, in-memory fallbacks are used. |
 
 ---
+
+## ☁️ Deploying to Render
+
+`render.yaml` provisions a web service and a PostgreSQL database. After the first sync,
+set `ADMIN_*`, `GOOGLE_*` and `EMAIL_*` in the Render dashboard. The service runs under
+`daphne` (ASGI) so the live dashboard WebSocket works.
 
 ## 🗺️ Roadmap
 

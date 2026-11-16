@@ -1,13 +1,48 @@
+databases:
+  - name: cash-management-db
+    databaseName: cashmanager
+    # Pick a paid plan for real data - Render free databases expire.
+
 services:
   - type: web
     name: cash-management
-    env: python
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_default_admin"
-    startCommand: "gunicorn cashProject.wsgi:application"
+    runtime: python
+    buildCommand: >-
+      pip install -r requirements.txt
+      && python manage.py collectstatic --noinput
+      && python manage.py migrate --noinput
+      && python manage.py create_default_admin
+    # daphne (ASGI) serves both HTTP and the /ws/dashboard/ WebSocket.
+    # gunicorn + wsgi cannot serve WebSockets.
+    startCommand: daphne -b 0.0.0.0 -p $PORT cashProject.asgi:application
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: cashProject.settings.production
+      - key: PYTHON_VERSION          # Django 6.0 needs Python 3.12+
+        value: "3.12.8"
       - key: SECRET_KEY
         generateValue: true
-      - key: DEBUG
-        value: "False"
-      - key: PYTHON_VERSION
-        value: "3.11.0"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cash-management-db
+          property: connectionString
+      # ── Fill these in the Render dashboard (sync: false = not stored in git) ──
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: GOOGLE_SHEET_ID
+        sync: false
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false
+      # Single instance: tasks run inline and the WebSocket layer is in-memory.
+      # To scale out, add a Redis (keyvalue) service, set REDIS_URL, and run a
+      # Celery worker with CELERY_EAGER=False.

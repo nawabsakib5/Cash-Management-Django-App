@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Delete Sub-category — CashManager{% endblock %}
+{% block nav_settings %}active{% endblock %}
+
+{% block extra_css %}{% include 'partials/confirm_styles.html' %}{% endblock %}
+
+{% block content %}
+<div class="cm-wrap">
+  <div class="cm-card">
+    <div class="cm-icon"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
+    <h2 class="cm-title">Delete this Sub-category?</h2>
+    <p class="cm-text">
+      You're about to delete <strong>{{ subcategory.name }}</strong>
+      (under {{ subcategory.category.name }}).
+      Existing transactions will be kept but will lose this sub-category. This cannot be undone.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="cm-actions">
+        <button type="submit" class="cm-btn cm-btn-danger">Confirm Delete</button>
+        <a href="{% url 'category_list' %}" class="cm-btn">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

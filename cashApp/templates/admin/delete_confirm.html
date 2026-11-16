@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}{% if reject_mode %}Reject{% else %}Confirm{% endif %} Delete Request — CashManager{% endblock %}
+{% block nav_delete_requests %}active{% endblock %}
+
+{% block extra_css %}{% include 'partials/confirm_styles.html' %}{% endblock %}
+
+{% block content %}
+<div class="cm-wrap">
+  <div class="cm-card{% if reject_mode %} cm-neutral{% endif %}">
+    {% if reject_mode %}
+    <div class="cm-icon" style="background: var(--emerald-fog, rgba(16,185,129,0.08)); border-color: rgba(16,185,129,0.25); color: var(--emerald);"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h2 class="cm-title">Reject this delete request?</h2>
+    <p class="cm-text">
+      <strong>{{ transaction.title }}</strong> (৳{{ transaction.amount|floatformat:2 }},
+      {{ transaction.get_type_display }}) will stay in
+      <strong>{{ transaction.project.name }}</strong> and the pending request will be cleared.
+    </p>
+    {% else %}
+    <div class="cm-icon"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
+    <h2 class="cm-title">Permanently delete this entry?</h2>
+    <p class="cm-text">
+      <strong>{{ transaction.title }}</strong> (৳{{ transaction.amount|floatformat:2 }},
+      {{ transaction.get_type_display }}) requested by <strong>{{ transaction.user.username }}</strong>
+      will be removed from <strong>{{ transaction.project.name }}</strong>.
+    </p>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="cm-actions">
+        <button type="submit" class="cm-btn {% if reject_mode %}cm-btn-ok{% else %}cm-btn-danger{% endif %}">
+          {% if reject_mode %}Reject Request{% else %}Confirm Delete{% endif %}
+        </button>
+        <a href="{% url 'admin_delete_requests' %}" class="cm-btn">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

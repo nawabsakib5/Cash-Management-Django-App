@@ -1,49 +1,66 @@
-from .tasks import send_dashboard_update
 import csv
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Prefetch
 from django.http import JsonResponse, HttpResponse
+from django.conf import settings
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 import io
 from django.db import transaction as db_transaction
 from .models import CustomUser, Transaction, Project, AuditLog, AdminProfile, Category, SubCategory, ProjectPermission, DynamicRow
 from .forms import *
 from .decorators import admin_required, not_frozen, log_action
 from .utils import *
+from .tasks import send_dashboard_update
 import json
-import os
 
+logger = logging.getLogger(__name__)
 
 
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# আপনার গুগল শিটের আইডিটি এখানে বসান
-SPREADSHEET_ID = "1Non3fdui16sefT-4fOwme9zzMmGNPIbtlBDaIxd8tas" 
+SHEETS_SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 
 def get_google_credentials(scopes):
-    
-    google_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
-    if google_json:
-        info = json.loads(google_json)
-        return service_account.Credentials.from_service_account_info(info, scopes=scopes) [5]
-    else:
-        return service_account.Credentials.from_service_account_file(
-            'google_credentials.json', scopes=scopes
-        )
+    """
+    Service-account credentials from, in order:
+      1. GOOGLE_CREDENTIALS_JSON (env var holding the JSON - use this in production)
+      2. GOOGLE_CREDENTIALS_FILE (local file - development only, never commit it)
+    """
+    if settings.GOOGLE_CREDENTIALS_JSON:
+        info = json.loads(settings.GOOGLE_CREDENTIALS_JSON)
+        return service_account.Credentials.from_service_account_info(info, scopes=scopes)
+    return service_account.Credentials.from_service_account_file(
+        settings.GOOGLE_CREDENTIALS_FILE, scopes=scopes
+    )
 
+
+def _sheets_service():
+    """Build the Sheets API client, or raise a clear error when not configured."""
+    if not settings.GOOGLE_SHEET_ID:
+        raise RuntimeError('GOOGLE_SHEET_ID is not configured')
+    creds = get_google_credentials(SHEETS_SCOPES)
+    return build('sheets', 'v4', credentials=creds, cache_discovery=False)
+
+
+def notify_dashboard():
+    """Push a live-dashboard refresh. Must never break the request if the broker is down."""
+    try:
+        send_dashboard_update.delay()
+    except Exception:
+        logger.exception('Could not queue dashboard update')
 
 
 def sync_to_google_sheet(transaction):
     try:
-        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        creds = get_google_credentials(SCOPES) 
-        service = build('sheets', 'v4', credentials=creds)
+        service = _sheets_service()
         sheet = service.spreadsheets()
 
         entry_time = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -65,24 +82,22 @@ def sync_to_google_sheet(transaction):
 
         body = {'values': [row_data]}
         sheet.values().append(
-            spreadsheetId=SPREADSHEET_ID,
-            range=f"'{transaction.project.name}'!A:I",  
+            spreadsheetId=settings.GOOGLE_SHEET_ID,
+            range=f"'{transaction.project.name}'!A:I",
             valueInputOption="RAW",
             insertDataOption="INSERT_ROWS",
             body=body
         ).execute()
         return True
     except Exception as e:
-        print(f"Google Sheet Sync Error: {e}")
+        logger.exception('Google Sheet sync failed for transaction %s', getattr(transaction, 'pk', None))
         return False
 
 
 def create_google_sheet_tab(project):
     try:
-        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        creds = get_google_credentials(SCOPES) 
-        service = build('sheets', 'v4', credentials=creds)
-        
+        service = _sheets_service()
+
         body = {
             'requests': [
                 {
@@ -95,7 +110,7 @@ def create_google_sheet_tab(project):
             ]
         }
         service.spreadsheets().batchUpdate(
-            spreadsheetId=SPREADSHEET_ID,
+            spreadsheetId=settings.GOOGLE_SHEET_ID,
             body=body
         ).execute()
 
@@ -106,14 +121,14 @@ def create_google_sheet_tab(project):
         
         header_body = {'values': [headers]}
         service.spreadsheets().values().update(
-            spreadsheetId=SPREADSHEET_ID,
+            spreadsheetId=settings.GOOGLE_SHEET_ID,
             range=f"'{project.name}'!A1",  
             valueInputOption="RAW",
             body=header_body
         ).execute()
         return True
     except Exception as e:
-        print(f"Google Sheet Create Tab Error: {e}")
+        logger.exception('Google Sheet tab creation failed for project %s', getattr(project, 'pk', None))
         return False
 
 
@@ -121,9 +136,7 @@ def create_google_sheet_tab(project):
 def sync_dynamic_row_to_sheet(dynamic_row):
     try:
         project = dynamic_row.project
-        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        creds = get_google_credentials(SCOPES) 
-        service = build('sheets', 'v4', credentials=creds)
+        service = _sheets_service()
         sheet = service.spreadsheets()
 
         row_data = []
@@ -132,15 +145,15 @@ def sync_dynamic_row_to_sheet(dynamic_row):
 
         body = {'values': [row_data]}
         sheet.values().append(
-            spreadsheetId=SPREADSHEET_ID,
-            range=f"'{project.name}'!A:Z",  
+            spreadsheetId=settings.GOOGLE_SHEET_ID,
+            range=f"'{project.name}'!A:Z",
             valueInputOption="RAW",
             insertDataOption="INSERT_ROWS",
             body=body
         ).execute()
         return True
     except Exception as e:
-        print(f"Dynamic Sheet Sync Error: {e}")
+        logger.exception('Dynamic row sync failed for row %s', getattr(dynamic_row, 'pk', None))
         return False
 
 
@@ -257,15 +270,18 @@ def Login(request):
                     user.backend = 'django.contrib.auth.backends.ModelBackend'
 
                 login(request, user)
-                print(f"DEBUG: user={user.username}, user_type={user.user_type}, is_admin={user.is_admin}")
 
                 try:
                     log_action(user, 'login', detail='Logged in', request=request)
                 except Exception:
                     pass
 
-                next_url = request.GET.get('next') or request.POST.get('next')
-                if next_url:
+                next_url = request.POST.get('next') or request.GET.get('next')
+                if next_url and url_has_allowed_host_and_scheme(
+                    next_url,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                ):
                     return redirect(next_url)
 
                 if getattr(user, 'user_type', '') == 'admin':
@@ -544,7 +560,7 @@ def transaction_create(request, pk):
             tx.save()
 
             sync_to_google_sheet(tx)
-            send_dashboard_update.delay()
+            notify_dashboard()
             send_transaction_confirmation(tx)
 
             log_action(request.user, 'create', target=tx,

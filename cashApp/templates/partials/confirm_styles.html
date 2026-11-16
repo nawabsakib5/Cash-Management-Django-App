@@ -1,0 +1,26 @@
+<style>
+  .cm-wrap { display: flex; justify-content: center; padding: 60px 20px; }
+  .cm-card {
+    width: 100%; max-width: 480px; padding: 40px; text-align: center;
+    background: var(--surface); border: 1px solid rgba(244, 63, 94, 0.22);
+    border-radius: var(--radius-lg); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+  .cm-card.cm-neutral { border-color: var(--border); }
+  .cm-icon {
+    width: 56px; height: 56px; border-radius: 50%; margin-bottom: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--rose-fog); border: 1px solid rgba(244, 63, 94, 0.22); color: var(--rose);
+  }
+  .cm-icon svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .cm-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+  .cm-text  { font-size: 13.5px; color: var(--text3); line-height: 1.6; margin-bottom: 24px; }
+  .cm-text strong { color: var(--text); }
+  .cm-actions { display: flex; gap: 12px; }
+  .cm-btn {
+    flex: 1; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 8px; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--text);
+  }
+  .cm-btn-danger { background: var(--rose); border-color: rgba(244, 63, 94, 0.6); color: #fff; }
+  .cm-btn-ok     { background: var(--emerald); border-color: rgba(16, 185, 129, 0.6); color: #fff; }
+</style>

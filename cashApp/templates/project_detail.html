@@ -123,8 +123,9 @@
         <span>Download BDT Ledger</span>
       </a>
 
-      <!-- লাইভ গুগল শিট বাটন (গুগল স্প্রেডশিটের ডাইরেক্ট লিঙ্ক) [3] -->
-      <a href="https://docs.google.com/spreadsheets/d/1Non3fdui16sefT-4fOwme9zzMmGNPIbtlBDaIxd8tas/edit?gid=0#gid=0" target="_blank" class="btn-sheets-premium">
+      {% if google_sheet_url %}
+      <!-- Live Google Sheet button (URL comes from GOOGLE_SHEET_ID setting) -->
+      <a href="{{ google_sheet_url }}" target="_blank" rel="noopener noreferrer" class="btn-sheets-premium">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
           <line x1="3" y1="9" x2="21" y2="9"/>
@@ -133,6 +134,7 @@
         </svg>
         <span>Live Google Sheets</span>
       </a>
+      {% endif %}
 
       <!-- মেম্বার পারমিশন কন্ট্রোল বাটন -->
       <a href="{% url 'admin_manage_project_permissions' project.pk %}" class="adm-btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text2); background: var(--surface); border: 1px solid var(--border); text-decoration: none;">

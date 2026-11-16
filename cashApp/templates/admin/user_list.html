@@ -348,7 +348,499 @@
       </div>
 
       <div style="display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-        <!-- Glowing "+ New User" Action Button [3] -->
+        <!-- Glowing "+ New User" Action Button -->
+        <a href="{% url 'admin_user_create' %}" class="btn-create-user-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New User
+        </a>
+
+        <!-- Premium Outlined Dashboard Arrow Button -->
+        <a href="{% url 'admin_dashboard' %}" class="adm-btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-size: 13.5px; font-weight: 700; color: var(--indigo) !important; background: var(--indigo-fog); border: 1px solid var(--indigo-line); text-decoration: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Search Section Panel -->
+    <div class="search-wrap-premium">
+      <form method="get" action="" style="display: flex; width: 100%; gap: 12px;">
+        <div style="position: relative; flex: 1;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none;">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" name="q" class="search-input-premium" placeholder="Search by username or email..." value="{{ query|default:'' }}">
+        </div>
+        <button type="submit" class="btn-search-premium">
+          <span>Search</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Users List Table Card -->
+    <div class="adm-table-card">
+      <div class="adm-table-head">
+        <div class="adm-table-title">
+          <span class="adm-table-title-dot" style="background: var(--primary);"></span>
+          All Accounts
+          <span style="font-size: 12px; color: var(--text3); font-weight: 500;">({{ users|length }} users total)</span>
+        </div>
+      </div>
+
+      {% if users %}
+      <div style="overflow-x: auto;">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>User Profile</th>
+              <th>Contact Email</th>
+              <th>Status Scope</th>
+              <th>Assigned Role</th>
+              <th style="text-align: right;">Action Control</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <!-- Profile details with gradient initial letters -->
+              <td>
+                <div class="adm-cell-user">
+                  <div class="avatar-premium">{{ u.username|first|upper }}</div>
+                  <div>
+                    <div class="adm-cell-name">{{ u.username }}</div>
+                    {% if u.full_name %}<div class="adm-cell-sub" style="font-size: 11px; color: var(--text3); margin-top: 1px;">{{ u.full_name }}</div>{% endif %}
+                  </div>
+                </div>
+              </td>
+              
+              <!-- Contact email -->
+              <td style="color: var(--text2); font-weight: 500;">
+                {{ u.email }}
+              </td>
+              
+              <!-- Status badging with pulse light effect -->
+              <td>
+                {% if u.is_frozen %}
+                <span class="badge-status frozen">
+                  <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--rose);"></span>
+                  Frozen
+                </span>
+                {% else %}
+                <span class="badge-status active">
+                  <span class="badge-pulse-green"></span>
+                  Active
+                </span>
+                {% endif %}
+              </td>
+              
+              <!-- User assigned roles -->
+              <td>
+                {% if u.user_type == 'admin' %}
+                <span class="badge-role admin">
+                  Administrator
+                </span>
+                {% else %}
+                <span class="badge-role user">
+                  Regular User
+                </span>
+                {% endif %}
+              </td>
+              
+              <!-- Actions column reconstructed into sleek premium pill controls -->
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
+                  <a href="{% url 'admin_user_activity' u.pk %}" class="btn-pill-premium action-primary">Activity</a>
+                  <a href="{% url 'admin_user_subcategory' u.pk %}" class="btn-pill-premium action-primary">Categories</a>
+                  <a href="{% url 'admin_user_edit' u.pk %}" class="btn-pill-premium action-primary">Edit</a>
+                  
+                  {% if u != request.user %}
+                  <form method="post" action="{% url 'admin_user_freeze' u.pk %}" style="margin: 0; display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-pill-premium action-warning">
+                      {% if u.is_frozen %}Unfreeze{% else %}Freeze{% endif %}
+                    </button>
+                  </form>
+                  <a href="{% url 'admin_user_delete' u.pk %}" class="btn-pill-premium action-danger">Delete</a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="adm-empty">
+        <div class="adm-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <p class="adm-empty-title">No matching accounts</p>
+        <p class="adm-empty-sub">No registered user accounts found for this search.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+{% endblock %}{% extends 'base.html' %}
+{% block title %}Manage Users — CashManager{% endblock %}
+{% block nav_user_list %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Reset main-wrapper for full-width layout (সাইডবার ডবল হওয়া রোধ করতে) ── */
+  .main-wrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
+
+  .adm-layout {
+    display: block !important;
+    width: 100%;
+    min-height: calc(100vh - var(--topbar-h));
+  }
+
+  .adm-main {
+    width: 100% !important;
+    padding: 32px;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+
+  /* ── Page Header ── */
+  .adm-page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .adm-breadcrumb {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .adm-breadcrumb svg {
+    width: 12px !important;
+    height: 12px !important;
+    stroke: var(--text3);
+    fill: none;
+    stroke-width: 2.5;
+  }
+
+  /* ── 10x Premium Dashboard Back Button ── */
+  .btn-back-dashboard-v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--indigo) !important;
+    background: var(--indigo-fog);
+    border: 1px solid var(--indigo-line);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-back-dashboard-v2 svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.5;
+    transition: transform 0.2s ease;
+  }
+  .btn-back-dashboard-v2:hover {
+    transform: translateX(-2.5px);
+    background: var(--indigo);
+    color: #ffffff !important;
+    border-color: var(--indigo);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  }
+  .btn-back-dashboard-v2:hover svg {
+    transform: translateX(-2px);
+  }
+
+  /* ── Ultra Premium Animated New User Button ── */
+  .btn-create-user-premium {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    color: #ffffff !important;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45);
+    animation: btn-glow-pulse 2.5s infinite;
+    transition: all 0.25s ease;
+  }
+  .btn-create-user-premium svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke-width: 2.5;
+  }
+  .btn-create-user-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  }
+
+  @keyframes btn-glow-pulse {
+    0% { box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45), 0 0 0 0 rgba(99, 102, 241, 0.4); }
+    50% { box-shadow: 0 4px 22px rgba(99, 102, 241, 0.5), 0 0 0 8px rgba(99, 102, 241, 0); }
+    100% { box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45), 0 0 0 0 rgba(99, 102, 241, 0); }
+  }
+
+  /* ── Styled Search Section ── */
+  .search-wrap-premium {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .search-input-premium {
+    flex: 1;
+    height: 42px;
+    padding: 0 16px 0 42px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input-premium:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+  .btn-search-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 20px;
+    height: 42px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--indigo);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+    transition: all 0.2s;
+  }
+  .btn-search-premium:hover {
+    background: var(--indigo-mid);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  }
+
+  /* ── 10x Impressive Table Design styling ── */
+  .adm-table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+  }
+  
+  .adm-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  /* Table Header */
+  .adm-table thead th {
+    background: var(--surface2);
+    padding: 16px 24px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    border-bottom: 1.5px solid var(--border);
+  }
+
+  /* Table Row Hover Micro-interaction */
+  .adm-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .adm-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.02) !important;
+  }
+  .adm-table tbody td {
+    padding: 16px 24px;
+    vertical-align: middle;
+  }
+
+  /* Avatar with gorgeous gradient border */
+  .avatar-premium {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--indigo-fog) 0%, rgba(99,102,241,0.18) 100%);
+    border: 1.5px solid var(--indigo-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--indigo);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.05);
+  }
+
+  /* Pulse status light animations */
+  .badge-pulse-green {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    box-shadow: 0 0 8px var(--emerald);
+    animation: pulse-active 1.8s infinite;
+  }
+  @keyframes pulse-active {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    50% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.6; }
+  }
+
+  /* High-end Styled Badges */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1px solid var(--border);
+  }
+  .badge-status.active {
+    background: var(--emerald-soft);
+    color: var(--emerald);
+    border-color: rgba(16, 185, 129, 0.2);
+  }
+  .badge-status.frozen {
+    background: var(--rose-soft);
+    color: var(--rose);
+    border-color: rgba(244, 63, 94, 0.2);
+  }
+
+  .badge-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1.5px solid var(--border);
+  }
+  .badge-role.admin {
+    background: var(--indigo-soft);
+    color: var(--indigo);
+    border-color: var(--indigo-line);
+  }
+  .badge-role.user {
+    background: var(--surface2);
+    color: var(--text3);
+    border-color: var(--border-color-darker, #cbd5e1);
+  }
+
+  /* Sleek, Premium Pill Buttons */
+  .btn-pill-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-pill-premium:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+  }
+  
+  /* Primary Action: Indigo */
+  .btn-pill-premium.action-primary:hover {
+    border-color: var(--indigo);
+    background: var(--indigo-soft);
+    color: var(--indigo);
+  }
+  /* Warning Action: Amber */
+  .btn-pill-premium.action-warning {
+    cursor: pointer;
+  }
+  .btn-pill-premium.action-warning:hover {
+    border-color: var(--amber);
+    background: rgba(245, 158, 11, 0.08);
+    color: #d97706;
+  }
+  /* Danger Action: Rose */
+  .btn-pill-premium.action-danger:hover {
+    border-color: var(--rose);
+    background: var(--rose-soft);
+    color: var(--rose);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="adm-layout">
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="adm-main">
+
+    <!-- Page Header & Interactive Actions -->
+    <div class="adm-page-head">
+      <div>
+        <div class="adm-breadcrumb">
+          Admin Panel
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          Manage Users
+        </div>
+        <h1 class="adm-page-title">Manage Users</h1>
+        <p style="font-size: 14px; color: var(--text3); margin-top: 6px;">View, edit, freeze or delete any user account registered in the system.</p>
+      </div>
+
+      <div style="display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <!-- Glowing "+ New User" Action Button -->
         <a href="{% url 'admin_user_create' %}" class="btn-create-user-premium">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           New User
