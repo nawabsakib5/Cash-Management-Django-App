@@ -42,3 +42,7 @@ CSRF_COOKIE_SECURE      = True
 SECURE_HSTS_SECONDS     = config('SECURE_HSTS_SECONDS', default=3600, cast=int)
 SECURE_REFERRER_POLICY  = 'same-origin'
 X_FRAME_OPTIONS         = 'DENY'
+
+# One proxy (Render's load balancer) sits in front of the app. If the audit log
+# ever shows proxy IPs instead of real client IPs, raise this to 2.
+TRUSTED_PROXY_COUNT = config('TRUSTED_PROXY_COUNT', default=1, cast=int)

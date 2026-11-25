@@ -116,7 +116,10 @@
         {% if user.is_admin %}
         <a href="{% url 'admin_dashboard' %}" class="nav-item"><i class="ti ti-shield"></i> Admin Panel</a>
         {% endif %}
-        <a href="{% url 'logout' %}" class="nav-item"><i class="ti ti-logout"></i> Logout</a>
+        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="nav-item" style="width:100%; background:none; border:none; font-family:inherit; text-align:left;"><i class="ti ti-logout"></i> Logout</button>
+        </form>
       </div>
       <div class="live-badge">
         <span class="pulse-dot"></span>

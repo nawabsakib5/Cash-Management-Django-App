@@ -1,8 +1,8 @@
-
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
 from .models import AuditLog
+from .security import get_client_ip
 
 
 # ── Permission Decorators ──────────────────────────────────────────────────────
@@ -41,10 +41,8 @@ def log_action(actor, action, target=None, detail='', request=None):
         log_action(request.user, 'create', target=transaction, request=request)
         log_action(request.user, 'freeze', detail=f'User: {user.username}', request=request)
     """
-    ip = None
-    if request:
-        x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
-        ip = x_forwarded.split(',')[0] if x_forwarded else request.META.get('REMOTE_ADDR')
+    # Validated IP only: a spoofed X-Forwarded-For can no longer reach the DB.
+    ip = get_client_ip(request) if request else None
 
     target_type = ''
     target_id   = None

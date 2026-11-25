@@ -30,6 +30,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'cashApp.middleware.FrozenUserMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -118,6 +119,33 @@ else:
     CHANNEL_LAYERS = {
         'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'},
     }
+
+# ── Cache (login lockout / rate-limit counters) ────────────────────────────────
+# LocMem is per-process; with REDIS_URL the counters are shared between processes.
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        },
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'cashmanager-default',
+        },
+    }
+
+# ── Authentication hardening ───────────────────────────────────────────────────
+LOGIN_MAX_ATTEMPTS    = config('LOGIN_MAX_ATTEMPTS', default=5, cast=int)       # per username + IP
+LOGIN_IP_MAX_ATTEMPTS = config('LOGIN_IP_MAX_ATTEMPTS', default=20, cast=int)   # per IP, any username
+LOGIN_LOCKOUT_SECONDS = config('LOGIN_LOCKOUT_SECONDS', default=900, cast=int)  # window and lock time
+SIGNUP_MAX_PER_HOUR   = config('SIGNUP_MAX_PER_HOUR', default=10, cast=int)     # per IP
+
+# Number of reverse proxies in front of the app whose X-Forwarded-For we trust.
+# 0 = use REMOTE_ADDR only (local dev). production.py defaults this to 1.
+TRUSTED_PROXY_COUNT = config('TRUSTED_PROXY_COUNT', default=0, cast=int)
 
 # ── Google Sheets sync ─────────────────────────────────────────────────────────
 GOOGLE_SHEET_ID         = config('GOOGLE_SHEET_ID', default='')

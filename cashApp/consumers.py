@@ -8,6 +8,19 @@ from .models import Transaction, Project
 class DashboardConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
+        # The dashboard broadcasts system-wide totals across every project, so only
+        # admins may listen. Anonymous, frozen and regular users are refused.
+        # (scope['user'] is already resolved by AuthMiddlewareStack.)
+        user = self.scope.get('user')
+        if (
+            user is None
+            or not user.is_authenticated
+            or getattr(user, 'is_frozen', False)
+            or getattr(user, 'user_type', '') != 'admin'
+        ):
+            await self.close(code=4401)
+            return
+
         await self.channel_layer.group_add('dashboard', self.channel_name)
         await self.accept()
         # connect হলেই সাথে সাথে current data পাঠাও
@@ -15,6 +28,7 @@ class DashboardConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(data))
 
     async def disconnect(self, close_code):
+        # group_discard is harmless if the socket was rejected in connect().
         await self.channel_layer.group_discard('dashboard', self.channel_name)
 
     async def receive(self, text_data):

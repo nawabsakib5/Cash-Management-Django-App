@@ -4,8 +4,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db.models import Q, Prefetch
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.conf import settings
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -16,7 +19,13 @@ from .forms import *
 from .decorators import admin_required, not_frozen, log_action
 from .utils import *
 from .tasks import send_dashboard_update
+from . import security
+from .permissions import (
+    Role, get_project_role, visible_projects, can_manage_project, can_add_entries,
+    can_delete_project, can_edit_transaction, editable_transaction_ids,
+)
 import json
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -195,33 +204,62 @@ def Signup(request):
         return redirect('project_list')
 
     if request.method == 'POST':
-        username         = request.POST.get('username')
-        full_name        = request.POST.get('full_name')
-        phone            = request.POST.get('phone')
-        email            = request.POST.get('email')
-        password         = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
+        if not security.hit_rate_limit('signup', request, settings.SIGNUP_MAX_PER_HOUR, 3600):
+            messages.error(request, "Too many sign-up attempts. Please try again later.")
+            return render(request, 'register.html', status=429)
+
+        username         = (request.POST.get('username') or '').strip()
+        full_name        = (request.POST.get('full_name') or '').strip()
+        phone            = (request.POST.get('phone') or '').strip()
+        email            = (request.POST.get('email') or '').strip()
+        password         = request.POST.get('password') or ''        # never strip passwords
+        confirm_password = request.POST.get('confirm_password') or ''
+
+        def fail(msg):
+            messages.error(request, msg)
+            return render(request, 'register.html')
 
         if not all([username, email, password, confirm_password]):
-            messages.error(request, "Please fill in all fields.")
-            return render(request, 'register.html')
+            return fail("Please fill in all fields.")
+
+        # '@' is reserved for e-mail addresses: otherwise someone could register a
+        # username equal to another user's e-mail and clash with e-mail login.
+        if '@' in username:
+            return fail("Username cannot contain '@'.")
+        try:
+            CustomUser.username_validator(username)
+        except ValidationError as exc:
+            return fail(exc.messages[0])
+        if len(username) > 150 or len(full_name) > 150 or len(phone) > 20 or len(email) > 254:
+            return fail("One of the fields is too long.")
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            return fail("Please enter a valid e-mail address.")
 
         if password != confirm_password:
-            messages.error(request, "Passwords do not match.")
-            return render(request, 'register.html')
+            return fail("Passwords do not match.")
 
-        if CustomUser.objects.filter(username=username).exists():
-            messages.error(request, "This username already exists.")
-            return render(request, 'register.html')
+        if CustomUser.objects.filter(username__iexact=username).exists():
+            return fail("This username already exists.")
 
-        if CustomUser.objects.filter(email=email).exists():
-            messages.error(request, "This email already exists.")
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            return fail("This email already exists.")
+
+        # Run Django's password validators (length, common passwords, similarity...).
+        candidate = CustomUser(username=username, email=email, full_name=full_name)
+        try:
+            validate_password(password, user=candidate)
+        except ValidationError as exc:
+            for msg in exc.messages:
+                messages.error(request, msg)
             return render(request, 'register.html')
 
         user = CustomUser.objects.create_user(
             username  = username,
-            full_name = full_name or '',
-            phone     = phone or '',
+            full_name = full_name,
+            phone     = phone,
             email     = email,
             user_type = 'user',
             password  = password,
@@ -229,7 +267,7 @@ def Signup(request):
         login(request, user)
         send_welcome_email(user)
         messages.success(request, f"Welcome {username}! Your account has been created.")
-        
+
         return redirect('project_list')
 
     return render(request, 'register.html')
@@ -242,60 +280,91 @@ def Login(request):
         return redirect('project_list')
 
     if request.method == 'POST':
-        username_or_email = request.POST.get('username', '').strip()
-        password          = request.POST.get('password', '').strip()
+        identifier = request.POST.get('username', '').strip()
+        password   = request.POST.get('password', '')   # never strip passwords
 
-        if not username_or_email or not password:
+        if not identifier or not password:
             messages.error(request, "Please enter both username/email and password.")
             return render(request, 'login.html')
 
-        user_obj = CustomUser.objects.filter(
-            Q(username__iexact=username_or_email) | Q(email__iexact=username_or_email)
-        ).first()
+        # 1. Brute-force protection - checked before touching the password, so even
+        #    the correct password is refused while locked. The same message appears
+        #    whether or not the account exists, so it cannot be used to probe users.
+        wait = security.login_lock_remaining(request, identifier)
+        if wait:
+            messages.error(
+                request,
+                f"Too many failed attempts. Please try again in {math.ceil(wait / 60)} minute(s)."
+            )
+            return render(request, 'login.html', status=429)
 
-        if user_obj:
-            if not user_obj.is_active:
-                messages.error(request, "This account is inactive. Please contact support.")
-                return render(request, 'login.html')
+        # 2. Look the account up (username first, then e-mail: deterministic).
+        user_obj = (
+            CustomUser.objects.filter(username__iexact=identifier).first()
+            or CustomUser.objects.filter(email__iexact=identifier).first()
+        )
 
-            if getattr(user_obj, 'is_frozen', False):
-                messages.error(request, "Your account is frozen. Please contact administrator.")
-                return render(request, 'login.html')
+        if user_obj is not None:
+            password_ok = user_obj.check_password(password)
+        else:
+            CustomUser().set_password(password)   # burn the same hashing time
+            password_ok = False
 
-            if user_obj.check_password(password):
-                user = authenticate(request, username=user_obj.username, password=password)
+        # 3. One generic error for "no such user" and "wrong password".
+        if not password_ok:
+            if security.record_login_failure(request, identifier):
+                logger.warning(
+                    'Login lockout triggered for %r from %s',
+                    identifier[:50], security.get_client_ip(request),
+                )
+            messages.error(request, "Invalid username/email or password.")
+            return render(request, 'login.html')
 
-                if user is None:
-                    user = user_obj
-                    user.backend = 'django.contrib.auth.backends.ModelBackend'
+        # 4. Credentials are proven correct, so account-state messages are safe to show.
+        if not user_obj.is_active:
+            messages.error(request, "This account is inactive. Please contact support.")
+            return render(request, 'login.html')
 
-                login(request, user)
+        if user_obj.is_frozen:
+            messages.error(request, "Your account is frozen. Please contact administrator.")
+            return render(request, 'login.html')
 
-                try:
-                    log_action(user, 'login', detail='Logged in', request=request)
-                except Exception:
-                    pass
+        security.clear_login_failures(request, identifier)
+        user_obj.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, user_obj)
 
-                next_url = request.POST.get('next') or request.GET.get('next')
-                if next_url and url_has_allowed_host_and_scheme(
-                    next_url,
-                    allowed_hosts={request.get_host()},
-                    require_https=request.is_secure(),
-                ):
-                    return redirect(next_url)
+        try:
+            log_action(user_obj, 'login', detail='Logged in', request=request)
+        except Exception:
+            logger.exception('Could not write login audit entry')
 
-                if getattr(user, 'user_type', '') == 'admin':
-                    return redirect('admin_dashboard')
-                return redirect('project_list')
+        next_url = request.POST.get('next') or request.GET.get('next')
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return redirect(next_url)
 
-        messages.error(request, "Invalid username/email or password.")
-        return render(request, 'login.html')
+        if getattr(user_obj, 'user_type', '') == 'admin':
+            return redirect('admin_dashboard')
+        return redirect('project_list')
 
     return render(request, 'login.html')
 
+
 def logoutpage(request):
+    # Logging out changes state, so only POST may do it (a GET link could be
+    # triggered by any other website, e.g. through an <img> tag). A stray GET
+    # just goes back to the app.
+    if request.method != 'POST':
+        return redirect('project_list')
+
     if request.user.is_authenticated:
-        log_action(request.user, 'logout', detail='Logged out', request=request)
+        try:
+            log_action(request.user, 'logout', detail='Logged out', request=request)
+        except Exception:
+            logger.exception('Could not write logout audit entry')
     logout(request)
     return redirect('login')
 
@@ -303,9 +372,16 @@ def logoutpage(request):
 @login_required(login_url='login')
 def changapassword(request):
     if request.method == 'POST':
-        old_pass = request.POST.get('old_pass')
-        new_pass = request.POST.get('new_pass')
-        con_pass = request.POST.get('con_pass')
+        # Slow down someone guessing the current password from a hijacked session.
+        if not security.hit_rate_limit(
+            'change-password', request, 10, 900, extra=request.user.pk
+        ):
+            messages.error(request, "Too many attempts. Please try again in a few minutes.")
+            return render(request, 'change_password.html', status=429)
+
+        old_pass = request.POST.get('old_pass') or ''
+        new_pass = request.POST.get('new_pass') or ''
+        con_pass = request.POST.get('con_pass') or ''
 
         if not request.user.check_password(old_pass):
             messages.error(request, "Current password is incorrect.")
@@ -315,13 +391,24 @@ def changapassword(request):
             messages.error(request, "New passwords do not match.")
             return render(request, 'change_password.html')
 
-        if len(new_pass) < 8:
-            messages.error(request, "Password must be at least 8 characters.")
+        if new_pass == old_pass:
+            messages.error(request, "New password must be different from the current one.")
+            return render(request, 'change_password.html')
+
+        try:
+            validate_password(new_pass, user=request.user)
+        except ValidationError as exc:
+            for msg in exc.messages:
+                messages.error(request, msg)
             return render(request, 'change_password.html')
 
         request.user.set_password(new_pass)
         request.user.save()
         update_session_auth_hash(request, request.user)
+        try:
+            log_action(request.user, 'edit', detail='Password changed', request=request)
+        except Exception:
+            logger.exception('Could not write password-change audit entry')
         send_password_change_email(request.user)
         messages.success(request, "Password changed successfully.")
         return redirect('project_list')
@@ -329,22 +416,47 @@ def changapassword(request):
     return render(request, 'change_password.html')
 
 
+# ─── Permission helpers ────────────────────────────────────────────────────────
+
+def _deny(request, message, to='project_list', **kwargs):
+    messages.error(request, message)
+    return redirect(to, **kwargs)
+
+
+def _get_transaction_for_user(request, pk):
+    """
+    Fetch a live (not deleted) transaction. Users with no access to its project get
+    a 404, so they cannot even confirm that the transaction exists.
+    """
+    transaction = get_object_or_404(
+        Transaction.objects.select_related('project'), pk=pk, is_deleted=False
+    )
+    if not request.user.is_admin:
+        project = transaction.project
+        if project is not None:
+            if get_project_role(request.user, project) < Role.VIEWER:
+                raise Http404
+        elif transaction.user_id != request.user.id:
+            raise Http404
+    return transaction
+
+
+def _redirect_after_transaction(transaction):
+    if transaction.project_id:
+        return redirect('project_detail', pk=transaction.project_id)
+    return redirect('project_list')
+
+
 # ─── Project Views ─────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def project_list(request):
-    if request.user.is_admin:
-        projects = Project.objects.select_related('user').prefetch_related('members').all().order_by('-created_at')
-    else:
-        
-        hidden_project_ids = ProjectPermission.objects.filter(
-            user=request.user, access_level='hide'
-        ).values_list('project_id', flat=True)
-
-        owned  = request.user.owned_projects.exclude(id__in=hidden_project_ids)
-        joined = request.user.joined_projects.exclude(id__in=hidden_project_ids)
-        projects = (owned | joined).distinct().order_by('-created_at')
-        
+    projects = (
+        visible_projects(request.user)
+        .select_related('user')
+        .prefetch_related('members')
+        .order_by('-created_at')
+    )
     return render(request, 'project_list.html', {
         'projects': projects,
         'is_admin_view': request.user.is_admin,
@@ -376,25 +488,13 @@ def project_create(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    is_admin_view = request.user.is_admin
-    is_owner      = request.user == project.user
-    is_member     = request.user in project.members.all()
+    role = get_project_role(request.user, project)
+    if role < Role.VIEWER:
+        return _deny(request, "You do not have permission to access this project.")
 
-    
-    user_permission = None
-    if not is_admin_view and not is_owner:
-        user_perm_obj = project.user_permissions.filter(user=request.user).first()
-        if user_perm_obj:
-            user_permission = user_perm_obj.access_level
-            if user_permission == 'hide':
-                messages.error(request, "You do not have permission to access this project.")
-                return redirect('project_list')
-        elif not is_member:
-            messages.error(request, "You do not have permission to access this project.")
-            return redirect('project_list')
-
-    
-    can_edit = is_admin_view or is_owner or (user_permission == 'edit') or (not user_permission and is_member)
+    is_admin_view = role == Role.ADMIN
+    is_owner      = request.user.id == project.user_id
+    can_edit      = role >= Role.CONTRIBUTOR
 
     today        = timezone.now().date()
     transactions = project.transactions.filter(is_deleted=False)
@@ -459,15 +559,17 @@ def project_detail(request, pk):
         'active_date_to':   date_to,
         'can_edit':         can_edit,  
         'dynamic_rows_data': dynamic_rows_data, 
+        'can_delete_project': can_delete_project(request.user, project),
+        'editable_tx_ids':    editable_transaction_ids(request.user, role, transactions),
     })
 
 @login_required(login_url='login')
 @not_frozen
 def project_edit(request, pk):
-    if request.user.is_admin:
-        project = get_object_or_404(Project, pk=pk)
-    else:
-        project = get_object_or_404(Project, pk=pk, user=request.user)
+    project = get_object_or_404(Project, pk=pk)
+    if not can_manage_project(request.user, project):
+        return _deny(request, "Only the project owner or an admin can edit this project.")
+
     if request.method == 'POST':
         form = ProjectForm(request.POST, instance=project)
         if form.is_valid():
@@ -483,39 +585,55 @@ def project_edit(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def project_delete(request, pk):
-    if request.user.is_admin:
-        project = get_object_or_404(Project, pk=pk)
-    else:
-        project = get_object_or_404(Project, pk=pk, user=request.user)
+    project = get_object_or_404(Project, pk=pk)
+    if not can_manage_project(request.user, project):
+        return _deny(request, "Only the project owner or an admin can delete this project.")
+
+    if not can_delete_project(request.user, project):
+        return _deny(
+            request,
+            "This project contains transactions, so only an admin can delete it.",
+            to='project_detail', pk=pk,
+        )
+
     if request.method == 'POST':
+        log_action(request.user, 'delete_confirm', target=project,
+                   detail=f"Project '{project.name}' deleted", request=request)
         project.delete()
         messages.success(request, "Project deleted successfully.")
         return redirect('project_list')
     return render(request, 'project_confirm_delete.html', {'project': project})
 
 
-
 @login_required(login_url='login')
 @not_frozen
 def project_members(request, pk):
-    if request.user.is_admin:
-        project = get_object_or_404(Project, pk=pk)
-    else:
-        project = get_object_or_404(Project, pk=pk, user=request.user)
+    project = get_object_or_404(Project, pk=pk)
+    if not can_manage_project(request.user, project):
+        return _deny(request, "Only the project owner or an admin can manage members.")
 
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        try:
-            user_to_add = CustomUser.objects.get(username=username)
-            if user_to_add == project.user:
-                messages.error(request, "You are the owner and cannot add yourself as a member.")
-            elif user_to_add in project.members.all():
-                messages.error(request, f"{username} is already a member.")
-            else:
-                project.members.add(user_to_add)
-                messages.success(request, f"{username} has been added to the project.")
-        except CustomUser.DoesNotExist:
+        username    = request.POST.get('username', '').strip()
+        user_to_add = CustomUser.objects.filter(username__iexact=username, is_active=True).first()
+
+        if user_to_add is None:
             messages.error(request, "No user found with that username.")
+        elif user_to_add.pk == project.user_id:
+            messages.error(request, "You are the owner and cannot add yourself as a member.")
+        elif project.members.filter(pk=user_to_add.pk).exists():
+            messages.error(request, f"{user_to_add.username} is already a member.")
+        elif ProjectPermission.objects.filter(
+            project=project, user=user_to_add, access_level='hide'
+        ).exists():
+            messages.error(
+                request,
+                f"{user_to_add.username}'s access to this project was restricted by an admin."
+            )
+        else:
+            project.members.add(user_to_add)
+            log_action(request.user, 'edit', target=project,
+                       detail=f"Member added: {user_to_add.username}", request=request)
+            messages.success(request, f"{user_to_add.username} has been added to the project.")
         return redirect('project_members', pk=pk)
 
     return render(request, 'project_members.html', {'project': project})
@@ -524,12 +642,23 @@ def project_members(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def project_member_remove(request, pk, user_id):
-    if request.user.is_admin:
-        project = get_object_or_404(Project, pk=pk)
-    else:
-        project = get_object_or_404(Project, pk=pk, user=request.user)
-    member  = get_object_or_404(CustomUser, pk=user_id)
+    project = get_object_or_404(Project, pk=pk)
+    if not can_manage_project(request.user, project):
+        return _deny(request, "Only the project owner or an admin can manage members.")
+
+    # Changing membership is a state change: POST only (a GET link could be
+    # triggered from another site).
+    if request.method != 'POST':
+        return redirect('project_members', pk=pk)
+
+    member = get_object_or_404(CustomUser, pk=user_id)
     project.members.remove(member)
+    # A leftover 'view'/'edit' row would keep granting access; an admin's 'hide' stays.
+    ProjectPermission.objects.filter(project=project, user=member).exclude(
+        access_level='hide'
+    ).delete()
+    log_action(request.user, 'edit', target=project,
+               detail=f"Member removed: {member.username}", request=request)
     messages.success(request, f"{member.username} has been removed from the project.")
     return redirect('project_members', pk=pk)
 
@@ -542,9 +671,8 @@ def transaction_create(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
     is_admin_view = request.user.is_admin
-    if not is_admin_view and request.user != project.user and request.user not in project.members.all():
-        messages.error(request, "You don't have permission to add transactions to this project.")
-        return redirect('project_list')
+    if not can_add_entries(request.user, project):
+        return _deny(request, "You don't have permission to add transactions to this project.")
 
     balance = project.balance()
 
@@ -588,31 +716,37 @@ def transaction_create(request, pk):
 @login_required(login_url='login')
 @not_frozen
 def transaction_edit(request, pk):
-    if request.user.is_admin:
-        transaction = get_object_or_404(Transaction, pk=pk)
-    else:
-        transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    transaction = _get_transaction_for_user(request, pk)
+    if not can_edit_transaction(request.user, transaction):
+        messages.error(request, "You don't have permission to edit this transaction.")
+        return _redirect_after_transaction(transaction)
+
     if request.method == 'POST':
         form = TransactionForm(request.POST, instance=transaction, user=request.user)
         if form.is_valid():
             form.save()
             log_action(request.user, 'edit', target=transaction, request=request)
             messages.success(request, "Transaction updated successfully.")
-            return redirect('project_detail', pk=transaction.project.pk)
+            return _redirect_after_transaction(transaction)
     else:
         form = TransactionForm(instance=transaction, user=request.user)
     return render(request, 'transaction_form.html', {
         'form': form, 'project': transaction.project,
     })
 
+
 @login_required(login_url='login')
 @not_frozen
 def transaction_delete(request, pk):
-    if request.user.is_admin:
-        transaction = get_object_or_404(Transaction, pk=pk)
-    else:
-        transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
-    project_pk = transaction.project.pk
+    transaction = _get_transaction_for_user(request, pk)
+
+    if transaction.delete_requested:
+        messages.info(request, "A delete request for this transaction is already pending.")
+        return _redirect_after_transaction(transaction)
+
+    if not can_edit_transaction(request.user, transaction):
+        messages.error(request, "You don't have permission to delete this transaction.")
+        return _redirect_after_transaction(transaction)
 
     if request.method == 'POST':
         transaction.request_delete()
@@ -621,7 +755,7 @@ def transaction_delete(request, pk):
         )
         send_delete_request_email(transaction, admin_emails)
         log_action(request.user, 'delete_request', target=transaction, request=request)
-        return redirect('project_detail', pk=project_pk)
+        return _redirect_after_transaction(transaction)
 
     return render(request, 'transaction_confirm_delete.html', {'transaction': transaction})
 
@@ -818,12 +952,30 @@ def admin_user_create(request):
 @admin_required
 def admin_user_edit(request, user_id):
     target_user = get_object_or_404(CustomUser, pk=user_id)
+    original_type, original_frozen = target_user.user_type, target_user.is_frozen
+
     if request.method == 'POST':
         form = AdminUserEditForm(request.POST, instance=target_user)
         if form.is_valid():
+            new_type   = form.cleaned_data['user_type']
+            new_frozen = form.cleaned_data['is_frozen']
+
+            # An admin must not demote or freeze themselves: it could leave the
+            # system without a working admin.
+            if target_user.pk == request.user.pk and (
+                new_type != original_type or new_frozen != original_frozen
+            ):
+                messages.error(request, "You cannot change your own role or freeze your own account.")
+                return render(request, 'admin/user_form.html', {
+                    'form': form, 'action': 'Edit', 'target_user': target_user,
+                })
+
             form.save()
             if target_user.user_type == 'admin':
                 AdminProfile.objects.get_or_create(user=target_user)
+            if new_frozen != original_frozen:
+                log_action(request.user, 'freeze' if new_frozen else 'unfreeze',
+                           target=target_user, request=request)
             log_action(request.user, 'edit', target=target_user,
                        detail=f"User '{target_user.username}' edited by admin", request=request)
             messages.success(request, f"User '{target_user.username}' updated successfully.")
@@ -1086,50 +1238,62 @@ def admin_import_project_sheet(request):
 
 @admin_required
 def admin_manage_project_permissions(request, pk):
-    
     project = get_object_or_404(Project, pk=pk)
-    users = CustomUser.objects.filter(user_type='user')
+    # The owner always has full access, so they are not listed or editable here.
+    users = CustomUser.objects.filter(user_type='user').exclude(pk=project.user_id)
 
     if request.method == 'POST':
-        user_id = request.POST.get('user_id')
         access_level = request.POST.get('access_level')
-        target_user = get_object_or_404(CustomUser, pk=user_id)
+        valid_levels = {value for value, _label in ProjectPermission.PERMISSION_CHOICES}
+        try:
+            user_id = int(request.POST.get('user_id', ''))
+        except (TypeError, ValueError):
+            raise Http404
 
-        perm, created = ProjectPermission.objects.update_or_create(
+        if access_level not in valid_levels:
+            messages.error(request, "Invalid access level.")
+            return redirect('admin_manage_project_permissions', pk=project.pk)
+
+        target_user = get_object_or_404(users, pk=user_id)
+
+        ProjectPermission.objects.update_or_create(
             project=project,
             user=target_user,
             defaults={'access_level': access_level}
         )
-        
-        if access_level in ['view', 'edit']:
+
+        if access_level in ('view', 'edit'):
             project.members.add(target_user)
         else:
             project.members.remove(target_user)
 
+        log_action(request.user, 'edit', target=project,
+                   detail=f"Access for {target_user.username} set to '{access_level}'",
+                   request=request)
         messages.success(request, f"Permissions updated for {target_user.username} successfully.")
         return redirect('admin_manage_project_permissions', pk=project.pk)
 
+    # Show the access each user really has (same rules as permissions.get_project_role).
     permissions_map = {p.user_id: p.access_level for p in project.user_permissions.all()}
+    member_ids = set(project.members.values_list('id', flat=True))
     for u in users:
-        u.current_access_level = permissions_map.get(u.id, 'view')  
+        u.current_access_level = permissions_map.get(u.id) or ('edit' if u.id in member_ids else 'hide')
 
     return render(request, 'admin/project_permissions.html', {
         'project': project,
         'users': users,
     })
 
+
 @login_required(login_url='login')
 @not_frozen
 def dynamic_entry_create(request, pk):
     
     project = get_object_or_404(Project, pk=pk, is_dynamic=True)
-    
-    
-    if not request.user.is_admin and request.user != project.user:
-        user_perm = project.user_permissions.filter(user=request.user).first()
-        if not user_perm or user_perm.access_level != 'edit':
-            messages.error(request, "You do not have permission to add rows to this project.")
-            return redirect('project_detail', pk=project.pk)
+
+    if not can_add_entries(request.user, project):
+        return _deny(request, "You do not have permission to add rows to this project.",
+                     to='project_detail', pk=project.pk)
 
     if request.method == 'POST':
         entry_data = {}
@@ -1151,6 +1315,6 @@ def dynamic_entry_create(request, pk):
 
 
 
-@login_required(login_url='login')
+@admin_required
 def realtime_dashboard(request):
     return render(request, 'dashboard_realtime.html')
